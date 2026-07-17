@@ -1,0 +1,12 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.11, pytest-9.0.2, pluggy-1.6.0 -- /share/pkg.8/academic-ml/spring-2026/install/spring-2026-pyt/bin/python3.12
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: /usr4/spclpgm/eric1/conformal-source-regions
+configfile: pytest.ini
+plugins: hypothesis-6.150.1, anyio-4.12.1
+collecting ... collected 1 item
+
+tests/test_fd_check.py::test_fd_cross_check_20_scenarios scenario  0: rms=3.951e+00 relL2=0.0564%
+scenario  1: rms=6.321e-01 relL2=0.0086%
+scenario  2: rms=1.910e-06 relL2=0.4016%
