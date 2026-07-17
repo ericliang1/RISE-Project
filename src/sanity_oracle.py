@@ -13,7 +13,7 @@ import torch
 
 from common import (REPO_ROOT, cell_centers, get_device, load_config, pos_to_cell,
                     resolve, scenario_rng, update_json)
-from exact_posterior import log_posterior_scenario, _q_nodes
+from exact_posterior import log_posterior_scenario, marginal_log_evidence
 from forward_model import cell_responses, sensor_responses
 from priors import obs_times, sample_params
 
@@ -108,13 +108,14 @@ def main():
     results["area_dose_pass"] = bool(np.mean(mono_q) >= 0.9 and np.mean(mono_sig) >= 0.9)
 
     # --- 5. brute-force q-marginalization cross-check --------------------
-    max_dev = 0.0
+    # Production composite rule vs (a) a 10x-node deep composite rule and
+    # (b) a dense trapezoid in log q (spectrally accurate for peak widths
+    # sigma_L >~ 2 grid spacings; comparison masked to such scenarios' cells).
+    max_dev_deep, max_dev_trap = 0.0, 0.0
     for _ in range(4):
         p = sample_params(rng, CFG)
         sensors = rng.uniform(0, 1, size=(8, 2))
         d = make_scenario(p, sensors, rng)
-        lp_gl = log_posterior_scenario(d, 0, CFG, DEV).cpu().numpy()
-        # brute force: dense trapezoid in log q on the same expanded form
         cells_t = torch.tensor(cell_centers(N_GRID), device=DEV, dtype=torch.float64)
         ns = int(d["n_sensors"][0])
         keep = d["keep"][0, :ns]
@@ -129,29 +130,43 @@ def main():
         y = torch.tensor(d["readings"][0, :ns][keep], device=DEV, dtype=torch.float64)
         M = y.shape[0]
         sig = float(d["sigma"][0])
+        yy = float(torch.dot(y, y))
+        a = g @ y
+        b = (g * g).sum(dim=1)
+
+        ev_prod = marginal_log_evidence(a, b, yy, sig, M, CFG, DEV)
+        ev_deep = marginal_log_evidence(a, b, yy, sig, M, CFG, DEV,
+                                        n_peak=320, n_outer=160, halfwidth=12.0)
+        lp_prod = (ev_prod - torch.logsumexp(ev_prod, 0)).cpu().numpy()
+        lp_deep = (ev_deep - torch.logsumexp(ev_deep, 0)).cpu().numpy()
+        m = np.maximum(lp_prod, lp_deep) > -30
+        max_dev_deep = max(max_dev_deep, float(np.abs(lp_prod[m] - lp_deep[m]).max()))
+
+        # dense trapezoid in L = log q
         L = torch.linspace(np.log(CFG["prior"]["q_log_low"]),
                            np.log(CFG["prior"]["q_log_high"]),
                            OC["brute_force_q_grid"], device=DEV, dtype=torch.float64)
         q = torch.exp(L)
-        yy = torch.dot(y, y)
-        a = g @ y
-        b = (g * g).sum(dim=1)
+        hL = float(L[1] - L[0])
+        # narrowest peak width in L across plausible cells
+        sig_L_min = float((sig / (torch.sqrt(b.clamp(min=1e-280)) * (a / b.clamp(min=1e-280)).clamp(0.5, 5.0))).min())
         out = torch.empty(N_GRID * N_GRID, device=DEV, dtype=torch.float64)
-        for lo_i in range(0, N_GRID * N_GRID, 512):
-            hi_i = min(lo_i + 512, N_GRID * N_GRID)
+        for lo_i in range(0, N_GRID * N_GRID, 256):
+            hi_i = min(lo_i + 256, N_GRID * N_GRID)
             quad = yy - 2.0 * q[None, :] * a[lo_i:hi_i, None] \
                 + (q ** 2)[None, :] * b[lo_i:hi_i, None]
             ll = -0.5 * M * np.log(2 * np.pi * sig ** 2) - quad / (2 * sig ** 2)
-            # trapezoid weights in L
-            w = torch.full_like(L, (L[1] - L[0]))
-            w[0] = w[-1] = 0.5 * (L[1] - L[0])
-            out[lo_i:hi_i] = torch.logsumexp(torch.log(w)[None, :] + ll, dim=1)
-        lp_bf = (out - torch.logsumexp(out, dim=0)).cpu().numpy()
-        # compare on cells with non-negligible posterior
-        m = np.maximum(lp_gl, lp_bf) > -30
-        max_dev = max(max_dev, float(np.abs(lp_gl[m] - lp_bf[m]).max()))
-    results["brute_force_logpost_max_abs_dev"] = max_dev
-    results["brute_force_pass"] = bool(max_dev < 1e-6)
+            w = torch.full_like(L, hL)
+            w[0] = w[-1] = 0.5 * hL
+            out[lo_i:hi_i] = torch.logsumexp(
+                torch.log(w)[None, :] + ll, dim=1) - np.log(np.log(10.0))
+        lp_trap = (out - torch.logsumexp(out, dim=0)).cpu().numpy()
+        if sig_L_min > 2.0 * hL:                  # trapezoid reference valid
+            m = np.maximum(lp_prod, lp_trap) > -30
+            max_dev_trap = max(max_dev_trap, float(np.abs(lp_prod[m] - lp_trap[m]).max()))
+    results["brute_force_deep_max_abs_dev"] = max_dev_deep
+    results["brute_force_trapezoid_max_abs_dev"] = max_dev_trap
+    results["brute_force_pass"] = bool(max_dev_deep < 1e-6 and max_dev_trap < 1e-6)
 
     update_json(GATES, {"G4": results})
     for k, v in results.items():

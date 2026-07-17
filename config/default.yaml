@@ -82,6 +82,9 @@ model:
   target_trunc_sigmas: 3.0        # truncated at 3 std
 
 training:
+  d4_augment: true                # DOCUMENTED DEVIATION: exact D4-symmetry batch
+                                  # augmentation (see GATES.md G2 — without it the
+                                  # paper recipe memorizes with zero generalization)
   lr: 3.0e-4
   lr_final: 3.0e-5                # cosine decay 3e-4 -> 3e-5
   weight_decay: 1.0e-4
@@ -100,11 +103,18 @@ conformal:
   score_seed: 777                 # RNG for the tie-breaking U_j (and test-time U for sweeps)
 
 oracle:
-  q_quad_nodes: 32                # Gauss-Legendre in log q over [log 0.5, log 5]
+  # DOCUMENTED DEVIATION from the paper's "32-node GL in log q": that fixed rule
+  # cannot resolve the q-likelihood peak (width sigma/||g_c||, up to ~1000x
+  # narrower than its node spacing) and fails the brute-force gate by many nats.
+  # We use a peak-aware composite GL rule over q in [0.5, 5]: panels split at
+  # qhat_c +/- 8 sigma_q, 32 nodes on the peak panel, 16 per outer panel.
+  q_peak_nodes: 32
+  q_outer_nodes: 16
+  q_peak_halfwidth_sigmas: 8.0
   cell_chunk: 1024                # cells per GPU chunk when building g_c
   dtype: float64                  # oracle entirely in float64 log-space
   sanity_sigma_small: 1.0e-4      # "sigma -> 0" mode-recovery check
-  brute_force_q_grid: 20000       # trapezoid grid in log q for cross-check
+  brute_force_q_grid: 200000      # trapezoid grid in log q for cross-check
   n_sanity_scenarios: 24
 
 fd_check:

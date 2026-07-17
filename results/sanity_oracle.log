@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/usr4/spclpgm/eric1/conformal-source-regions/src/sanity_oracle.py", line 180, in <module>
+    main()
+  File "/usr4/spclpgm/eric1/conformal-source-regions/src/sanity_oracle.py", line 70, in main
+    d = make_scenario(p, sensors, rng, sigma=OC["sanity_sigma_small"])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr4/spclpgm/eric1/conformal-source-regions/src/sanity_oracle.py", line 35, in make_scenario
+    A = sensor_responses(to(sensors)[None], to(times), to(p["xs"])[None],
+                         ^^^^^^^^^^^
+  File "/usr4/spclpgm/eric1/conformal-source-regions/src/sanity_oracle.py", line 34, in <lambda>
+    to = lambda a: torch.tensor(np.asarray(a, np.float64), device=DEV)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.AcceleratorError: CUDA error: CUDA-capable device(s) is/are busy or unavailable
+Search for `cudaErrorDevicesUnavailable' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+oracle stage exit: 1

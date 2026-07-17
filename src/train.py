@@ -3,6 +3,15 @@
 Cross-entropy to a smoothed Gaussian-bump target; AdamW, cosine lr decay,
 early stopping on validation NLL (true-cell NLL), checkpoint by val NLL only.
 
+DOCUMENTED DEVIATION (training protocol only): each training batch is
+transformed by a random D4 symmetry of the unit square (rotations by k*90deg
++ reflection, applied jointly to sensors, wind, and source).  This is an
+EXACT physics symmetry (validated by the G1 rotation/reflection gate) and the
+benchmark prior is D4-invariant, so augmented scenarios are exact draws from
+the same prior.  Without it, the paper's recipe memorizes the 10k training
+scenarios with zero generalization (val NLL never better than uniform); with
+it, val NLL tracks train loss.  See GATES.md (G2).
+
 Usage:  python src/train.py --seed 1 [--config ...]
 """
 import argparse
@@ -13,9 +22,44 @@ import numpy as np
 import torch
 
 from baselines import localization_errors, peak_sensor_estimates
-from common import cell_center_of, get_device, load_config, resolve, update_json
+from common import (cell_center_of, get_device, load_config, pos_to_cell,
+                    resolve, update_json)
 from inference import heatmaps, load_split, to_batch
 from model import DeepSetsLocalizer, count_params, smoothed_targets
+
+
+def d4_augment(batch, xs, rng, device):
+    """Random per-scenario D4 symmetry about the domain center applied to
+    sensors, wind, and source.  Returns (augmented batch, augmented xs)."""
+    B = batch["sensors"].shape[0]
+    k = torch.tensor(rng.integers(0, 4, B), device=device)
+    r = torch.tensor(rng.integers(0, 2, B), device=device)
+    c = 0.5
+    sx = batch["sensors"][..., 0] - c
+    sy = batch["sensors"][..., 1] - c
+    ux, uy = batch["u"][:, 0], batch["u"][:, 1]
+    xsx = torch.tensor(xs[:, 0], device=device, dtype=torch.float32) - c
+    xsy = torch.tensor(xs[:, 1], device=device, dtype=torch.float32) - c
+    # reflect about the x-axis, then rotate by k*90deg
+    sy = torch.where(r[:, None] == 1, -sy, sy)
+    uy = torch.where(r == 1, -uy, uy)
+    xsy = torch.where(r == 1, -xsy, xsy)
+
+    def rot(px, py, kk):
+        ox = torch.where(kk == 0, px, torch.where(kk == 1, -py,
+                         torch.where(kk == 2, -px, py)))
+        oy = torch.where(kk == 0, py, torch.where(kk == 1, px,
+                         torch.where(kk == 2, -py, -px)))
+        return ox, oy
+
+    sx, sy = rot(sx, sy, k[:, None])
+    ux, uy = rot(ux, uy, k)
+    xsx, xsy = rot(xsx, xsy, k)
+    out = dict(batch)
+    out["sensors"] = torch.stack([sx + c, sy + c], dim=-1)
+    out["u"] = torch.stack([ux, uy], dim=-1)
+    xs_new = torch.stack([xsx + c, xsy + c], dim=-1).double().cpu().numpy()
+    return out, xs_new
 
 
 def val_nll(model, d, device, batch_size=512):
@@ -62,7 +106,7 @@ def train_one_seed(cfg, seed, device):
 
     n_grid = cfg["grid"]["n"]
     m = cfg["model"]
-    true_cells_train = torch.tensor(d_train["true_cell"])
+    use_aug = tr.get("d4_augment", True)
     n_train = len(d_train["ids"])
     bs = tr["batch_size"]
 
@@ -83,7 +127,11 @@ def train_one_seed(cfg, seed, device):
             for lo in range(0, n_train, bs):
                 idx = perm[lo: lo + bs]
                 batch = to_batch(d_train, idx, device)
-                tgt = smoothed_targets(true_cells_train[idx], n_grid,
+                xs = d_train["xs"][idx]
+                if use_aug:
+                    batch, xs = d4_augment(batch, xs, np_rng, device)
+                tc = torch.tensor(pos_to_cell(xs, n_grid))
+                tgt = smoothed_targets(tc, n_grid,
                                        m["target_smooth_std_cells"],
                                        m["target_trunc_sigmas"], device)
                 with torch.autocast("cuda", dtype=amp_dtype):

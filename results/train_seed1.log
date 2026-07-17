@@ -1,0 +1,39 @@
+seed 1: 4.87M params
+/usr4/spclpgm/eric1/conformal-source-regions/src/train.py:145: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+  tot_loss += float(loss)
+epoch   0 loss 8.0882 val_nll 7.9760 best 7.9760@0
+epoch   1 loss 7.9923 val_nll 7.9484 best 7.9484@1
+epoch   2 loss 7.9718 val_nll 7.9370 best 7.9370@2
+epoch   5 loss 7.9564 val_nll 7.9292 best 7.9292@5
+epoch   7 loss 7.9418 val_nll 7.9288 best 7.9288@7
+epoch   8 loss 7.9249 val_nll 7.8952 best 7.8952@8
+epoch   9 loss 7.8750 val_nll 7.8345 best 7.8345@9
+epoch  10 loss 7.7778 val_nll 7.7433 best 7.7433@10
+epoch  11 loss 7.6324 val_nll 7.5939 best 7.5939@11
+epoch  12 loss 7.4040 val_nll 7.3000 best 7.3000@12
+epoch  13 loss 7.2067 val_nll 7.1450 best 7.1450@13
+epoch  14 loss 7.0993 val_nll 7.0640 best 7.0640@14
+epoch  15 loss 7.0127 val_nll 6.9807 best 6.9807@15
+epoch  16 loss 6.9452 val_nll 6.9344 best 6.9344@16
+epoch  17 loss 6.8906 val_nll 6.8882 best 6.8882@17
+epoch  18 loss 6.8363 val_nll 6.8653 best 6.8653@18
+epoch  19 loss 6.8043 val_nll 6.8495 best 6.8495@19
+epoch  20 loss 6.7418 val_nll 6.8294 best 6.8294@20
+epoch  21 loss 6.7111 val_nll 6.7860 best 6.7860@21
+epoch  22 loss 6.6679 val_nll 6.7210 best 6.7210@22
+epoch  23 loss 6.6527 val_nll 6.7164 best 6.7164@23
+epoch  24 loss 6.6192 val_nll 6.6894 best 6.6894@24
+epoch  25 loss 6.5976 val_nll 6.6556 best 6.6556@25
+epoch  27 loss 6.5371 val_nll 6.5958 best 6.5958@27
+epoch  30 loss 6.4793 val_nll 6.5819 best 6.5819@30
+epoch  31 loss 6.4644 val_nll 6.5700 best 6.5700@31
+epoch  32 loss 6.4506 val_nll 6.5599 best 6.5599@32
+epoch  33 loss 6.4342 val_nll 6.5574 best 6.5574@33
+epoch  35 loss 6.4024 val_nll 6.5242 best 6.5242@35
+epoch  39 loss 6.3469 val_nll 6.4657 best 6.4657@39
+epoch  40 loss 6.3186 val_nll 6.4513 best 6.4513@40
+epoch  45 loss 6.2639 val_nll 6.4037 best 6.4037@45
+epoch  48 loss 6.2279 val_nll 6.4015 best 6.4015@48
+epoch  49 loss 6.2146 val_nll 6.3846 best 6.3846@49
+epoch  50 loss 6.1971 val_nll 6.3859 best 6.3846@49

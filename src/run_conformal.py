@@ -25,15 +25,19 @@ from inference import heatmaps, load_model, load_split
 def get_probs(tag, split, cfg, device):
     data_dir = resolve(cfg, "data_dir")
     if tag.startswith("model_seed"):
+        seed = int(tag.replace("model_seed", ""))
+        ckpt_path = resolve(cfg, "checkpoints_dir") / f"seed{seed}.pt"
+        from common import sha256_file
+        ckpt_sha = sha256_file(ckpt_path)
         cache = data_dir / f"heatmaps_{tag}_{split}.npz"
         if cache.exists():
-            return np.load(cache)["probs"]
-        seed = int(tag.replace("model_seed", ""))
-        model, _ = load_model(cfg, resolve(cfg, "checkpoints_dir") / f"seed{seed}.pt",
-                              device)
+            z = np.load(cache)
+            if "ckpt_sha" in z and str(z["ckpt_sha"]) == ckpt_sha:
+                return z["probs"]           # cache matches current checkpoint
+        model, _ = load_model(cfg, ckpt_path, device)
         d = load_split(data_dir, split)
         P = heatmaps(model, d, device)
-        np.savez_compressed(cache, ids=d["ids"], probs=P)
+        np.savez_compressed(cache, ids=d["ids"], probs=P, ckpt_sha=ckpt_sha)
         return P
     elif tag == "exact":
         return np.load(data_dir / f"{split}_posterior.npz")["probs"].astype(np.float64)
