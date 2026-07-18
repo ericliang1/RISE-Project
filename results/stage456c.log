@@ -1,0 +1,3 @@
+=== exact posteriors calib+test (float64) ===
+exact posteriors: calib (grid 64x64)
+  500/2000  (30 ms/scen)

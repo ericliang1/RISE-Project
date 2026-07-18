@@ -63,9 +63,16 @@ def main():
     rng = np.random.default_rng(5150)
 
     # --- 2. mode -> true cell as sigma -> 0 ------------------------------
+    # The candidate set is the 64x64 cell centers, so the check is well-posed
+    # only when the source sits AT a cell center (otherwise the center-offset
+    # residual, up to 1/128, dominates a sigma=1e-4 likelihood and the mode
+    # legitimately lands on a better-fitting neighbor).  Documented in GATES.md.
     hits, n_try = 0, OC["n_sanity_scenarios"]
     for _ in range(n_try):
         p = sample_params(rng, CFG)
+        cell = pos_to_cell(p["xs"][None], N_GRID)[0]
+        p["xs"] = np.array([(cell % N_GRID + 0.5) / N_GRID,
+                            (cell // N_GRID + 0.5) / N_GRID])
         sensors = rng.uniform(0, 1, size=(8, 2))
         d = make_scenario(p, sensors, rng, sigma=OC["sanity_sigma_small"])
         lp = log_posterior_scenario(d, 0, CFG, DEV).cpu().numpy()

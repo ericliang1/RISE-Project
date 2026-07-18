@@ -126,11 +126,15 @@ def log_posterior_scenario(d, i, cfg, device, cells_t=None, grid_n=None):
 
 @torch.no_grad()
 def posteriors_for_split(d, cfg, device, grid_n=None, verbose_every=500):
-    """(S, n_cells) probs float32 + logp float32 + normalization check."""
+    """(S, n_cells) probs FLOAT64 + logp float32 + normalization check.
+
+    probs must be float64: in float32, p(true cell) underflows to exactly 0 for
+    ~15% of scenarios (sharp posteriors), which breaks the conformal machinery
+    (score atoms at ~1.0 and qhat pinned at 1.0 -> severe undercoverage)."""
     n = grid_n or cfg["grid"]["n"]
     cells_t = torch.tensor(cell_centers(n), device=device, dtype=torch.float64)
     S = len(d["ids"])
-    probs = np.empty((S, n * n), dtype=np.float32)
+    probs = np.empty((S, n * n), dtype=np.float64)
     logp = np.empty((S, n * n), dtype=np.float32)
     norm_err = 0.0
     t0 = time.time()
@@ -138,7 +142,7 @@ def posteriors_for_split(d, cfg, device, grid_n=None, verbose_every=500):
         lp = log_posterior_scenario(d, i, cfg, device, cells_t, n)
         p = torch.exp(lp)
         norm_err = max(norm_err, abs(float(p.sum()) - 1.0))
-        probs[i] = p.float().cpu().numpy()
+        probs[i] = p.cpu().numpy()
         logp[i] = lp.float().cpu().numpy()
         if verbose_every and (i + 1) % verbose_every == 0:
             print(f"  {i+1}/{S}  ({(time.time()-t0)/(i+1)*1000:.0f} ms/scen)",

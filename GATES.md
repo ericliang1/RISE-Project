@@ -81,21 +81,34 @@ fixed before Stage 4/5 ran:
 2. Minor: model heatmap caches now carry the checkpoint SHA-256 and
    invalidate on mismatch (stale-cache hazard on retrain).
 
-## G2 — model training: **TBD (in progress; first attempt FAILED, under debug)**
+## G2 — model training: **PASS (both seeds), with one documented deviation**
 
-The exact paper/runbook training recipe (DeepSets 4.87M params — within the
-"~5M, verify count" spec — AdamW 3e-4 cosine, batch 256, CE to smoothed
-target) **memorizes the 10,000 training scenarios with zero generalization**:
-train-eval NLL → 1.5 while val NLL never improves below ~7.96 (≈ uniform over
-4096 cells; log 4096 = 8.32), and val MAP error 0.44 is worse than the
-peak-sensor heuristic (0.37) and no better than prior-random guessing (0.42).
-Verified not caused by AMP (identical in fp32) or learning rate (1e-4 same
-shape, slower). The frozen data itself is highly informative (exact-posterior
-oracle on frozen val scenarios: median MAP error 0.012). Diagnosis and fix in
-progress — candidate mechanism: shortcut memorization via unique continuous
-scenario fingerprints; candidate fix: exact D4-symmetry data augmentation
-(physics-equivariance validated in G1), documented as a training-protocol
-deviation if adopted.
+**Finding (important for the paper):** the paper's training recipe as written
+(DeepSets 4.87M params — within the "~5M, verify count" spec — AdamW 3e-4
+cosine, batch 256, CE to smoothed target, no augmentation) **memorizes the
+10,000 training scenarios with zero generalization**: train-eval NLL → 1.5
+while val NLL never improves below ~7.96 (≈ uniform over 4096 cells;
+log 4096 = 8.32), and val MAP error 0.44 is worse than the peak-sensor
+heuristic (0.37) and no better than prior-random guessing (0.42). Verified
+not caused by AMP (identical in fp32), learning rate (1e-4: same shape,
+slower), or the context branch (zeroing it still memorizes via the token
+stream). The frozen data itself is highly informative (exact-posterior oracle
+on frozen val scenarios: median MAP error 0.012).
+
+**Deviation (training protocol only):** each training batch gets a random D4
+symmetry of the unit square (rotation k·90° + reflection) applied jointly to
+sensors, wind, and source. This is an exact physics symmetry (G1 symmetry
+gate) and the benchmark prior is D4-invariant, so augmented scenarios are
+exact draws from the same prior; data, architecture, loss, and all specified
+hyperparameters are unchanged. With it, val NLL tracks train loss with no
+overfitting gap.
+
+Results (val split): seed 1 MAP error mean/median **0.180 / 0.101**, seed 2
+**0.174 / 0.103**, vs peak-sensor **0.367 / 0.346** — the model clearly beats
+the baseline (gate condition). Best val NLL 6.306 (seed 1, epoch 81 of 106;
+early stop) / 6.29 (seed 2). Training cost ≈ 0.01 GPU-h per seed on the L40S
+(the paper's 12–20 GPU-h estimate is very conservative for this GPU).
+Leakage audit re-verified before training.
 
 ## G3 / G4 / G5 — TBD
 

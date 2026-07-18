@@ -1,0 +1,86 @@
+=== train seed 2 ===
+seed 2: 4.87M params
+/usr4/spclpgm/eric1/conformal-source-regions/src/train.py:145: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+  tot_loss += float(loss)
+epoch   0 loss 8.0868 val_nll 7.9838 best 7.9838@0
+epoch   1 loss 7.9870 val_nll 7.9628 best 7.9628@1
+epoch   3 loss 7.9639 val_nll 7.9472 best 7.9472@3
+epoch   4 loss 7.9565 val_nll 7.9392 best 7.9392@4
+epoch   5 loss 7.9506 val_nll 7.9280 best 7.9280@5
+epoch   6 loss 7.9435 val_nll 7.9257 best 7.9257@6
+epoch   7 loss 7.9171 val_nll 7.8838 best 7.8838@7
+epoch   8 loss 7.8258 val_nll 7.7801 best 7.7801@8
+epoch   9 loss 7.6942 val_nll 7.6615 best 7.6615@9
+epoch  10 loss 7.5057 val_nll 7.4556 best 7.4556@10
+epoch  11 loss 7.2953 val_nll 7.2747 best 7.2747@11
+epoch  12 loss 7.1591 val_nll 7.1553 best 7.1553@12
+epoch  13 loss 7.0616 val_nll 7.0647 best 7.0647@13
+epoch  14 loss 6.9822 val_nll 6.9942 best 6.9942@14
+epoch  15 loss 6.9187 val_nll 6.9403 best 6.9403@15
+epoch  16 loss 6.8695 val_nll 6.8729 best 6.8729@16
+epoch  17 loss 6.8211 val_nll 6.8519 best 6.8519@17
+epoch  18 loss 6.7698 val_nll 6.8163 best 6.8163@18
+epoch  19 loss 6.7247 val_nll 6.7866 best 6.7866@19
+epoch  20 loss 6.6994 val_nll 6.7783 best 6.7783@20
+epoch  21 loss 6.6712 val_nll 6.7314 best 6.7314@21
+epoch  22 loss 6.6329 val_nll 6.6959 best 6.6959@22
+epoch  23 loss 6.6190 val_nll 6.6633 best 6.6633@23
+epoch  24 loss 6.5731 val_nll 6.6360 best 6.6360@24
+epoch  25 loss 6.5558 val_nll 6.6125 best 6.6125@25
+epoch  26 loss 6.5318 val_nll 6.5963 best 6.5963@26
+epoch  27 loss 6.5031 val_nll 6.5780 best 6.5780@27
+epoch  29 loss 6.4747 val_nll 6.5665 best 6.5665@29
+epoch  30 loss 6.4464 val_nll 6.5492 best 6.5492@30
+epoch  31 loss 6.4366 val_nll 6.5205 best 6.5205@31
+epoch  34 loss 6.3980 val_nll 6.4879 best 6.4879@34
+epoch  36 loss 6.3668 val_nll 6.4854 best 6.4854@36
+epoch  37 loss 6.3471 val_nll 6.4750 best 6.4750@37
+epoch  39 loss 6.3281 val_nll 6.4640 best 6.4640@39
+epoch  40 loss 6.3064 val_nll 6.4358 best 6.4358@40
+epoch  41 loss 6.2881 val_nll 6.4176 best 6.4176@41
+epoch  45 loss 6.2253 val_nll 6.3831 best 6.3831@45
+epoch  46 loss 6.2283 val_nll 6.3745 best 6.3745@46
+epoch  49 loss 6.1789 val_nll 6.3663 best 6.3663@49
+epoch  50 loss 6.1885 val_nll 6.3761 best 6.3663@49
+epoch  51 loss 6.1734 val_nll 6.3549 best 6.3549@51
+epoch  54 loss 6.1290 val_nll 6.3428 best 6.3428@54
+epoch  57 loss 6.0854 val_nll 6.3365 best 6.3365@57
+epoch  60 loss 6.0610 val_nll 6.3025 best 6.3025@60
+epoch  64 loss 6.0168 val_nll 6.2945 best 6.2945@64
+epoch  70 loss 5.9623 val_nll 6.3155 best 6.2945@64
+epoch  74 loss 5.9386 val_nll 6.2911 best 6.2911@74
+epoch  75 loss 5.9109 val_nll 6.2835 best 6.2835@75
+epoch  80 loss 5.8732 val_nll 6.3056 best 6.2835@75
+epoch  90 loss 5.7760 val_nll 6.2871 best 6.2835@75
+epoch 100 loss 5.6797 val_nll 6.3104 best 6.2835@75
+early stop at epoch 100
+[G2] seed 2: val MAP mean 0.1737 median 0.1034 | peak-sensor mean 0.3665 median 0.3458 | 0.01 GPU-h
+=== oracle sanity ===
+  mode_recovery_small_sigma: 10/24
+  mode_recovery_pass: False
+  hpd90_area_wellspread_mean: 0.12320963541666667
+  hpd90_area_confined_mean: 0.2880452473958333
+  poor_layout_broader_pass: True
+  area_contracts_q_frac: 1.0
+  area_grows_sigma_frac: 1.0
+  area_dose_pass: True
+  brute_force_deep_max_abs_dev: 5.665411890731775e-07
+  brute_force_trapezoid_max_abs_dev: 5.92282901834551e-07
+  brute_force_pass: True
+ORACLE SANITY: FAIL
+Traceback (most recent call last):
+  File "/usr4/spclpgm/eric1/conformal-source-regions/src/sanity_oracle.py", line 180, in <module>
+    main()
+  File "/usr4/spclpgm/eric1/conformal-source-regions/src/sanity_oracle.py", line 176, in main
+    assert ok
+           ^^
+AssertionError
+=== exact posteriors calib+test ===
+exact posteriors: calib (grid 64x64)
+  500/2000  (31 ms/scen)
+  1000/2000  (31 ms/scen)
+  1500/2000  (31 ms/scen)
+  2000/2000  (30 ms/scen)
+  done in 61s, max |1-sum(p)| = 3.44e-13
+exact posteriors: test (grid 64x64)

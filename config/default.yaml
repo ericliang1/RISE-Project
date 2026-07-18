@@ -113,7 +113,9 @@ oracle:
   q_peak_halfwidth_sigmas: 8.0
   cell_chunk: 1024                # cells per GPU chunk when building g_c
   dtype: float64                  # oracle entirely in float64 log-space
-  sanity_sigma_small: 1.0e-4      # "sigma -> 0" mode-recovery check
+  sanity_sigma_small: 1.0e-6      # "sigma -> 0" mode-recovery check (1e-4 is not
+                                  # yet asymptotic for weak-signal scenarios whose
+                                  # adjacent-cell responses differ by < 1e-4)
   brute_force_q_grid: 200000      # trapezoid grid in log q for cross-check
   n_sanity_scenarios: 24
 
