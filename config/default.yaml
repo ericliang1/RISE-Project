@@ -131,4 +131,6 @@ fd_check:
 evaluation:
   latency_scenarios: 200          # batch-1 latency measurement
   jsd_dtype: float64
-  refine_scenarios: 100           # appendix E: 96x96 refinement on 100 test scenarios
+  refine_scenarios: 2000          # appendix E: 96x96 refinement on the FULL test
+                                  # split (the paper's 100-scenario version is too
+                                  # noisy: 100-window coverage spans 0.79-0.97)

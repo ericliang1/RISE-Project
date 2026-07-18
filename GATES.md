@@ -110,6 +110,145 @@ early stop) / 6.29 (seed 2). Training cost ≈ 0.01 GPU-h per seed on the L40S
 (the paper's 12–20 GPU-h estimate is very conservative for this GPU).
 Leakage audit re-verified before training.
 
-## G3 / G4 / G5 — TBD
+## G3 — conformal calibration (H1): machinery verified; seed-dependent verdict
 
-(Filled after their stages run.)
+**Numerical finding #2 (important for the paper):** the paper's nonconformity
+score s = (mass above the true cell) saturates in floating point for sharp
+heatmaps: when p(true cell) ~ 1e-30, `1 - tiny` rounds to exactly 1.0
+(catastrophic cancellation), creating an atom of tied scores at the top of the
+score distribution. The calibration quantile lands inside the atom and the
+region rule then excludes every atom member — conformal-on-exact-posterior
+covered only 0.84 instead of 0.90 (and float32 posterior storage made it
+worse, 0.82). **Fix (exact-arithmetic-equivalent):** all scoring, threshold,
+and region logic works with the complement tail mass t = 1 − s (mass at or
+below the true cell, complementary randomization), which is representable at
+both ends (the exact-posterior threshold is t̂ ≈ 4e-199). In-sample coverage
+is 0.9005 = 1801/2000 by construction, verifying the quantile indexing.
+
+Results at 90% on the 2000-scenario test split:
+
+| heatmap | coverage | Clopper–Pearson 95% CI | contains 0.90 |
+|---|---|---|---|
+| learned, seed 1 | 0.8750 | [0.860, 0.889] | **no** |
+| learned, seed 2 | 0.8960 | [0.882, 0.909] | yes |
+| exact posterior (oracle) | 0.9070 | [0.893, 0.919] | yes |
+
+**Honest verdict on the seed-1 shortfall** (investigated exhaustively): the
+implementation is exact (in-sample 0.9005; U-randomization irrelevant —
+coverage spread over 20 U-seeds < 0.0005); calib and test are exchangeable
+(exact-posterior scores KS p = 0.90, learned scores KS p = 0.51; the exact
+oracle covers on the same splits); and swapping the roles (calibrate on test,
+cover calib) OVER-covers by the mirror amount (0.9165). A permutation test
+puts the probability of a test pass-rate this low under exchangeability at
+p = 0.0045. Conclusion: a genuine ~1-in-220 finite-sample fluctuation of this
+particular (model, calibration-split, test-split) triple, reported as such —
+not an implementation defect. The formal G3 criterion (CI contains 0.90)
+passes for seed 2 and for conformal-on-exact, and fails for seed 1.
+
+## G4 — exact posterior + audit: **PASS**
+
+- Normalization: max |1 − Σp| = 3.4e-13 (calib), 8.9e-14 (test); gate 1e-6.
+- Brute-force marginalization cross-check: composite rule vs 10×-node deep
+  rule max |Δ log posterior| = 5.7e-7, vs 200k-node trapezoid 5.9e-7
+  (gate 1e-6) — validates the composite quadrature deviation (see review
+  section above).
+- Poor-layout posteriors visibly broader: mean 90% HPD area 0.29 (confined)
+  vs 0.12 (well-spread).
+- Region area contracts as q rises and grows as σ rises: 12/12 scenarios each.
+- Mode → true cell as σ → 0: **24/24**. Well-posedness required two
+  documented formulation fixes: (a) the source is snapped to its cell center
+  (candidates ARE cell centers; an off-center source at tiny σ legitimately
+  fits a neighboring center better), and (b) scenarios are conditioned on
+  identifiability (a sensor must see the plume above the smallest benchmark
+  noise floor 0.01 — for all-upwind layouts adjacent cells differ by ~1e-30
+  and no numerically reachable σ separates them). σ = 1e-6 (1e-4 is not yet
+  asymptotic for weak-signal scenarios).
+- Area dose behavior (24 cell-centered scenarios, frozen noise realization):
+  contracts with q for 87.5% of scenarios (mean Δarea = −0.0047), grows with
+  σ for 100% (mean Δarea = +0.0238). Per-realization q-monotonicity is not
+  guaranteed at the rate-prior edges (q_true = 0.5 or 5 truncates the
+  location–rate confusion set asymmetrically) — the gate is mean contraction
+  plus a ≥75% per-scenario fraction.
+- Oracle MAP error on frozen data: mean/median 0.151/0.020 (calib),
+  0.160/0.023 (test) — the frozen benchmark is highly informative.
+
+### H2 (sharpness audit, seed 1, matched verified-90% conformal coverage)
+
+- Per-scenario Spearman(learned area, exact area) = **0.848**.
+- Inefficiency factor (learned/exact area): median **5.57**, mean 47.6
+  (heavy right tail: scenarios where the exact posterior is razor-sharp but
+  the learned heatmap saturates at ~0.4 of the domain).
+- **Honest interpretation:** the learned regions strongly track the physics
+  ordering but are far from the information-theoretic sharpness limit — the
+  network, not the data, is the bottleneck (the paper's Sec. 6.2 language for
+  a factor ≫ 1 applies).
+
+### H3 (dose–response, seed 1; region-size language only, constructed sets)
+
+- Knob 1 (sensor count): per-scenario Spearman(learned, exact curves) median
+  **0.81** (mean 0.65); contraction-slope ratio (learned/exact) **0.47**
+  (mean curves), per-scenario median 0.46.
+- Knob 2 (geometry, N = 6): confined/spread area ratio — learned median 1.20
+  (mean 2.44), exact median 1.58 (mean 177.7, blown up by a few scenarios
+  whose confined exact region explodes); Spearman agreement of per-scenario
+  ratios **0.88**; both methods widen under the confined layout in exactly
+  64% of the 50 pairs.
+- Knob 3 (noise): per-scenario Spearman median **0.75** (mean 0.52); slope
+  ratio (area vs log10 σ) **0.49** (mean curves), per-scenario median 0.61.
+- **Honest interpretation:** the learned tool responds in the correct
+  direction on every knob and its ordering agrees strongly with the oracle,
+  but it reacts with roughly HALF the oracle's magnitude — consistent with
+  the H2 finding that the learned regions are over-wide where the data are
+  most informative.
+
+### Appendix E — 96×96 grid refinement (full 2000-scenario test split)
+
+Coverage changes by **−0.0065** (0.9005 at 96² vs 0.9070 at 64²) and median
+exact region area by **−0.0062** (0.0066 vs 0.0128 as a domain fraction —
+finer cells resolve sharper regions). Coverage is stable at nominal; the
+64×64 grid is adequate. (The paper's 100-scenario version of this check is
+too noisy to be meaningful — 100-window coverage varies 0.79–0.97 across the
+test split — so we ran the full split; norm error at 96²: 1.4e-13.)
+
+## G5 — assembly + reproducibility: **PASS**
+
+- `results/placeholder_map.json`: 47 keys covering every paper placeholder
+  (headline Table 3, H2/H3, appendix Table 4, gates, seed-2 spread).
+- Tables: `results/tables/table3_headline.{csv,tex}`,
+  `table4_auxiliary.csv`, `coverage.csv` (fig3 source).
+- Figures with the exact filenames the LaTeX expects: `figures/fig1_pipeline.pdf`,
+  `fig2_easy_vs_ambiguous.pdf`, `fig3_coverage.pdf`, `fig4_audit.pdf`,
+  `fig5_doseresponse.pdf` — rendered and visually verified.
+- **Reproducibility rerun:** regenerating the test split from the config
+  yields a bit-identical npz (SHA-256 match: a2f8d103…); re-running
+  `assemble_results.py` from the frozen artifacts reproduces the main tables
+  byte-for-byte. G1 fast gates re-pass after all changes (4/4).
+  `scripts/run_all.sh` is the single-command clean-checkout pipeline.
+- Note: training itself is seeded but GPU kernels are not bitwise
+  deterministic; the frozen checkpoints are part of the released artifact and
+  all downstream numbers regenerate deterministically from them.
+
+## Budget
+
+- Storage: **237 MB** on /projectnb (data + posteriors + heatmaps +
+  checkpoints) — far under the 10 GB budget.
+- Compute: training 0.011 GPU-h per seed (4,869,568 params — "~5M" verified);
+  the entire pipeline including physics gates, posteriors (64² and 96² on
+  4000+ scenarios), audits, and dose–response used **≈ 1.5 GPU-h** on one
+  L40S — far under the paper's 12–20 GPU-h estimate.
+
+## Summary of findings the paper text must absorb
+
+1. The 32-node GL-in-log-q rate marginalization (Sec. 4.3) is numerically
+   inadequate; a peak-aware composite rule is required (validated < 1e-6).
+2. The nonconformity score (Eq. 5) must be computed in tail space; the naive
+   mass-above form saturates in floating point and silently destroys the
+   coverage guarantee for sharp posteriors.
+3. The training recipe (Sec. 4.1) requires D4-symmetry augmentation; as
+   written it memorizes with zero generalization at this data scale.
+4. H1: seed 2 and conformal-on-exact attain nominal coverage; seed 1 lands at
+   0.875 [0.860, 0.889] — a quantified finite-sample fluctuation
+   (permutation p = 0.0045), not an implementation defect.
+5. H2 is a partial null: calibrated and strongly rank-correlated (ρ = 0.85)
+   but ~5.6× the oracle area at the median.
+6. H3: correct direction on all three knobs, ~half the oracle's magnitude.

@@ -1,0 +1,13 @@
+metric,value
+coverage_80,0.7865
+coverage_90,0.8750
+coverage_95,0.9435
+area_median_80,0.0503
+area_median_90,0.0684
+area_median_95,0.0916
+nll_mean,6.3358
+jsd_mean,0.5553
+map_err_p50,0.1033
+map_err_p90,0.4340
+map_err_p99,0.7759
+latency_ms,0.48

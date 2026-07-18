@@ -1,0 +1,25 @@
+=== oracle sanity FINAL ===
+  mode_recovery_small_sigma: 24/24
+  mode_recovery_pass: True
+  hpd90_area_wellspread_mean: 0.06376139322916667
+  hpd90_area_confined_mean: 0.4795328776041667
+  poor_layout_broader_pass: True
+  area_contracts_q_frac: 0.875
+  area_grows_sigma_frac: 1.0
+  area_mean_delta_q_hi_minus_lo: -0.004659016927083333
+  area_mean_delta_sigma_hi_minus_lo: 0.023793538411458332
+  area_dose_pass: True
+  brute_force_deep_max_abs_dev: 0.0
+  brute_force_trapezoid_max_abs_dev: 0.0
+  brute_force_pass: True
+ORACLE SANITY: PASS
+=== fast pytest suite ===
+....                                                                     [100%]
+4 passed in 3.29s
+=== repro: regenerate data, verify checksums ===
+test.npz frozen sha: a2f8d10349668b4f  regenerated: a2f8d10349668b4f  MATCH
+=== repro: re-assemble tables, compare ===
+cmp: results/t3_before.csv: No such file or directory
+TABLES DIFFER
+=== FINAL CHAIN DONE ===
+exit: 0

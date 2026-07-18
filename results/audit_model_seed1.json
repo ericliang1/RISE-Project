@@ -1,9 +1,9 @@
 {
   "h2": {
-    "spearman_area": 0.5973946823130614,
-    "spearman_p": 9.086269762402654e-194,
-    "inefficiency_mean": 75.58991755699539,
-    "inefficiency_median": 1.2759888553941718
+    "spearman_area": 0.8483715568086974,
+    "spearman_p": 0.0,
+    "inefficiency_mean": 47.63314472859747,
+    "inefficiency_median": 5.572089314194578
   },
   "map_error": {
     "learned_mean": 0.17367232386917533,
@@ -21,5 +21,5 @@
   "nll_mean": 6.335784435272217,
   "jsd_mean": 0.5553437334978075,
   "jsd_median": 0.6580207949048984,
-  "latency_ms_per_scenario": 0.4832327365875244
+  "latency_ms_per_scenario": 0.47889232635498047
 }

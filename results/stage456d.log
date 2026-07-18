@@ -1,3 +1,140 @@
 === conformal model seed1 (tail-space) ===
 [model_seed1] coverage@90 = 0.8750 CI [0.8597, 0.8892] contains 0.90: False | area mean 0.1678 median 0.0684
 === conformal model seed2 ===
+[model_seed2] coverage@90 = 0.8960 CI [0.8818, 0.9090] contains 0.90: True | area mean 0.1706 median 0.0729
+=== conformal exact ===
+[exact] coverage@90 = 0.9070 CI [0.8934, 0.9194] contains 0.90: True | area mean 0.2215 median 0.0127
+=== audit seed1 ===
+{
+  "h2": {
+    "spearman_area": 0.8483715568086974,
+    "spearman_p": 0.0,
+    "inefficiency_mean": 47.63314472859747,
+    "inefficiency_median": 5.572089314194578
+  },
+  "map_error": {
+    "learned_mean": 0.17367232386917533,
+    "learned_median": 0.10333826673227411,
+    "exact_mean": 0.16023777154216712,
+    "exact_median": 0.022668104127897146,
+    "peak_sensor_mean": 0.35560398282612177,
+    "peak_sensor_median": 0.3150528444401277,
+    "learned_p50_p90_p99": [
+      0.10333826673227411,
+      0.4339940212500064,
+      0.7758640562356378
+    ]
+  },
+  "nll_mean": 6.335784435272217,
+  "jsd_mean": 0.5553437334978075,
+  "jsd_median": 0.6580207949048984,
+  "latency_ms_per_scenario": 0.47889232635498047
+}
+=== audit seed2 ===
+{
+  "h2": {
+    "spearman_area": 0.8511421209714861,
+    "spearman_p": 0.0,
+    "inefficiency_mean": 51.27277616521761,
+    "inefficiency_median": 5.796551724137931
+  },
+  "map_error": {
+    "learned_mean": 0.17487958246130386,
+    "learned_median": 0.09915808081769267,
+    "exact_mean": 0.16023777154216712,
+    "exact_median": 0.022668104127897146,
+    "peak_sensor_mean": 0.35560398282612177,
+    "peak_sensor_median": 0.3150528444401277,
+    "learned_p50_p90_p99": [
+      0.09915808081769267,
+      0.4464825941909243,
+      0.76898491880185
+    ]
+  },
+  "nll_mean": 6.353116035461426,
+  "jsd_mean": 0.557007756173881,
+  "jsd_median": 0.6595498118668737,
+  "latency_ms_per_scenario": 0.49763560295104986
+}
+=== dose response ===
+/usr4/spclpgm/eric1/conformal-source-regions/src/dose_response.py:103: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  k1_rho = [spearmanr(curves_l[b], curves_e[b]).statistic for b in range(B)]
+/usr4/spclpgm/eric1/conformal-source-regions/src/dose_response.py:153: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  k3_rho = [spearmanr(sw_l[b], sw_e[b]).statistic for b in range(B)]
+{
+  "knob1": {
+    "spearman_per_scenario_mean": 0.6491554896079271,
+    "spearman_per_scenario_median": 0.8136762043449725,
+    "slope_ratio_mean_curves": 0.46732677465863803,
+    "slope_ratio_per_scenario_median": 0.4599122667935098,
+    "slope_learned_mean": -0.016143310546875,
+    "slope_exact_mean": -0.0345439453125
+  },
+  "knob2": {
+    "confined_over_spread_learned_mean": 2.4413991591115076,
+    "confined_over_spread_exact_mean": 177.71666261300487,
+    "confined_over_spread_learned_median": 1.1964232027139579,
+    "confined_over_spread_exact_median": 1.5765870639859552,
+    "spearman_ratio_agreement": 0.8801383029741062,
+    "confined_broader_learned_frac": 0.64,
+    "confined_broader_exact_frac": 0.64
+  },
+  "knob3": {
+    "spearman_per_scenario_mean": 0.5249693342945732,
+    "spearman_per_scenario_median": 0.7500000000000002,
+    "slope_ratio_mean_curves": 0.49320290491820223,
+    "slope_ratio_per_scenario_median": 0.6088056680161944,
+    "slope_learned_mean": 0.03993477957589286,
+    "slope_exact_mean": 0.08097028459821429
+  },
+  "Ns": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "sigma_values": [
+    0.010000000000000004,
+    0.014677992676220697,
+    0.02154434690031885,
+    0.0316227766016838,
+    0.046415888336127815,
+    0.06812920690579614,
+    0.10000000000000002
+  ]
+}
+=== oracle sanity (identifiability-conditioned) ===
+  mode_recovery_small_sigma: 24/24
+  mode_recovery_pass: True
+  hpd90_area_wellspread_mean: 0.06376139322916667
+  hpd90_area_confined_mean: 0.4795328776041667
+  poor_layout_broader_pass: True
+  area_contracts_q_frac: 0.8333333333333334
+  area_grows_sigma_frac: 1.0
+  area_dose_pass: False
+  brute_force_deep_max_abs_dev: 9.338929771729454e-07
+  brute_force_trapezoid_max_abs_dev: 9.429484748579853e-07
+  brute_force_pass: True
+ORACLE SANITY: FAIL
+Traceback (most recent call last):
+  File "/usr4/spclpgm/eric1/conformal-source-regions/src/sanity_oracle.py", line 195, in <module>
+    main()
+  File "/usr4/spclpgm/eric1/conformal-source-regions/src/sanity_oracle.py", line 191, in main
+    assert ok
+           ^^
+AssertionError
+=== refine check 96x96 ===
+96x96 posteriors: calib (2000)...
+  500/2000  (67 ms/scen)
+  1000/2000  (67 ms/scen)
+  1500/2000  (67 ms/scen)
+  2000/2000  (67 ms/scen)
+96x96 posteriors: test subset (100)...
+{'coverage_96_minus_64': 0.08999999999999997, 'median_area_96_minus_64': -0.021986219618055556, 'coverage_96': 0.89, 'coverage_64_subset': 0.8, 'median_area_96': 0.026475694444444444, 'median_area_64_subset': 0.0484619140625, 'norm_err_96': 1.3855583347321954e-13, 'n_scenarios': 100}
+=== CHAIN3 DONE ===
+chain exit: 0
