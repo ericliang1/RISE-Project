@@ -1,0 +1,3 @@
+=== conformal model seed1 (tail-space) ===
+[model_seed1] coverage@90 = 0.8750 CI [0.8597, 0.8892] contains 0.90: False | area mean 0.1678 median 0.0684
+=== conformal model seed2 ===

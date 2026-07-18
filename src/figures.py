@@ -20,7 +20,7 @@ import torch
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 from common import cell_center_of, get_device, load_config, resolve
-from conformal import conformal_threshold, region_mask
+from conformal import region_mask, tail_threshold
 from exact_posterior import log_posterior_scenario
 from inference import heatmaps, load_model, load_split
 from dose_response import subset_dict
@@ -123,8 +123,8 @@ def fig5_dose(cfg, fig_dir, data_dir, device):
     slopes = (curves_e[:, -1] - curves_e[:, 0])
     flag = int(np.argsort(slopes)[len(slopes) // 10])   # strongly contracting
     d1 = load_split(data_dir, "dose1_master")
-    qhat_l = conformal_threshold(
-        np.load(data_dir / "scores_model_seed1.npz")["scores"], alpha)
+    qhat_l = tail_threshold(
+        np.load(data_dir / "scores_model_seed1.npz")["tails"], alpha)
     model, _ = load_model(cfg, resolve(cfg, "checkpoints_dir") / "seed1.pt", device)
 
     snapNs = [4, 6, 8, 10, 12]
@@ -160,10 +160,10 @@ def fig5_dose(cfg, fig_dir, data_dir, device):
 def fig2_scenarios(cfg, fig_dir, data_dir, device):
     n = cfg["grid"]["n"]
     alpha = cfg["conformal"]["alpha"]
-    qhat_l = conformal_threshold(
-        np.load(data_dir / "scores_model_seed1.npz")["scores"], alpha)
-    qhat_e = conformal_threshold(
-        np.load(data_dir / "scores_exact.npz")["scores"], alpha)
+    qhat_l = tail_threshold(
+        np.load(data_dir / "scores_model_seed1.npz")["tails"], alpha)
+    qhat_e = tail_threshold(
+        np.load(data_dir / "scores_exact.npz")["tails"], alpha)
     model, _ = load_model(cfg, resolve(cfg, "checkpoints_dir") / "seed1.pt", device)
     d_s = load_split(data_dir, "dose2_spread")
     d_c = load_split(data_dir, "dose2_confined")
@@ -209,7 +209,7 @@ def fig1_pipeline(cfg, fig_dir, data_dir, device):
     d = load_split(data_dir, "test")
     P_l = np.load(data_dir / "heatmaps_model_seed1_test.npz")["probs"]
     P_e = np.load(data_dir / "test_posterior.npz")["probs"]
-    qhat_l = float(np.load(data_dir / "regions_model_seed1_test.npz")["qhat"])
+    qhat_l = float(np.load(data_dir / "regions_model_seed1_test.npz")["tail_qhat"])
     # pick a mid-difficulty scenario: median learned area
     sizes = np.load(data_dir / "regions_model_seed1_test.npz")["sizes"]
     i = int(np.argsort(np.abs(sizes - np.median(sizes)))[0])

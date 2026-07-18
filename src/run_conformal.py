@@ -17,8 +17,7 @@ import json
 import numpy as np
 
 from common import get_device, load_config, resolve, update_json
-from conformal import (conformal_threshold, coverage_report, nonconformity_scores,
-                       nominal_sweep)
+from conformal import coverage_report, nominal_sweep, tail_scores
 from inference import heatmaps, load_model, load_split
 
 
@@ -63,26 +62,26 @@ def main():
 
     cc = cfg["conformal"]
     rng = np.random.default_rng(cc["score_seed"])
-    scores = nonconformity_scores(P_calib.astype(np.float64),
-                                  d_calib["true_cell"], rng)
-    np.savez_compressed(data_dir / f"scores_{tag}.npz", scores=scores)
+    tails = tail_scores(P_calib.astype(np.float64), d_calib["true_cell"], rng)
+    np.savez_compressed(data_dir / f"scores_{tag}.npz", tails=tails)
 
     alpha = cc["alpha"]
     rep = coverage_report(P_test.astype(np.float64), d_test["true_cell"],
-                          scores, alpha)
+                          tails, alpha)
     sizes = rep.pop("sizes")
     np.savez_compressed(data_dir / f"regions_{tag}_test.npz",
-                        ids=d_test["ids"], sizes=sizes, qhat=rep["qhat"])
+                        ids=d_test["ids"], sizes=sizes,
+                        tail_qhat=rep["tail_qhat"])
 
     aux = {}
     for lev_alpha in [1.0 - l for l in cc["aux_levels"]]:
         r = coverage_report(P_test.astype(np.float64), d_test["true_cell"],
-                            scores, lev_alpha)
+                            tails, lev_alpha)
         r.pop("sizes")
         aux[f"level_{1-lev_alpha:.2f}"] = r
 
     lo, hi = cc["nominal_sweep_range"]
-    sweep = nominal_sweep(P_test.astype(np.float64), d_test["true_cell"], scores,
+    sweep = nominal_sweep(P_test.astype(np.float64), d_test["true_cell"], tails,
                           np.linspace(lo, hi, cc["nominal_sweep"]))
 
     out = {"tag": tag, "main": rep, "aux": aux, "sweep": sweep}

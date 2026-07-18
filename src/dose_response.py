@@ -24,7 +24,7 @@ import torch
 from scipy.stats import spearmanr
 
 from common import get_device, load_config, resolve, update_json
-from conformal import conformal_threshold, region_mask
+from conformal import region_mask, tail_threshold
 from exact_posterior import log_posterior_scenario
 from inference import heatmaps, load_model, load_split
 
@@ -81,8 +81,8 @@ def main():
     n_cells = cfg["grid"]["n"] ** 2
     alpha = cfg["conformal"]["alpha"]
 
-    qhat_l = conformal_threshold(np.load(data_dir / f"scores_{tag}.npz")["scores"], alpha)
-    qhat_e = conformal_threshold(np.load(data_dir / "scores_exact.npz")["scores"], alpha)
+    qhat_l = tail_threshold(np.load(data_dir / f"scores_{tag}.npz")["tails"], alpha)
+    qhat_e = tail_threshold(np.load(data_dir / "scores_exact.npz")["tails"], alpha)
     model, _ = load_model(cfg, resolve(cfg, "checkpoints_dir") / f"seed{args.seed}.pt",
                           device)
 

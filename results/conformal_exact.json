@@ -3,208 +3,208 @@
   "main": {
     "alpha": 0.1,
     "qhat": 1.0,
-    "coverage": 0.821,
+    "coverage": 0.8385,
     "cp_ci": [
-      0.8034825690991236,
-      0.837570848570843
+      0.8216285634897816,
+      0.8543724570390971
     ],
     "n": 2000,
-    "covered": 1642,
-    "area_mean": 0.401391357421875,
-    "area_median": 0.0179443359375
+    "covered": 1677,
+    "area_mean": 0.427831787109375,
+    "area_median": 0.250244140625
   },
   "aux": {
     "level_0.80": {
       "alpha": 0.19999999999999996,
-      "qhat": 0.9999999859085165,
-      "coverage": 0.806,
+      "qhat": 0.9999999999973856,
+      "coverage": 0.807,
       "cp_ci": [
-        0.7879764531699422,
-        0.8231217216433898
+        0.7890089172742584,
+        0.824086277560637
       ],
       "n": 2000,
-      "covered": 1612,
-      "area_mean": 0.2406473388671875,
-      "area_median": 0.0029296875
+      "covered": 1614,
+      "area_mean": 0.1739383544921875,
+      "area_median": 0.001953125
     },
     "level_0.95": {
       "alpha": 0.050000000000000044,
-      "qhat": 1.0000000000000537,
-      "coverage": 0.9565,
+      "qhat": 1.0,
+      "coverage": 0.8385,
       "cp_ci": [
-        0.9466174011066275,
-        0.9650141371532314
+        0.8216285634897816,
+        0.8543724570390971
       ],
       "n": 2000,
-      "covered": 1913,
-      "area_mean": 0.7253214111328125,
-      "area_median": 1.0
+      "covered": 1677,
+      "area_mean": 0.427831787109375,
+      "area_median": 0.250244140625
     }
   },
   "sweep": [
     {
       "nominal": 0.5,
-      "conformal": 0.578,
-      "raw_hpd": 0.481
+      "conformal": 0.5755,
+      "raw_hpd": 0.486
     },
     {
       "nominal": 0.515,
-      "conformal": 0.591,
-      "raw_hpd": 0.4875
+      "conformal": 0.5895,
+      "raw_hpd": 0.491
     },
     {
       "nominal": 0.53,
-      "conformal": 0.5995,
-      "raw_hpd": 0.496
+      "conformal": 0.6,
+      "raw_hpd": 0.4975
     },
     {
       "nominal": 0.545,
-      "conformal": 0.605,
-      "raw_hpd": 0.501
+      "conformal": 0.609,
+      "raw_hpd": 0.5025
     },
     {
       "nominal": 0.56,
-      "conformal": 0.6145,
-      "raw_hpd": 0.51
+      "conformal": 0.616,
+      "raw_hpd": 0.5115
     },
     {
       "nominal": 0.575,
       "conformal": 0.6215,
-      "raw_hpd": 0.515
+      "raw_hpd": 0.517
     },
     {
       "nominal": 0.59,
-      "conformal": 0.6345,
-      "raw_hpd": 0.522
+      "conformal": 0.6315,
+      "raw_hpd": 0.521
     },
     {
       "nominal": 0.605,
-      "conformal": 0.6455,
-      "raw_hpd": 0.529
+      "conformal": 0.6425,
+      "raw_hpd": 0.5275
     },
     {
       "nominal": 0.62,
       "conformal": 0.653,
-      "raw_hpd": 0.536
+      "raw_hpd": 0.533
     },
     {
       "nominal": 0.635,
-      "conformal": 0.664,
-      "raw_hpd": 0.5415
+      "conformal": 0.6635,
+      "raw_hpd": 0.5385
     },
     {
       "nominal": 0.65,
       "conformal": 0.6775,
-      "raw_hpd": 0.5475
+      "raw_hpd": 0.5435
     },
     {
       "nominal": 0.665,
       "conformal": 0.687,
-      "raw_hpd": 0.555
+      "raw_hpd": 0.5515
     },
     {
       "nominal": 0.6799999999999999,
       "conformal": 0.6975,
-      "raw_hpd": 0.5605
+      "raw_hpd": 0.5575
     },
     {
       "nominal": 0.6950000000000001,
       "conformal": 0.708,
-      "raw_hpd": 0.5655
+      "raw_hpd": 0.562
     },
     {
       "nominal": 0.71,
       "conformal": 0.723,
-      "raw_hpd": 0.574
+      "raw_hpd": 0.57
     },
     {
       "nominal": 0.725,
       "conformal": 0.7365,
-      "raw_hpd": 0.5805
+      "raw_hpd": 0.578
     },
     {
       "nominal": 0.74,
       "conformal": 0.7495,
-      "raw_hpd": 0.5855
+      "raw_hpd": 0.5835
     },
     {
       "nominal": 0.755,
       "conformal": 0.7645,
-      "raw_hpd": 0.591
+      "raw_hpd": 0.59
     },
     {
       "nominal": 0.77,
       "conformal": 0.7725,
-      "raw_hpd": 0.598
+      "raw_hpd": 0.599
     },
     {
       "nominal": 0.7849999999999999,
-      "conformal": 0.7895,
-      "raw_hpd": 0.6035
+      "conformal": 0.788,
+      "raw_hpd": 0.6045
     },
     {
       "nominal": 0.8,
-      "conformal": 0.806,
-      "raw_hpd": 0.6115
+      "conformal": 0.807,
+      "raw_hpd": 0.613
     },
     {
       "nominal": 0.815,
-      "conformal": 0.821,
+      "conformal": 0.8155,
       "raw_hpd": 0.6185
     },
     {
       "nominal": 0.83,
-      "conformal": 0.821,
-      "raw_hpd": 0.625
+      "conformal": 0.8325,
+      "raw_hpd": 0.623
     },
     {
       "nominal": 0.845,
-      "conformal": 0.821,
-      "raw_hpd": 0.6345
+      "conformal": 0.8385,
+      "raw_hpd": 0.6315
     },
     {
       "nominal": 0.86,
-      "conformal": 0.821,
-      "raw_hpd": 0.6395
+      "conformal": 0.8385,
+      "raw_hpd": 0.6365
     },
     {
       "nominal": 0.875,
-      "conformal": 0.821,
-      "raw_hpd": 0.648
+      "conformal": 0.8385,
+      "raw_hpd": 0.646
     },
     {
       "nominal": 0.89,
-      "conformal": 0.821,
-      "raw_hpd": 0.6555
+      "conformal": 0.8385,
+      "raw_hpd": 0.655
     },
     {
       "nominal": 0.905,
-      "conformal": 0.821,
-      "raw_hpd": 0.664
+      "conformal": 0.8385,
+      "raw_hpd": 0.6635
     },
     {
       "nominal": 0.9199999999999999,
-      "conformal": 0.821,
+      "conformal": 0.8385,
       "raw_hpd": 0.6775
     },
     {
       "nominal": 0.935,
-      "conformal": 0.821,
+      "conformal": 0.8385,
       "raw_hpd": 0.6855
     },
     {
       "nominal": 0.95,
-      "conformal": 0.9565,
+      "conformal": 0.8385,
       "raw_hpd": 0.696
     },
     {
       "nominal": 0.965,
-      "conformal": 0.9685,
+      "conformal": 0.8385,
       "raw_hpd": 0.7065
     },
     {
       "nominal": 0.98,
-      "conformal": 0.9765,
+      "conformal": 0.975,
       "raw_hpd": 0.721
     }
   ]

@@ -10,7 +10,7 @@ Usage:  python src/refine_check.py
 import numpy as np
 
 from common import get_device, load_config, pos_to_cell, resolve, update_json
-from conformal import conformal_threshold, nonconformity_scores, regions
+from conformal import regions, tail_scores, tail_threshold
 from exact_posterior import posteriors_for_split
 from inference import load_split
 
@@ -38,8 +38,8 @@ def main():
 
     tc_c96 = pos_to_cell(d_calib["xs"], n96)
     tc_t96 = pos_to_cell(d_test_sub["xs"], n96)
-    scores96 = nonconformity_scores(P_c96.astype(np.float64), tc_c96, rng)
-    qhat96 = conformal_threshold(scores96, alpha)
+    scores96 = tail_scores(P_c96.astype(np.float64), tc_c96, rng)
+    qhat96 = tail_threshold(scores96, alpha)
     reg96 = regions(P_t96.astype(np.float64), qhat96, tc_t96)
     cov96 = float(reg96["covered"].mean())
     area96 = float(np.median(reg96["sizes"] / (n96 * n96)))
@@ -47,9 +47,9 @@ def main():
     # 64x64 reference restricted to the same 100 scenarios
     P_c64 = np.load(data_dir / "calib_posterior.npz")["probs"].astype(np.float64)
     P_t64 = np.load(data_dir / "test_posterior.npz")["probs"].astype(np.float64)[:n_test]
-    scores64 = nonconformity_scores(P_c64, d_calib["true_cell"],
+    scores64 = tail_scores(P_c64, d_calib["true_cell"],
                                     np.random.default_rng(cfg["conformal"]["score_seed"] + 1))
-    qhat64 = conformal_threshold(scores64, alpha)
+    qhat64 = tail_threshold(scores64, alpha)
     reg64 = regions(P_t64, qhat64, d_test_sub["true_cell"])
     cov64 = float(reg64["covered"].mean())
     area64 = float(np.median(reg64["sizes"] / (n64 * n64)))

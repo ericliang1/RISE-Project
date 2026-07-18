@@ -63,18 +63,26 @@ def main():
     rng = np.random.default_rng(5150)
 
     # --- 2. mode -> true cell as sigma -> 0 ------------------------------
-    # The candidate set is the 64x64 cell centers, so the check is well-posed
-    # only when the source sits AT a cell center (otherwise the center-offset
-    # residual, up to 1/128, dominates a sigma=1e-4 likelihood and the mode
-    # legitimately lands on a better-fitting neighbor).  Documented in GATES.md.
-    hits, n_try = 0, OC["n_sanity_scenarios"]
-    for _ in range(n_try):
+    # Well-posedness (documented in GATES.md): (a) the candidate set is the
+    # 64x64 cell centers, so the source is snapped to its cell center
+    # (otherwise the center-offset residual dominates a tiny-sigma likelihood
+    # and the mode legitimately lands on a better-fitting neighbor); (b) the
+    # scenario must be identifiable - if no sensor ever sees the plume above
+    # the smallest benchmark noise floor (max clean reading < 0.01), adjacent
+    # cells differ by ~1e-30 and no numerically reachable sigma separates
+    # them, so such scenarios are resampled.
+    hits, n_try, tried = 0, OC["n_sanity_scenarios"], 0
+    while tried < n_try:
         p = sample_params(rng, CFG)
         cell = pos_to_cell(p["xs"][None], N_GRID)[0]
         p["xs"] = np.array([(cell % N_GRID + 0.5) / N_GRID,
                             (cell // N_GRID + 0.5) / N_GRID])
         sensors = rng.uniform(0, 1, size=(8, 2))
         d = make_scenario(p, sensors, rng, sigma=OC["sanity_sigma_small"])
+        clean_max = float(np.abs(d["readings"][0][d["keep"][0]]).max())
+        if clean_max < 0.01:                  # unidentifiable layout; resample
+            continue
+        tried += 1
         lp = log_posterior_scenario(d, 0, CFG, DEV).cpu().numpy()
         hits += int(lp.argmax() == d["true_cell"][0])
     results["mode_recovery_small_sigma"] = f"{hits}/{n_try}"
