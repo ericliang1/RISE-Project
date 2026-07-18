@@ -20,8 +20,8 @@
 \newcommand{\Cref}{C_{\mathrm{ref}}}
 
 \title{Conformal Source Regions for Sparse-Sensor Pollution
-Localization: A Calibration, Exact-Posterior Audit,
-and Information Dose-Response Study}
+Localization: A Benchmark with Exact Posteriors that
+Audits --- and Trains --- Learned Localizers}
 
 \author{%
   Anonymous Author(s)\\
@@ -38,27 +38,29 @@ and Information Dose-Response Study}
 When a gas leak or pollution release happens, responders must answer a deceptively
 simple question: \emph{where is it coming from?} --- increasingly from only a handful of
 cheap, fixed sensors. A learned localizer can output a heatmap of likely sources, but a
-heatmap alone does not say how much to trust it. We combine a standard permutation-invariant
-network (DeepSets) with split conformal prediction to produce spatial regions that provably
-contain the true source with probability $90\%$, and we \emph{audit} those regions against
-the exact Bayesian posterior of a controlled advection--diffusion simulator. Three
-preregistered questions: are the regions \emph{calibrated} (H1); are they as \emph{sharp}
-as the data physically permit (H2); do they respond correctly when sensors are added, moved,
-or degraded (H3, an information ``dose--response'' test)? The verdict is differentiated.
-Calibrated: yes --- conformal-on-exact-posterior attains $90.7\%$, the learned localizer
-$89.6\%$ ($87.5\%$ for a second seed, a quantified finite-sample fluctuation). Sharp: no ---
-learned regions are a median $5.6\times$ larger than the exact-posterior regions, so the
-network, not the data, is the bottleneck. Stable: directionally --- correct response on
-every knob, at roughly half the oracle's magnitude. The audit's diagnosis is then put to
-work: adding a \emph{physics-informed training signal} --- distilling the simulator's exact
-posterior, mildly tempered, with the same architecture, data, and optimizer --- sharpens the
-regions to $3.9\times$ and nearly restores oracle-proportional sensor response
-($0.47 \to 0.87$ slope ratio). The run also surfaced a floating-point failure mode that
-silently destroys conformal coverage on sharp probability maps, and two further portable
-implementation lessons. To our knowledge this is the first study to pair finite-sample
-conformal spatial regions with an exact-posterior sharpness audit in this domain, and the
-first to test learned localization uncertainty causally through a controlled dose--response
-protocol.
+heatmap alone does not say how much to trust it. We introduce a benchmark for
+uncertainty-aware source localization whose defining asset is the \emph{exact Bayesian
+posterior} of every scenario, shipped with the data, and show that this asset does double
+duty. \textbf{First, it audits.} Pairing split conformal prediction with the exact
+posteriors yields a preregistered three-way test of any localizer: calibration (do $90\%$
+regions cover $90\%$?), sharpness (are regions as tight as the data physically permit?),
+and a causal information dose--response (do regions track added sensors, geometry, and
+noise the way the physics dictates?). On a standard DeepSets baseline the verdict is
+differentiated: calibrated (conformal-on-exact-posterior attains $90.7\%$; the learned
+localizer $89.6\%$, with $87.5\%$ for a second seed quantified as a finite-sample
+fluctuation), but a median $5.6\times$ too wide --- the network, not the data, is the
+bottleneck --- and directionally correct on every knob at only half the oracle's magnitude.
+\textbf{Second, it trains.} Using the same shipped posteriors as a \emph{physics-derived
+training signal} --- distilling each scenario's exact posterior, mildly tempered, into the
+identical architecture on identical data --- sharpens regions to $3.9\times$ and nearly
+restores oracle-proportional sensor response ($0.47 \to 0.87$ slope ratio); raw
+(untempered) physics targets fail, an optimization finding in its own right. The study
+also surfaced a floating-point failure mode that silently destroys conformal coverage on
+sharp probability maps, among other portable implementation lessons. To our knowledge this
+is the first benchmark in this domain to ship exact per-scenario posteriors, the first to
+pair finite-sample conformal regions with an exact-posterior sharpness audit, and the
+first to test learned localization uncertainty causally through a controlled
+dose--response protocol.
 \end{abstract}
 
 \section{Introduction}
@@ -83,19 +85,32 @@ inadequate. \textbf{Dose--response stability} (trust under change): sensors are 
 lost constantly, so a region should shrink when information arrives and grow when it is
 removed, tracking what an oracle would do.
 
-\paragraph{Contribution.} We contribute a benchmark and an evaluation protocol, \emph{not} a new
-algorithm. We deliberately assemble off-the-shelf components --- DeepSets [Zaheer et al.,
-2017], split conformal prediction [Angelopoulos and Bates, 2021], and textbook grid-based
-Bayesian inversion --- and ask whether the resulting uncertainty machinery is calibrated,
-sharp, and stable. We claim novelty only in the domain pairing, the audit protocol, the
-dose--response protocol, and the released artifact. Verbatim: \emph{To our knowledge, this
-is the first study to combine finite-sample conformal spatial regions with an
-exact-posterior sharpness audit for sparse-sensor atmospheric advection--diffusion source
-localization, the first to test learned localization uncertainty causally via a controlled
-information dose--response protocol against exact posteriors, and the first public
-benchmark in this domain to ship exact per-scenario posteriors.} We claim no new conformal
-algorithm, no new architecture, no coverage under distribution shift, no field
-deployability, and no abstention capability.
+\paragraph{Contributions.} Three, in order of emphasis:
+\textbf{(1) A benchmark whose central asset is exact posteriors.} A controlled
+advection--diffusion simulator with an analytic Green's-function forward model, a frozen
+14{,}000-scenario benchmark, constructed dose--response sets --- and, for every scenario,
+the \emph{exact grid posterior} of the source location, shipped with the artifact. The
+posteriors power a preregistered three-way audit of any localizer: finite-sample
+conformal calibration, a sharpness audit against the physical information limit, and a
+causal information dose--response protocol.
+\textbf{(2) A preregistered audit of a standard recipe.} We deliberately assemble
+off-the-shelf components --- DeepSets [Zaheer et al., 2017] and split conformal prediction
+[Angelopoulos and Bates, 2021] --- and measure whether the resulting uncertainty is
+calibrated, sharp, and stable (it is calibrated; it is not sharp; Sec.~\ref{sec:h1}--\ref{sec:h3}).
+\textbf{(3) The posteriors double as a training signal.} Distilling each scenario's exact
+posterior --- tempered to a learnable sharpness --- into the \emph{identical} architecture
+on \emph{identical} data substantially improves every uncertainty-quality metric the audit
+measures (exploratory, validation-selected; Secs.~\ref{sec:distillmethod},
+\ref{sec:distill}).
+Verbatim: \emph{To our knowledge, this is the first public benchmark in this domain to
+ship exact per-scenario posteriors, the first study to combine finite-sample conformal
+spatial regions with an exact-posterior sharpness audit for sparse-sensor atmospheric
+advection--diffusion source localization, and the first to test learned localization
+uncertainty causally via a controlled information dose--response protocol against exact
+posteriors.} We claim no new conformal algorithm, no new architecture, no coverage under
+distribution shift, no field deployability, and no abstention capability; the distillation
+recipe is an application of teacher--student learning whose teacher is exact physics
+rather than another network.
 
 \paragraph{Findings at a glance.}
 (i)~\textbf{H1:} the conformal machinery is sound --- applied to the exact posterior it
@@ -106,10 +121,10 @@ larger than the data permit; the network, not the data, is the bottleneck
 (Sec.~\ref{sec:h2}).
 (iii)~\textbf{H3:} the learned regions respond in the physically correct direction on all
 three information knobs, at roughly half the oracle's magnitude (Sec.~\ref{sec:h3}).
-(iv)~\textbf{The audit is actionable:} supervising the \emph{same} model, on the
-\emph{same} data, with a physics-informed target --- the simulator's exact posterior,
-mildly tempered --- sharpens regions to $3.9\times$ and lifts the sensor-response slope
-ratio from $0.47$ to $0.87$ (Sec.~\ref{sec:distill}).
+(iv)~\textbf{The benchmark trains as well as it audits:} distilling its shipped exact
+posteriors --- mildly tempered --- into the \emph{same} model on the \emph{same} data
+sharpens regions to $3.9\times$ and lifts the sensor-response slope ratio from $0.47$ to
+$0.87$; raw physics targets fail (Secs.~\ref{sec:distillmethod}, \ref{sec:distill}).
 (v)~Three implementation lessons that transfer beyond this benchmark: the standard
 conformal score silently saturates in floating point on sharp heatmaps; fixed-node rate
 quadrature cannot marginalize peaked likelihoods; and at this data scale the specified
@@ -326,6 +341,31 @@ interventions are unconfounded. \emph{Wording discipline:} constructed layouts a
 exchangeable prior draws, so we report region-\emph{size} behavior only on these sets; the
 coverage claim lives exclusively on the random test split.
 
+\subsection{Physics-likelihood distillation: the posteriors as a training signal}
+\label{sec:distillmethod}
+
+The exact posteriors of Sec.~\ref{sec:oracle} are not only an audit reference --- they are
+the Bayes-optimal \emph{training target}. In the baseline recipe each scenario teaches the
+network one thing (``the source was here''); the posterior target teaches the full answer,
+including its shape --- the downwind ambiguity ridge, the multimodal arc behind a confined
+sensor cluster, the tightening that an extra sensor should produce. We therefore train the
+\emph{identical} architecture, on the \emph{identical} 10k scenarios, with the identical
+optimizer, schedule, and augmentation, replacing the smoothed one-hot target with the
+scenario's exact posterior (Eq.~\eqref{eq:posterior}) --- \emph{tempered} by the same
+0.75-cell Gaussian used for the baseline target; under D4 augmentation the target grid is
+permuted by the exact same symmetry. Two implementation rules proved make-or-break:
+(i) \textbf{temper the teacher} --- raw, near-delta posterior targets are an optimization
+trap (validation region area $0.197$, worse than the baseline); (ii) \textbf{early-stop on
+validation teacher cross-entropy}, not true-cell NLL --- the sharp teacher has poor
+true-cell NLL by construction, and the mismatched criterion truncates training and
+\emph{worsens} sharpness ($10.8\times$). Five loss variants (mixture weight
+$\lambda \in \{1, 0.75, 0.5\}$; raw or tempered teacher) were compared by a pre-stated
+validation-only rule (minimum median validation $90\%$-HPD area); the test split was
+evaluated once, for the winner (tempered teacher, $\lambda = 1$). This recipe is
+exploratory (not preregistered) and requires a tractable per-scenario posterior at
+training time --- available by construction wherever training data come from a simulator,
+as here and in simulation-based inference generally.
+
 \section{Experimental Protocol and Preregistered Analyses}
 \label{sec:protocol}
 
@@ -461,48 +501,38 @@ with H2: the regions are over-wide precisely where data are most informative
   \label{fig:dose}
 \end{figure}
 
-\subsection{Attributing and narrowing the gap: a physics-informed training signal (post-hoc)}
+\subsection{The physics-distilled localizer: the audit certifies the improvement}
 \label{sec:distill}
 
-H2's diagnosis --- the network is the bottleneck --- is testable: change \emph{only} the
-training signal. We keep the identical architecture, the identical 10k training scenarios,
-optimizer, schedule, and augmentation, and replace the smoothed one-hot target with the
-scenario's \emph{exact posterior} (Eq.~\eqref{eq:posterior}), tempered by the same
-0.75-cell Gaussian used for the baseline target; under D4 augmentation the target grid is
-permuted by the exact same symmetry. Early stopping uses validation teacher cross-entropy.
-Five loss variants (mixture weight $\lambda \in \{1, 0.75, 0.5\}$; raw or tempered
-teacher) were compared by a pre-stated validation rule --- minimum median validation
-$90\%$-HPD area --- and the test split was evaluated once for the winner (tempered teacher,
-$\lambda = 1$). Notably, \emph{raw} exact-posterior targets fail (validation area
-$0.197$): near-delta targets are an optimization trap, and tempering is what makes the
-physics signal learnable.
-
-Results (Table~\ref{tab:headline}; magenta in Figures~\ref{fig:audit}--\ref{fig:dose}):
-coverage $0.899$ $[0.884, 0.911]$; median region area $0.068 \to 0.053$; inefficiency
-median $5.6\times \to 3.9\times$ (mean $47.6 \to 28.9$); H2 Spearman $0.848 \to 0.893$;
-JSD to the exact posterior $0.56 \to 0.50$; median MAP error $0.103 \to 0.094$. The
-dose--response sharpens most: the sensor-count slope ratio rises from $0.47$ to $0.87$
---- the distilled model tightens at $87\%$ of the oracle's rate when a sensor is added ---
-and geometry agreement reaches $0.90$ (noise: $0.54$). Interpretation: the audit's
-diagnosis was actionable --- a physics-informed target closes roughly a third of the
-sharpness gap and most of the sensor-response gap with no capacity or data change; the
-remaining $\sim 3.9\times$ quantifies what amortization itself leaves on the table at this
-scale. The benchmark's shipped posteriors thus double as a training resource. Caveat: the
-recipe needs a tractable per-scenario posterior at training time --- available by
-construction wherever training data come from a simulator, as here and in
-simulation-based inference generally.
+H2's diagnosis --- the network, not the data, is the bottleneck --- is testable, and the
+distillation recipe of Sec.~\ref{sec:distillmethod} tests it with everything but the
+training signal held fixed. Results (Table~\ref{tab:headline}; magenta in
+Figures~\ref{fig:audit}--\ref{fig:dose}): coverage $0.899$ $[0.884, 0.911]$; median
+region area $0.068 \to 0.053$; inefficiency median $5.6\times \to 3.9\times$ (mean
+$47.6 \to 28.9$); H2 Spearman $0.848 \to 0.893$; JSD to the exact posterior
+$0.56 \to 0.50$; median MAP error $0.103 \to 0.094$. The dose--response sharpens most:
+the sensor-count slope ratio rises from $0.47$ to $0.87$ --- the distilled model tightens
+at $87\%$ of the oracle's rate when a sensor is added --- and geometry agreement reaches
+$0.90$ (noise: $0.54$). The gains land exactly where the audit located the deficiency ---
+uncertainty \emph{shape} --- and barely move point accuracy, which was never the problem.
+Interpretation: the benchmark's shipped posteriors double as a training resource that
+closes roughly a third of the sharpness gap and most of the sensor-response gap with no
+capacity or data change; the remaining $\sim 3.9\times$ cleanly quantifies what
+amortization itself leaves on the table at this scale.
 
 \section{Discussion, Limitations, and Broader Impact}
 
-\paragraph{What the results mean.} \emph{Calibration:} the conformal wrapper delivers honest
-coverage, including on top of an oracle that is itself overconfident w.r.t.\ the
-continuous ground truth (cell-center discretization; Appendix~\ref{app:refine}) --- exactly
-the failure mode conformal calibration exists to absorb. \emph{Sharpness:} coverage alone
-would have hidden a $5.6\times$ gap to the physical information limit; only the
-exact-posterior audit exposes it --- and its diagnosis, put to work, recovers a third of
-the gap (Sec.~\ref{sec:distill}). \emph{Stability:} directionally correct, magnitude
-initially half, largely restored by the physics-informed signal. We frame the benchmark as
-a \emph{neutral screening instrument} for uncertainty claims: failing the audit is
+\paragraph{What the results mean.} The benchmark's exact posteriors earn their storage
+twice. As an \emph{audit reference}: coverage alone would have certified the baseline
+(after conformal calibration) while hiding a $5.6\times$ gap to the physical information
+limit and a blunted response to added sensors --- only the exact-posterior comparison
+exposes both, and conformal calibration meanwhile absorbs even the oracle's own
+discretization overconfidence (Appendix~\ref{app:refine}). As a \emph{training signal}:
+the same posteriors, distilled with tempering into the same model, recover a third of the
+sharpness gap and most of the dose--response gap --- so the audit's diagnosis (``the
+network is the bottleneck'') is not just descriptive but actionable, and the residual
+$3.9\times$ isolates what amortization itself costs. We frame the benchmark as a
+\emph{neutral screening instrument} for uncertainty claims: failing the audit is
 disqualifying, passing is necessary but not sufficient --- and the instrument demonstrably
 detects failure, certifies improvement, and quantifies remaining headroom.
 
@@ -527,15 +557,18 @@ data (METEC-style).
 
 \section{Conclusion}
 
-We presented a preregistered benchmark that audits learned localization uncertainty three
-ways --- finite-sample coverage, sharpness against exact posteriors, and causal
-dose--response --- and released it with per-scenario exact posteriors. On its own baseline
-the instrument returned a differentiated verdict (calibrated; not sharp; directionally
-stable), diagnosed the bottleneck, and certified a fix derived from that diagnosis: a
-physics-informed training signal that sharpens regions from $5.6\times$ to $3.9\times$ the
-physical limit and nearly restores oracle-proportional response to added sensors --- with
-the same model and data. The implementation lessons on conformal scores, quadrature, and
-symmetry transfer well beyond pollution localization.
+We presented a benchmark for uncertainty-aware source localization built around a single
+asset --- the exact Bayesian posterior of every scenario, shipped with the data --- and
+showed that this asset both audits and trains. As an audit, it tests any localizer three
+ways (finite-sample coverage, sharpness against the physical information limit, causal
+dose--response) and returned a differentiated, preregistered verdict on a standard
+baseline: calibrated, not sharp, directionally stable. As a training signal, the same
+posteriors --- distilled with tempering into the same model on the same data --- sharpen
+regions from $5.6\times$ to $3.9\times$ the physical limit and nearly restore
+oracle-proportional response to added sensors, certifying the audit's diagnosis and
+isolating the residual cost of amortization. The implementation lessons on conformal
+scores, quadrature, symmetry, and teacher tempering transfer well beyond pollution
+localization.
 
 \section*{Reproducibility Statement}
 
