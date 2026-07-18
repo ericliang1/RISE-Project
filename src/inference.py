@@ -29,11 +29,16 @@ def to_batch(d, idx, device):
 
 
 def load_model(cfg, ckpt_path, device):
-    model = DeepSetsLocalizer(cfg).to(device)
     ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
+    model = DeepSetsLocalizer(cfg).to(device)
     model.load_state_dict(ckpt["model_state"])
     model.eval()
     return model, ckpt
+
+
+def ckpt_stem(arch, seed):
+    """Checkpoint filename stem for an architecture tag."""
+    return f"seed{seed}" if arch in ("v1", "model") else f"model2_seed{seed}"
 
 
 @torch.no_grad()

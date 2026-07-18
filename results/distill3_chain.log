@@ -1,0 +1,319 @@
+=== train distill lambda=1.0 blur=0.75 (tempered teacher) ===
+distill seed 1: 4.87M params
+/usr4/spclpgm/eric1/conformal-source-regions/src/train.py:231: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+  tot_loss += float(loss)
+epoch   0 loss 8.2899 val_nll 8.2559 best 8.2559@0
+epoch   1 loss 8.2322 val_nll 8.2048 best 8.2048@1
+epoch   2 loss 8.1634 val_nll 8.1295 best 8.1295@2
+epoch   3 loss 8.1282 val_nll 8.1172 best 8.1172@3
+epoch   4 loss 8.1090 val_nll 8.1058 best 8.1058@4
+epoch   5 loss 8.0814 val_nll 8.0461 best 8.0461@5
+epoch   6 loss 7.9260 val_nll 7.7915 best 7.7915@6
+epoch   7 loss 7.6154 val_nll 7.5205 best 7.5205@7
+epoch   8 loss 7.4065 val_nll 7.3647 best 7.3647@8
+epoch   9 loss 7.2887 val_nll 7.3067 best 7.3067@9
+epoch  10 loss 7.1966 val_nll 7.1796 best 7.1796@10
+epoch  11 loss 7.1040 val_nll 7.1399 best 7.1399@11
+epoch  12 loss 7.0467 val_nll 7.0941 best 7.0941@12
+epoch  13 loss 6.9905 val_nll 7.0189 best 7.0189@13
+epoch  14 loss 6.9461 val_nll 6.9676 best 6.9676@14
+epoch  15 loss 6.8878 val_nll 6.9393 best 6.9393@15
+epoch  16 loss 6.8551 val_nll 6.9250 best 6.9250@16
+epoch  17 loss 6.8220 val_nll 6.8785 best 6.8785@17
+epoch  18 loss 6.7970 val_nll 6.8637 best 6.8637@18
+epoch  19 loss 6.7808 val_nll 6.8518 best 6.8518@19
+epoch  20 loss 6.7279 val_nll 6.8277 best 6.8277@20
+epoch  21 loss 6.7040 val_nll 6.7832 best 6.7832@21
+epoch  22 loss 6.6659 val_nll 6.7613 best 6.7613@22
+epoch  23 loss 6.6564 val_nll 6.7271 best 6.7271@23
+epoch  24 loss 6.6376 val_nll 6.7256 best 6.7256@24
+epoch  25 loss 6.6319 val_nll 6.7239 best 6.7239@25
+epoch  26 loss 6.5969 val_nll 6.6892 best 6.6892@26
+epoch  28 loss 6.5605 val_nll 6.6782 best 6.6782@28
+epoch  30 loss 6.5215 val_nll 6.6409 best 6.6409@30
+epoch  32 loss 6.4985 val_nll 6.5887 best 6.5887@32
+epoch  34 loss 6.4699 val_nll 6.5864 best 6.5864@34
+epoch  37 loss 6.4139 val_nll 6.5804 best 6.5804@37
+epoch  38 loss 6.4247 val_nll 6.5726 best 6.5726@38
+epoch  39 loss 6.4040 val_nll 6.5407 best 6.5407@39
+epoch  40 loss 6.3845 val_nll 6.5147 best 6.5147@40
+epoch  43 loss 6.3693 val_nll 6.5023 best 6.5023@43
+epoch  46 loss 6.3350 val_nll 6.4990 best 6.4990@46
+epoch  47 loss 6.3083 val_nll 6.4861 best 6.4861@47
+epoch  48 loss 6.3050 val_nll 6.4837 best 6.4837@48
+epoch  50 loss 6.2869 val_nll 6.4605 best 6.4605@50
+epoch  53 loss 6.2760 val_nll 6.4517 best 6.4517@53
+epoch  54 loss 6.2491 val_nll 6.4258 best 6.4258@54
+epoch  60 loss 6.1913 val_nll 6.4306 best 6.4258@54
+epoch  61 loss 6.2092 val_nll 6.4063 best 6.4063@61
+epoch  63 loss 6.1775 val_nll 6.3916 best 6.3916@63
+epoch  65 loss 6.1655 val_nll 6.3895 best 6.3895@65
+epoch  68 loss 6.1436 val_nll 6.3855 best 6.3855@68
+epoch  69 loss 6.1320 val_nll 6.3797 best 6.3797@69
+epoch  70 loss 6.1336 val_nll 6.3679 best 6.3679@70
+epoch  75 loss 6.1093 val_nll 6.3512 best 6.3512@75
+epoch  76 loss 6.0834 val_nll 6.3477 best 6.3477@76
+epoch  80 loss 6.0456 val_nll 6.3472 best 6.3472@80
+epoch  81 loss 6.0499 val_nll 6.3462 best 6.3462@81
+epoch  83 loss 6.0473 val_nll 6.3309 best 6.3309@83
+epoch  85 loss 6.0109 val_nll 6.3304 best 6.3304@85
+epoch  90 loss 6.0093 val_nll 6.3382 best 6.3304@85
+epoch  93 loss 5.9672 val_nll 6.3294 best 6.3294@93
+epoch  96 loss 5.9529 val_nll 6.3293 best 6.3293@96
+epoch  97 loss 5.9729 val_nll 6.3054 best 6.3054@97
+epoch 100 loss 5.9302 val_nll 6.3170 best 6.3054@97
+epoch 107 loss 5.8763 val_nll 6.2956 best 6.2956@107
+epoch 110 loss 5.8879 val_nll 6.2904 best 6.2904@110
+epoch 112 loss 5.8704 val_nll 6.2853 best 6.2853@112
+epoch 120 loss 5.8430 val_nll 6.3072 best 6.2853@112
+epoch 130 loss 5.8014 val_nll 6.3017 best 6.2853@112
+epoch 133 loss 5.7949 val_nll 6.2817 best 6.2817@133
+epoch 140 loss 5.7641 val_nll 6.3025 best 6.2817@133
+epoch 142 loss 5.7313 val_nll 6.2722 best 6.2722@142
+epoch 150 loss 5.7158 val_nll 6.2827 best 6.2722@142
+epoch 156 loss 5.7007 val_nll 6.2716 best 6.2716@156
+epoch 160 loss 5.6741 val_nll 6.2807 best 6.2716@156
+epoch 164 loss 5.6797 val_nll 6.2685 best 6.2685@164
+epoch 170 loss 5.6725 val_nll 6.2683 best 6.2683@170
+epoch 180 loss 5.6555 val_nll 6.2717 best 6.2683@170
+epoch 183 loss 5.6462 val_nll 6.2670 best 6.2670@183
+epoch 190 loss 5.6326 val_nll 6.2648 best 6.2648@190
+epoch 193 loss 5.6199 val_nll 6.2615 best 6.2615@193
+[G2] model2_seed1: val MAP mean 0.1705 median 0.0921 | peak-sensor mean 0.3665 median 0.3458 | 0.02 GPU-h
+=== train distill lambda=0.75 blur=0 ===
+distill seed 1: 4.87M params
+/usr4/spclpgm/eric1/conformal-source-regions/src/train.py:231: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+  tot_loss += float(loss)
+epoch   0 loss 8.3257 val_nll 8.3079 best 8.3079@0
+epoch   1 loss 8.2357 val_nll 8.2722 best 8.2722@1
+epoch   2 loss 8.2073 val_nll 8.2505 best 8.2505@2
+epoch   3 loss 8.1716 val_nll 8.1910 best 8.1910@3
+epoch   4 loss 8.1384 val_nll 8.1631 best 8.1631@4
+epoch   5 loss 8.1201 val_nll 8.1433 best 8.1433@5
+epoch   7 loss 8.1021 val_nll 8.1343 best 8.1343@7
+epoch   8 loss 8.0895 val_nll 8.1267 best 8.1267@8
+epoch   9 loss 8.0783 val_nll 8.1149 best 8.1149@9
+epoch  10 loss 8.0567 val_nll 8.0984 best 8.0984@10
+epoch  11 loss 8.0120 val_nll 8.0577 best 8.0577@11
+epoch  12 loss 7.9219 val_nll 7.9309 best 7.9309@12
+epoch  13 loss 7.7489 val_nll 7.7498 best 7.7498@13
+epoch  14 loss 7.5772 val_nll 7.6385 best 7.6385@14
+epoch  15 loss 7.4525 val_nll 7.5182 best 7.5182@15
+epoch  16 loss 7.3638 val_nll 7.4638 best 7.4638@16
+epoch  17 loss 7.2765 val_nll 7.3913 best 7.3913@17
+epoch  18 loss 7.2135 val_nll 7.3337 best 7.3337@18
+epoch  19 loss 7.1641 val_nll 7.3050 best 7.3050@19
+epoch  20 loss 7.0802 val_nll 7.2807 best 7.2807@20
+epoch  21 loss 7.0426 val_nll 7.2299 best 7.2299@21
+epoch  22 loss 6.9816 val_nll 7.1698 best 7.1698@22
+epoch  23 loss 6.9475 val_nll 7.1434 best 7.1434@23
+epoch  24 loss 6.9118 val_nll 7.1167 best 7.1167@24
+epoch  25 loss 6.8841 val_nll 7.0846 best 7.0846@25
+epoch  26 loss 6.8392 val_nll 7.0542 best 7.0542@26
+epoch  27 loss 6.7916 val_nll 7.0410 best 7.0410@27
+epoch  29 loss 6.7441 val_nll 7.0252 best 7.0252@29
+epoch  30 loss 6.7190 val_nll 7.0026 best 7.0026@30
+epoch  32 loss 6.6686 val_nll 6.9780 best 6.9780@32
+epoch  33 loss 6.6350 val_nll 6.9650 best 6.9650@33
+epoch  34 loss 6.6166 val_nll 6.9591 best 6.9591@34
+epoch  35 loss 6.6036 val_nll 6.9521 best 6.9521@35
+epoch  36 loss 6.5658 val_nll 6.9476 best 6.9476@36
+epoch  38 loss 6.5398 val_nll 6.9166 best 6.9166@38
+epoch  39 loss 6.5050 val_nll 6.8842 best 6.8842@39
+epoch  40 loss 6.4839 val_nll 6.8822 best 6.8822@40
+epoch  41 loss 6.4577 val_nll 6.8799 best 6.8799@41
+epoch  42 loss 6.4495 val_nll 6.8679 best 6.8679@42
+epoch  44 loss 6.4042 val_nll 6.8624 best 6.8624@44
+epoch  47 loss 6.3307 val_nll 6.8382 best 6.8382@47
+epoch  48 loss 6.3244 val_nll 6.8245 best 6.8245@48
+epoch  49 loss 6.3034 val_nll 6.8205 best 6.8205@49
+epoch  50 loss 6.2795 val_nll 6.8238 best 6.8205@49
+epoch  54 loss 6.2179 val_nll 6.8124 best 6.8124@54
+epoch  60 loss 6.1067 val_nll 6.8259 best 6.8124@54
+epoch  61 loss 6.0977 val_nll 6.7976 best 6.7976@61
+epoch  64 loss 6.0101 val_nll 6.7940 best 6.7940@64
+epoch  70 loss 5.9533 val_nll 6.8096 best 6.7940@64
+epoch  80 loss 5.7557 val_nll 6.8095 best 6.7940@64
+early stop at epoch 89
+[G2] model2_seed1: val MAP mean 0.1893 median 0.1239 | peak-sensor mean 0.3665 median 0.3458 | 0.01 GPU-h
+=== train distill lambda=0.75 blur=0.75 ===
+distill seed 1: 4.87M params
+/usr4/spclpgm/eric1/conformal-source-regions/src/train.py:231: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+  tot_loss += float(loss)
+epoch   0 loss 8.2507 val_nll 8.2589 best 8.2589@0
+epoch   1 loss 8.1979 val_nll 8.2210 best 8.2210@1
+epoch   2 loss 8.1574 val_nll 8.1443 best 8.1443@2
+epoch   3 loss 8.1206 val_nll 8.1252 best 8.1252@3
+epoch   4 loss 8.0996 val_nll 8.1106 best 8.1106@4
+epoch   5 loss 8.0699 val_nll 8.0536 best 8.0536@5
+epoch   6 loss 7.9122 val_nll 7.8048 best 7.8048@6
+epoch   7 loss 7.5926 val_nll 7.4965 best 7.4965@7
+epoch   8 loss 7.3832 val_nll 7.3768 best 7.3768@8
+epoch   9 loss 7.2701 val_nll 7.2683 best 7.2683@9
+epoch  10 loss 7.1778 val_nll 7.1814 best 7.1814@10
+epoch  11 loss 7.0863 val_nll 7.1641 best 7.1641@11
+epoch  12 loss 7.0360 val_nll 7.0818 best 7.0818@12
+epoch  13 loss 6.9742 val_nll 7.0183 best 7.0183@13
+epoch  14 loss 6.9355 val_nll 6.9689 best 6.9689@14
+epoch  15 loss 6.8760 val_nll 6.9292 best 6.9292@15
+epoch  17 loss 6.8149 val_nll 6.8767 best 6.8767@17
+epoch  18 loss 6.7837 val_nll 6.8680 best 6.8680@18
+epoch  19 loss 6.7719 val_nll 6.8404 best 6.8404@19
+epoch  20 loss 6.7160 val_nll 6.8412 best 6.8404@19
+epoch  21 loss 6.6969 val_nll 6.7770 best 6.7770@21
+epoch  22 loss 6.6595 val_nll 6.7482 best 6.7482@22
+epoch  23 loss 6.6472 val_nll 6.7206 best 6.7206@23
+epoch  24 loss 6.6289 val_nll 6.7084 best 6.7084@24
+epoch  25 loss 6.6205 val_nll 6.6987 best 6.6987@25
+epoch  26 loss 6.5872 val_nll 6.6937 best 6.6937@26
+epoch  27 loss 6.5535 val_nll 6.6836 best 6.6836@27
+epoch  28 loss 6.5447 val_nll 6.6576 best 6.6576@28
+epoch  30 loss 6.5108 val_nll 6.6312 best 6.6312@30
+epoch  31 loss 6.4974 val_nll 6.6277 best 6.6277@31
+epoch  32 loss 6.4839 val_nll 6.5969 best 6.5969@32
+epoch  34 loss 6.4594 val_nll 6.5880 best 6.5880@34
+epoch  37 loss 6.4061 val_nll 6.5660 best 6.5660@37
+epoch  38 loss 6.4121 val_nll 6.5446 best 6.5446@38
+epoch  39 loss 6.3963 val_nll 6.5414 best 6.5414@39
+epoch  40 loss 6.3700 val_nll 6.5309 best 6.5309@40
+epoch  41 loss 6.3624 val_nll 6.5200 best 6.5200@41
+epoch  43 loss 6.3634 val_nll 6.5144 best 6.5144@43
+epoch  46 loss 6.3259 val_nll 6.4890 best 6.4890@46
+epoch  47 loss 6.3014 val_nll 6.4777 best 6.4777@47
+epoch  50 loss 6.2758 val_nll 6.4582 best 6.4582@50
+epoch  52 loss 6.2587 val_nll 6.4570 best 6.4570@52
+epoch  54 loss 6.2432 val_nll 6.4261 best 6.4261@54
+epoch  59 loss 6.2029 val_nll 6.4186 best 6.4186@59
+epoch  60 loss 6.1934 val_nll 6.4169 best 6.4169@60
+epoch  62 loss 6.1785 val_nll 6.4148 best 6.4148@62
+epoch  63 loss 6.1723 val_nll 6.4091 best 6.4091@63
+epoch  64 loss 6.1395 val_nll 6.4014 best 6.4014@64
+epoch  67 loss 6.1504 val_nll 6.3970 best 6.3970@67
+epoch  68 loss 6.1321 val_nll 6.3835 best 6.3835@68
+epoch  69 loss 6.1293 val_nll 6.3797 best 6.3797@69
+epoch  70 loss 6.1348 val_nll 6.3610 best 6.3610@70
+epoch  75 loss 6.1094 val_nll 6.3500 best 6.3500@75
+epoch  80 loss 6.0483 val_nll 6.3483 best 6.3483@80
+epoch  83 loss 6.0543 val_nll 6.3374 best 6.3374@83
+epoch  85 loss 6.0092 val_nll 6.3276 best 6.3276@85
+epoch  90 loss 6.0070 val_nll 6.3409 best 6.3276@85
+epoch  94 loss 5.9717 val_nll 6.3174 best 6.3174@94
+epoch  97 loss 5.9816 val_nll 6.3169 best 6.3169@97
+epoch 100 loss 5.9370 val_nll 6.3324 best 6.3169@97
+epoch 102 loss 5.9345 val_nll 6.3113 best 6.3113@102
+epoch 106 loss 5.8955 val_nll 6.3072 best 6.3072@106
+epoch 109 loss 5.8921 val_nll 6.3054 best 6.3054@109
+epoch 110 loss 5.9028 val_nll 6.2931 best 6.2931@110
+epoch 116 loss 5.8618 val_nll 6.2835 best 6.2835@116
+epoch 117 loss 5.8525 val_nll 6.2789 best 6.2789@117
+epoch 120 loss 5.8528 val_nll 6.3095 best 6.2789@117
+epoch 126 loss 5.8150 val_nll 6.2769 best 6.2769@126
+epoch 130 loss 5.8135 val_nll 6.2994 best 6.2769@126
+epoch 140 loss 5.7768 val_nll 6.2928 best 6.2769@126
+epoch 142 loss 5.7480 val_nll 6.2655 best 6.2655@142
+epoch 147 loss 5.7570 val_nll 6.2654 best 6.2654@147
+epoch 150 loss 5.7304 val_nll 6.2852 best 6.2654@147
+epoch 160 loss 5.6938 val_nll 6.2728 best 6.2654@147
+epoch 162 loss 5.7080 val_nll 6.2585 best 6.2585@162
+epoch 170 loss 5.6877 val_nll 6.2621 best 6.2585@162
+epoch 180 loss 5.6769 val_nll 6.2664 best 6.2585@162
+early stop at epoch 187
+[G2] model2_seed1: val MAP mean 0.1626 median 0.0915 | peak-sensor mean 0.3665 median 0.3458 | 0.02 GPU-h
+=== select among all candidates on val ===
+{'stem': 'model2_lam10', 'epoch': 39, 'val_hpd90_area_median': 0.19677734375, 'val_hpd90_area_mean': 0.348248779296875, 'val_hpd90_coverage': 0.932, 'val_teacher_ce': 7.133510787159361}
+{'stem': 'model2_lam05', 'epoch': 118, 'val_hpd90_area_median': 0.064208984375, 'val_hpd90_area_mean': 0.23924365234375, 'val_hpd90_coverage': 0.885, 'val_teacher_ce': 6.5875077071927475}
+{'stem': 'model2_lam10b', 'epoch': 193, 'val_hpd90_area_median': 0.054931640625, 'val_hpd90_area_mean': 0.229071533203125, 'val_hpd90_coverage': 0.898, 'val_teacher_ce': 6.221243756493801}
+{'stem': 'model2_lam075', 'epoch': 64, 'val_hpd90_area_median': 0.10595703125, 'val_hpd90_area_mean': 0.2808662109375, 'val_hpd90_coverage': 0.913, 'val_teacher_ce': 6.794002441681674}
+{'stem': 'model2_lam075b', 'epoch': 162, 'val_hpd90_area_median': 0.0557861328125, 'val_hpd90_area_mean': 0.227311279296875, 'val_hpd90_coverage': 0.907, 'val_teacher_ce': 6.212894675465992}
+winner: model2_lam10b
+=== conformal model2 (final winner) ===
+[model2_seed1] coverage@90 = 0.8985 CI [0.8844, 0.9114] contains 0.90: True | area mean 0.2354 median 0.0530
+=== audit model2 ===
+{
+  "h2": {
+    "spearman_area": 0.8927936100476708,
+    "spearman_p": 0.0,
+    "inefficiency_mean": 28.909651649849433,
+    "inefficiency_median": 3.924304035032843
+  },
+  "map_error": {
+    "learned_mean": 0.1761071564885754,
+    "learned_median": 0.0940413190029123,
+    "exact_mean": 0.16023777154216712,
+    "exact_median": 0.022668104127897146,
+    "peak_sensor_mean": 0.35560398282612177,
+    "peak_sensor_median": 0.3150528444401277,
+    "learned_p50_p90_p99": [
+      0.0940413190029123,
+      0.46685840314318156,
+      0.819910155846876
+    ]
+  },
+  "nll_mean": 6.262631893157959,
+  "jsd_mean": 0.49781753531333245,
+  "jsd_median": 0.6439783385922639,
+  "latency_ms_per_scenario": 0.48078417778015137
+}
+=== dose model2 ===
+/usr4/spclpgm/eric1/conformal-source-regions/src/dose_response.py:104: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  k1_rho = [spearmanr(curves_l[b], curves_e[b]).statistic for b in range(B)]
+/usr4/spclpgm/eric1/conformal-source-regions/src/dose_response.py:154: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  k3_rho = [spearmanr(sw_l[b], sw_e[b]).statistic for b in range(B)]
+{
+  "knob1": {
+    "spearman_per_scenario_mean": 0.7076414275071151,
+    "spearman_per_scenario_median": 0.8284591346681658,
+    "slope_ratio_mean_curves": 0.8718820380893147,
+    "slope_ratio_per_scenario_median": 0.902761457109283,
+    "slope_learned_mean": -0.03011824544270833,
+    "slope_exact_mean": -0.0345439453125
+  },
+  "knob2": {
+    "confined_over_spread_learned_mean": 4.143738845973364,
+    "confined_over_spread_exact_mean": 177.71666261300487,
+    "confined_over_spread_learned_median": 1.1288170163170164,
+    "confined_over_spread_exact_median": 1.5765870639859552,
+    "spearman_ratio_agreement": 0.9033326940880572,
+    "confined_broader_learned_frac": 0.58,
+    "confined_broader_exact_frac": 0.64
+  },
+  "knob3": {
+    "spearman_per_scenario_mean": 0.6254889056516589,
+    "spearman_per_scenario_median": 0.7387687194103585,
+    "slope_ratio_mean_curves": 0.5407567260227948,
+    "slope_ratio_per_scenario_median": 0.7150809716599192,
+    "slope_learned_mean": 0.04378522600446429,
+    "slope_exact_mean": 0.08097028459821429
+  },
+  "Ns": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "sigma_values": [
+    0.010000000000000004,
+    0.014677992676220697,
+    0.02154434690031885,
+    0.0316227766016838,
+    0.046415888336127815,
+    0.06812920690579614,
+    0.10000000000000002
+  ]
+}
+=== figures ===
+fig3 done
+fig4 done
+fig5 done (flagship scenario 39)
+fig2 done (geometry scenario 0)
+fig1 done
+=== DISTILL3 CHAIN DONE ===
+exit: 0

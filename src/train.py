@@ -59,7 +59,41 @@ def d4_augment(batch, xs, rng, device):
     out["sensors"] = torch.stack([sx + c, sy + c], dim=-1)
     out["u"] = torch.stack([ux, uy], dim=-1)
     xs_new = torch.stack([xsx + c, xsy + c], dim=-1).double().cpu().numpy()
-    return out, xs_new
+    codes = r * 4 + k                     # (B,) D4 op code for target permutation
+    return out, xs_new, codes
+
+
+def blur_teacher(P, n, std_cells, trunc=3.0):
+    """Convolve teacher posteriors (S, n*n) with an isotropic Gaussian
+    (std in cells, truncated at trunc*std), renormalized.  D4-equivariant, so
+    it commutes with the augmentation permutation."""
+    r = int(np.ceil(trunc * std_cells))
+    xs = torch.arange(-r, r + 1, dtype=torch.float32)
+    g1 = torch.exp(-xs ** 2 / (2 * std_cells ** 2))
+    k2 = torch.outer(g1, g1)
+    k2 = (k2 / k2.sum())[None, None]
+    img = P.reshape(-1, 1, n, n)
+    out = torch.empty_like(img)
+    for lo in range(0, img.shape[0], 2048):
+        hi = min(lo + 2048, img.shape[0])
+        out[lo:hi] = torch.nn.functional.conv2d(img[lo:hi], k2, padding=r)
+    out = out.reshape(-1, n * n)
+    return out / out.sum(dim=1, keepdim=True)
+
+
+def teacher_ce(model, d, P_teacher, device, batch_size=512):
+    """Mean CE of model heatmaps against exact-posterior soft targets."""
+    model.eval()
+    n = len(d["ids"])
+    tot = 0.0
+    with torch.no_grad():
+        for lo in range(0, n, batch_size):
+            idx = np.arange(lo, min(lo + batch_size, n))
+            logits = model(to_batch(d, idx, device)).float()
+            logp = torch.log_softmax(logits, dim=-1)
+            tgt = P_teacher[idx].to(device)
+            tot += float(-(tgt * logp).sum(dim=1).sum())
+    return tot / n
 
 
 def val_nll(model, d, device, batch_size=512):
@@ -85,23 +119,65 @@ def map_error(model, d, cfg, device):
     return float(err.mean()), float(np.median(err))
 
 
-def train_one_seed(cfg, seed, device):
+def d4_target_perms(n, device):
+    """Inverse cell permutations for the 8 D4 ops, matching d4_augment exactly:
+    reflection (y -> -y) first, then k x 90-degree rotation.  Returns int64
+    tensor (8, n*n) with code = r*4 + k such that
+        target_new = target_old[:, inv[code]] .
+    """
+    from common import cell_centers
+    centers = cell_centers(n)
+    inv = np.empty((8, n * n), dtype=np.int64)
+    for r in range(2):
+        for k in range(4):
+            x = centers[:, 0] - 0.5
+            y = centers[:, 1] - 0.5
+            if r:
+                y = -y
+            for _ in range(k):
+                x, y = -y, x
+            new_cell = pos_to_cell(np.stack([x + 0.5, y + 0.5], -1), n)
+            code = r * 4 + k
+            inv[code, new_cell] = np.arange(n * n)
+    return torch.tensor(inv, device=device)
+
+
+def train_one_seed(cfg, seed, device, distill=False):
     tr = cfg["training"]
-    torch.manual_seed(cfg["seeds"]["torch_train_base"] + seed)
+    torch.manual_seed(cfg["seeds"]["torch_train_base"] + seed
+                      + (5000 if distill else 0))
     np_rng = np.random.default_rng(seed)
 
     data_dir = resolve(cfg, "data_dir")
     d_train = load_split(data_dir, "train")
     d_val = load_split(data_dir, "val")
+    P_teacher = None
+    if distill:
+        z = np.load(data_dir / "train_posterior.npz")
+        assert (z["ids"] == d_train["ids"]).all()
+        P_teacher = torch.tensor(z["probs"].astype(np.float32))
+        inv_perms = d4_target_perms(cfg["grid"]["n"], device)
+        zv = np.load(data_dir / "val_posterior.npz")
+        assert (zv["ids"] == d_val["ids"]).all()
+        P_val_teacher = torch.tensor(zv["probs"].astype(np.float32))
+        mix = float(cfg["distill"].get("mix_lambda", 1.0))
+        blur = float(cfg["distill"].get("teacher_blur_std_cells", 0.0))
+        if blur > 0:
+            P_teacher = blur_teacher(P_teacher, cfg["grid"]["n"], blur)
+            P_val_teacher = blur_teacher(P_val_teacher, cfg["grid"]["n"], blur)
 
     model = DeepSetsLocalizer(cfg).to(device)
     n_params = count_params(model)
-    print(f"seed {seed}: {n_params/1e6:.2f}M params", flush=True)
+    print(f"{'distill' if distill else 'baseline'} seed {seed}: "
+          f"{n_params/1e6:.2f}M params", flush=True)
 
+    max_epochs = cfg["distill"]["max_epochs"] if distill else tr["max_epochs"]
+    patience = (cfg["distill"]["early_stop_patience"] if distill
+                else tr["early_stop_patience"])
     opt = torch.optim.AdamW(model.parameters(), lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(
-        opt, T_max=tr["max_epochs"], eta_min=tr["lr_final"])
+        opt, T_max=max_epochs, eta_min=tr["lr_final"])
     amp_dtype = getattr(torch, tr["amp_dtype"])
 
     n_grid = cfg["grid"]["n"]
@@ -112,15 +188,16 @@ def train_one_seed(cfg, seed, device):
 
     ckpt_dir = resolve(cfg, "checkpoints_dir")
     ckpt_dir.mkdir(parents=True, exist_ok=True)
-    ckpt_path = ckpt_dir / f"seed{seed}.pt"
-    log_path = ckpt_dir / f"train_log_seed{seed}.csv"
+    stem = f"model2_seed{seed}" if distill else f"seed{seed}"
+    ckpt_path = ckpt_dir / f"{stem}.pt"
+    log_path = ckpt_dir / f"train_log_{stem}.csv"
 
     best_nll, best_epoch, since_best = np.inf, -1, 0
     t0 = time.time()
     with open(log_path, "w", newline="") as logf:
         writer = csv.writer(logf)
         writer.writerow(["epoch", "train_loss", "val_nll", "lr", "wall_s"])
-        for epoch in range(tr["max_epochs"]):
+        for epoch in range(max_epochs):
             model.train()
             perm = np_rng.permutation(n_train)
             tot_loss, n_batches = 0.0, 0
@@ -128,12 +205,21 @@ def train_one_seed(cfg, seed, device):
                 idx = perm[lo: lo + bs]
                 batch = to_batch(d_train, idx, device)
                 xs = d_train["xs"][idx]
+                codes = None
                 if use_aug:
-                    batch, xs = d4_augment(batch, xs, np_rng, device)
+                    batch, xs, codes = d4_augment(batch, xs, np_rng, device)
                 tc = torch.tensor(pos_to_cell(xs, n_grid))
                 tgt = smoothed_targets(tc, n_grid,
                                        m["target_smooth_std_cells"],
                                        m["target_trunc_sigmas"], device)
+                if distill:
+                    # physics-informed soft target: exact posterior, permuted
+                    # by the same D4 op applied to the inputs; mixed with the
+                    # standard smoothed target by mix_lambda
+                    tp = P_teacher[idx].to(device)
+                    if codes is not None:
+                        tp = tp.gather(1, inv_perms[codes])
+                    tgt = mix * tp + (1.0 - mix) * tgt
                 with torch.autocast("cuda", dtype=amp_dtype):
                     logits = model(batch)
                 logp = torch.log_softmax(logits.float(), dim=-1)
@@ -145,22 +231,27 @@ def train_one_seed(cfg, seed, device):
                 tot_loss += float(loss)
                 n_batches += 1
             sched.step()
-            vnll = val_nll(model, d_val, device)
+            if distill:
+                # early-stop criterion matches the objective: mean CE of the
+                # model's val heatmaps against the exact val posteriors
+                vnll = teacher_ce(model, d_val, P_val_teacher, device)
+            else:
+                vnll = val_nll(model, d_val, device)
             writer.writerow([epoch, tot_loss / n_batches, vnll,
                              sched.get_last_lr()[0], time.time() - t0])
             logf.flush()
             if vnll < best_nll:
                 best_nll, best_epoch, since_best = vnll, epoch, 0
-                torch.save({"model_state": model.state_dict(),
-                            "epoch": epoch, "val_nll": vnll, "seed": seed,
-                            "n_params": n_params}, ckpt_path)
+                torch.save({"model_state": model.state_dict(), "arch": "v1",
+                            "distill": distill, "epoch": epoch, "val_nll": vnll,
+                            "seed": seed, "n_params": n_params}, ckpt_path)
             else:
                 since_best += 1
             if epoch % 10 == 0 or since_best == 0:
                 print(f"epoch {epoch:3d} loss {tot_loss/n_batches:.4f} "
                       f"val_nll {vnll:.4f} best {best_nll:.4f}@{best_epoch}",
                       flush=True)
-            if since_best >= tr["early_stop_patience"]:
+            if since_best >= patience:
                 print(f"early stop at epoch {epoch}", flush=True)
                 break
     wall_h = (time.time() - t0) / 3600.0
@@ -170,13 +261,23 @@ def train_one_seed(cfg, seed, device):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, required=True)
+    ap.add_argument("--distill", action="store_true",
+                    help="physics-likelihood distillation (tag model2)")
+    ap.add_argument("--mix-lambda", type=float, default=None,
+                    help="override distill.mix_lambda")
+    ap.add_argument("--teacher-blur", type=float, default=None,
+                    help="override distill.teacher_blur_std_cells")
     ap.add_argument("--config", default=None)
     args = ap.parse_args()
     cfg = load_config(args.config)
+    if args.mix_lambda is not None:
+        cfg["distill"]["mix_lambda"] = args.mix_lambda
+    if args.teacher_blur is not None:
+        cfg["distill"]["teacher_blur_std_cells"] = args.teacher_blur
     device = get_device()
 
     ckpt_path, best_nll, best_epoch, wall_h, n_params, d_val = \
-        train_one_seed(cfg, args.seed, device)
+        train_one_seed(cfg, args.seed, device, args.distill)
 
     # G2 evaluation on validation: model MAP vs peak-sensor heuristic
     model = DeepSetsLocalizer(cfg).to(device)
@@ -187,21 +288,22 @@ def main():
     gpu = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "cpu"
 
     results_dir = resolve(cfg, "results_dir")
+    key = f"model2_seed{args.seed}" if args.distill else f"seed{args.seed}"
     entry = {
-        f"seed{args.seed}_val_map_error_mean": m_mean,
-        f"seed{args.seed}_val_map_error_median": m_med,
-        f"seed{args.seed}_best_val_nll": best_nll,
-        f"seed{args.seed}_best_epoch": best_epoch,
-        f"seed{args.seed}_gpu_hours": wall_h,
-        f"seed{args.seed}_param_count": n_params,
+        f"{key}_val_map_error_mean": m_mean,
+        f"{key}_val_map_error_median": m_med,
+        f"{key}_best_val_nll": best_nll,
+        f"{key}_best_epoch": best_epoch,
+        f"{key}_gpu_hours": wall_h,
+        f"{key}_param_count": n_params,
         "val_peak_sensor_error_mean": float(ps_err.mean()),
         "val_peak_sensor_error_median": float(np.median(ps_err)),
         "gpu_model": gpu,
     }
-    if args.seed == 1:
+    if args.seed == 1 and not args.distill:
         entry["model_beats_peak_sensor"] = bool(m_mean < ps_err.mean())
     update_json(results_dir / "gates.json", {"G2": entry})
-    print(f"[G2] seed {args.seed}: val MAP mean {m_mean:.4f} median {m_med:.4f} | "
+    print(f"[G2] {key}: val MAP mean {m_mean:.4f} median {m_med:.4f} | "
           f"peak-sensor mean {ps_err.mean():.4f} median {np.median(ps_err):.4f} | "
           f"{wall_h:.2f} GPU-h", flush=True)
 

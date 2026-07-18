@@ -88,6 +88,24 @@ def main():
             pm[f"coverage_{lev}_learned"] = conf_l["aux"][key]["coverage"]
             pm[f"area_median_{lev}_learned"] = conf_l["aux"][key]["area_median"]
 
+    if (results_dir / "conformal_model2_seed1.json").exists():
+        c2 = load_json(results_dir / "conformal_model2_seed1.json")["main"]
+        a2 = load_json(results_dir / "audit_model2_seed1.json")
+        d2 = load_json(results_dir / "dose_response_model2_seed1.json")
+        pm["distilled_coverage_90"] = c2["coverage"]
+        pm["distilled_coverage_ci"] = c2["cp_ci"]
+        pm["distilled_area_mean"] = c2["area_mean"]
+        pm["distilled_area_median"] = c2["area_median"]
+        pm["distilled_h2_spearman"] = a2["h2"]["spearman_area"]
+        pm["distilled_inefficiency_mean"] = a2["h2"]["inefficiency_mean"]
+        pm["distilled_inefficiency_median"] = a2["h2"]["inefficiency_median"]
+        pm["distilled_map_error_mean"] = a2["map_error"]["learned_mean"]
+        pm["distilled_map_error_median"] = a2["map_error"]["learned_median"]
+        pm["distilled_jsd_mean"] = a2["jsd_mean"]
+        pm["distilled_h3_knob1_slope_ratio"] = d2["knob1"]["slope_ratio_mean_curves"]
+        pm["distilled_h3_knob3_slope_ratio"] = d2["knob3"]["slope_ratio_mean_curves"]
+        pm["distilled_h3_knob2_spearman"] = d2["knob2"]["spearman_ratio_agreement"]
+
     if not args.skip_seed2 and (results_dir / "conformal_model_seed2.json").exists():
         c2 = load_json(results_dir / "conformal_model_seed2.json")["main"]
         a2 = load_json(results_dir / "audit_model_seed2.json")

@@ -32,6 +32,13 @@ python src/audit.py --seed 2
 echo "== H3: dose-response =="
 python src/dose_response.py --seed 1
 
+echo "== Post-hoc physics-distilled variant (non-preregistered; same model+data) =="
+python src/exact_posterior.py --splits train
+python src/train.py --seed 1 --distill
+python src/run_conformal.py --probs model2 --seed 1
+python src/audit.py --seed 1 --arch model2
+python src/dose_response.py --seed 1 --arch model2
+
 echo "== G5: assembly + figures =="
 python src/assemble_results.py
 python src/figures.py

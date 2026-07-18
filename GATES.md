@@ -237,6 +237,48 @@ test split — so we ran the full split; norm error at 96²: 1.4e-13.)
   4000+ scenarios), audits, and dose–response used **≈ 1.5 GPU-h** on one
   L40S — far under the paper's 12–20 GPU-h estimate.
 
+## Post-hoc physics-distilled variant (non-preregistered; added after the audit)
+
+Clearly-labeled post-hoc variant: IDENTICAL DeepSets architecture (4.87M
+params), IDENTICAL 10k train split, optimizer, schedule, and D4 augmentation
+— only the loss changes: CE to the scenario's EXACT Bayes posterior as a
+soft target ("physics-likelihood distillation"; under D4 augmentation the
+target grid is permuted by the exact same symmetry, verified). Early stop on
+validation teacher-CE (matches the objective; the preregistered true-cell
+val-NLL criterion actively fights distillation — the sharp teacher has poor
+true-cell NLL by construction, and using it truncated training at high LR
+and made H2 WORSE, 10.8x).
+
+Five loss variants were compared by a pre-stated validation-only rule
+(min median val 90%-HPD area); test evaluated once for the winner:
+
+| variant                         | val HPD-90 area (median) |
+|---|---|
+| raw teacher, lambda=1.0         | 0.197  (near-delta targets are an optimization trap) |
+| raw teacher, lambda=0.75        | 0.106 |
+| raw teacher, lambda=0.5         | 0.064 |
+| **tempered teacher (0.75-cell blur), lambda=1.0** | **0.055  (winner, epoch 193)** |
+| tempered teacher, lambda=0.75   | 0.056 |
+
+Final test results (single evaluation): coverage 0.8985 [0.884, 0.911]
+(contains 0.90); region area median 0.068 -> 0.053; H2 inefficiency median
+5.6x -> **3.9x** (mean 47.6 -> 28.9); H2 Spearman 0.848 -> 0.893; JSD 0.56
+-> 0.50; MAP median 0.103 -> 0.094; H3 sensor-count slope ratio 0.47 ->
+**0.87**; geometry agreement 0.88 -> 0.90; noise slope ratio 0.49 -> 0.54.
+
+Purpose in the paper: (1) attribute the H2 gap — same model, same data, new
+training signal closes ~1/3 of it and most of the sensor-response gap;
+(2) the audit certifies improvement, not only failure; (3) the benchmark's
+shipped posteriors double as a training resource. Key methodological finding:
+RAW exact-posterior targets fail; TEMPERING (0.75-cell Gaussian, matching the
+baseline target smoothing) is what makes the physics signal learnable.
+Caveat: requires a tractable per-scenario posterior at training time
+(available by construction in simulation-based training). Note: gates.json's
+G2 model2 entry reflects the last-trained variant; the winner is
+model2_lam10b (see results/distill_variant_selection.json). An earlier
+set-transformer variant was implemented and abandoned before any results
+were produced.
+
 ## Summary of findings the paper text must absorb
 
 1. The 32-node GL-in-log-q rate marginalization (Sec. 4.3) is numerically

@@ -18,14 +18,15 @@ import numpy as np
 
 from common import get_device, load_config, resolve, update_json
 from conformal import coverage_report, nominal_sweep, tail_scores
-from inference import heatmaps, load_model, load_split
+from inference import ckpt_stem, heatmaps, load_model, load_split
 
 
 def get_probs(tag, split, cfg, device):
     data_dir = resolve(cfg, "data_dir")
-    if tag.startswith("model_seed"):
-        seed = int(tag.replace("model_seed", ""))
-        ckpt_path = resolve(cfg, "checkpoints_dir") / f"seed{seed}.pt"
+    if tag.startswith(("model_seed", "model2_seed")):
+        arch, seed_s = tag.rsplit("_seed", 1)
+        seed = int(seed_s)
+        ckpt_path = resolve(cfg, "checkpoints_dir") / f"{ckpt_stem(arch, seed)}.pt"
         from common import sha256_file
         ckpt_sha = sha256_file(ckpt_path)
         cache = data_dir / f"heatmaps_{tag}_{split}.npz"
@@ -45,13 +46,13 @@ def get_probs(tag, split, cfg, device):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--probs", choices=["model", "exact"], required=True)
+    ap.add_argument("--probs", choices=["model", "model2", "exact"], required=True)
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--config", default=None)
     args = ap.parse_args()
     cfg = load_config(args.config)
     device = get_device()
-    tag = f"model_seed{args.seed}" if args.probs == "model" else "exact"
+    tag = "exact" if args.probs == "exact" else f"{args.probs}_seed{args.seed}"
     data_dir = resolve(cfg, "data_dir")
     results_dir = resolve(cfg, "results_dir")
 

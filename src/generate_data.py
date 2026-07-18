@@ -254,10 +254,16 @@ def main():
     data_dir.mkdir(parents=True, exist_ok=True)
 
     checksums = {}
-    for split, count in cfg["splits"].items():
+    all_splits = dict(cfg["splits"])
+    all_splits.update(cfg.get("extra_splits", {}))
+    for split, count in all_splits.items():
+        path = data_dir / f"{split}.npz"
+        if split in cfg.get("extra_splits", {}) and path.exists():
+            print(f"{split} exists, skipping", flush=True)
+            checksums[f"{split}.npz"] = sha256_file(path)
+            continue
         print(f"generating {split} ({count} scenarios)...", flush=True)
         d = generate_split(split, count, cfg, device)
-        path = data_dir / f"{split}.npz"
         np.savez_compressed(path, **d)
         checksums[f"{split}.npz"] = sha256_file(path)
 
@@ -271,7 +277,8 @@ def main():
     results_dir = resolve(cfg, "results_dir")
     update_json(results_dir / "checksums.json", checksums)
 
-    audit = leakage_audit(data_dir, list(cfg["splits"].keys()))
+    audit = leakage_audit(data_dir, list(cfg["splits"].keys())
+                          + list(cfg.get("extra_splits", {}).keys()))
     with open(results_dir / "leakage_audit.json", "w") as f:
         json.dump(audit, f, indent=2)
     update_json(results_dir / "gates.json",

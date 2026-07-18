@@ -17,7 +17,7 @@ from scipy.stats import spearmanr
 
 from baselines import localization_errors, peak_sensor_estimates
 from common import cell_center_of, get_device, load_config, resolve, update_json
-from inference import load_model, load_split, to_batch
+from inference import ckpt_stem, load_model, load_split, to_batch
 
 
 def jsd_rows(P, Q, eps=1e-300):
@@ -34,11 +34,12 @@ def jsd_rows(P, Q, eps=1e-300):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--arch", choices=["model", "model2"], default="model")
     ap.add_argument("--config", default=None)
     args = ap.parse_args()
     cfg = load_config(args.config)
     device = get_device()
-    tag = f"model_seed{args.seed}"
+    tag = f"{args.arch}_seed{args.seed}"
     data_dir = resolve(cfg, "data_dir")
     results_dir = resolve(cfg, "results_dir")
     n_grid = cfg["grid"]["n"]
@@ -73,7 +74,7 @@ def main():
     jsd = jsd_rows(P_learn, P_exact)
 
     # --- latency (batch 1) ------------------------------------------------
-    model, _ = load_model(cfg, resolve(cfg, "checkpoints_dir") / f"seed{args.seed}.pt",
+    model, _ = load_model(cfg, resolve(cfg, "checkpoints_dir") / f"{ckpt_stem(args.arch, args.seed)}.pt",
                           device)
     n_lat = cfg["evaluation"]["latency_scenarios"]
     with torch.no_grad():

@@ -64,7 +64,7 @@ def scenario_rng(root_entropy, split_tag, index):
     return np.random.default_rng(ss)
 
 
-SPLIT_TAGS = {"train": 0, "val": 1, "calib": 2, "test": 3,
+SPLIT_TAGS = {"train": 0, "val": 1, "calib": 2, "test": 3, "train_xl": 4,
               "dose_base": 10, "dose_geometry": 11, "dose_sigma": 12}
 
 

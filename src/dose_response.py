@@ -26,7 +26,7 @@ from scipy.stats import spearmanr
 from common import get_device, load_config, resolve, update_json
 from conformal import region_mask, tail_threshold
 from exact_posterior import log_posterior_scenario
-from inference import heatmaps, load_model, load_split
+from inference import ckpt_stem, heatmaps, load_model, load_split
 
 
 def subset_dict(d, i, rows):
@@ -71,11 +71,12 @@ def safe_ratio(a, b):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--arch", choices=["model", "model2"], default="model")
     ap.add_argument("--config", default=None)
     args = ap.parse_args()
     cfg = load_config(args.config)
     device = get_device()
-    tag = f"model_seed{args.seed}"
+    tag = f"{args.arch}_seed{args.seed}"
     data_dir = resolve(cfg, "data_dir")
     results_dir = resolve(cfg, "results_dir")
     n_cells = cfg["grid"]["n"] ** 2
@@ -83,7 +84,7 @@ def main():
 
     qhat_l = tail_threshold(np.load(data_dir / f"scores_{tag}.npz")["tails"], alpha)
     qhat_e = tail_threshold(np.load(data_dir / "scores_exact.npz")["tails"], alpha)
-    model, _ = load_model(cfg, resolve(cfg, "checkpoints_dir") / f"seed{args.seed}.pt",
+    model, _ = load_model(cfg, resolve(cfg, "checkpoints_dir") / f"{ckpt_stem(args.arch, args.seed)}.pt",
                           device)
 
     lo_N, hi_N = cfg["dose_response"]["nested_range"]

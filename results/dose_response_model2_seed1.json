@@ -1,0 +1,47 @@
+{
+  "knob1": {
+    "spearman_per_scenario_mean": 0.7076414275071151,
+    "spearman_per_scenario_median": 0.8284591346681658,
+    "slope_ratio_mean_curves": 0.8718820380893147,
+    "slope_ratio_per_scenario_median": 0.902761457109283,
+    "slope_learned_mean": -0.03011824544270833,
+    "slope_exact_mean": -0.0345439453125
+  },
+  "knob2": {
+    "confined_over_spread_learned_mean": 4.143738845973364,
+    "confined_over_spread_exact_mean": 177.71666261300487,
+    "confined_over_spread_learned_median": 1.1288170163170164,
+    "confined_over_spread_exact_median": 1.5765870639859552,
+    "spearman_ratio_agreement": 0.9033326940880572,
+    "confined_broader_learned_frac": 0.58,
+    "confined_broader_exact_frac": 0.64
+  },
+  "knob3": {
+    "spearman_per_scenario_mean": 0.6254889056516589,
+    "spearman_per_scenario_median": 0.7387687194103585,
+    "slope_ratio_mean_curves": 0.5407567260227948,
+    "slope_ratio_per_scenario_median": 0.7150809716599192,
+    "slope_learned_mean": 0.04378522600446429,
+    "slope_exact_mean": 0.08097028459821429
+  },
+  "Ns": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "sigma_values": [
+    0.010000000000000004,
+    0.014677992676220697,
+    0.02154434690031885,
+    0.0316227766016838,
+    0.046415888336127815,
+    0.06812920690579614,
+    0.10000000000000002
+  ]
+}

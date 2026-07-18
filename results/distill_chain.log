@@ -1,0 +1,151 @@
+=== exact posteriors: train split (distillation targets) ===
+exact posteriors: train (grid 64x64)
+  500/10000  (30 ms/scen)
+  1000/10000  (30 ms/scen)
+  1500/10000  (30 ms/scen)
+  2000/10000  (30 ms/scen)
+  2500/10000  (30 ms/scen)
+  3000/10000  (30 ms/scen)
+  3500/10000  (30 ms/scen)
+  4000/10000  (30 ms/scen)
+  4500/10000  (30 ms/scen)
+  5000/10000  (30 ms/scen)
+  5500/10000  (30 ms/scen)
+  6000/10000  (30 ms/scen)
+  6500/10000  (30 ms/scen)
+  7000/10000  (30 ms/scen)
+  7500/10000  (30 ms/scen)
+  8000/10000  (30 ms/scen)
+  8500/10000  (30 ms/scen)
+  9000/10000  (30 ms/scen)
+  9500/10000  (30 ms/scen)
+  10000/10000  (30 ms/scen)
+  done in 302s, max |1-sum(p)| = 2.08e-13
+=== train distilled (same model, same data, physics loss) ===
+distill seed 1: 4.87M params
+/usr4/spclpgm/eric1/conformal-source-regions/src/train.py:189: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+  tot_loss += float(loss)
+epoch   0 loss 8.4184 val_nll 8.2147 best 8.2147@0
+epoch   1 loss 8.3042 val_nll 8.1320 best 8.1320@1
+epoch   6 loss 8.1185 val_nll 8.1138 best 8.1138@6
+epoch   9 loss 8.0863 val_nll 8.1107 best 8.1107@9
+epoch  10 loss 8.0697 val_nll 8.0904 best 8.0904@10
+epoch  12 loss 8.0236 val_nll 8.0785 best 8.0785@12
+epoch  13 loss 7.9794 val_nll 8.0450 best 8.0450@13
+epoch  14 loss 7.8905 val_nll 8.0170 best 8.0170@14
+epoch  15 loss 7.7720 val_nll 7.8395 best 7.8395@15
+epoch  16 loss 7.6516 val_nll 7.7325 best 7.7325@16
+epoch  17 loss 7.5420 val_nll 7.6589 best 7.6589@17
+epoch  18 loss 7.4511 val_nll 7.6079 best 7.6079@18
+epoch  19 loss 7.3763 val_nll 7.5247 best 7.5247@19
+epoch  20 loss 7.2793 val_nll 7.4779 best 7.4779@20
+epoch  21 loss 7.2286 val_nll 7.4569 best 7.4569@21
+epoch  22 loss 7.1540 val_nll 7.4217 best 7.4217@22
+epoch  23 loss 7.1051 val_nll 7.3912 best 7.3912@23
+epoch  24 loss 7.0617 val_nll 7.3479 best 7.3479@24
+epoch  25 loss 7.0165 val_nll 7.3017 best 7.3017@25
+epoch  26 loss 6.9701 val_nll 7.2971 best 7.2971@26
+epoch  27 loss 6.9215 val_nll 7.2394 best 7.2394@27
+epoch  28 loss 6.8901 val_nll 7.2252 best 7.2252@28
+epoch  30 loss 6.8165 val_nll 7.2107 best 7.2107@30
+epoch  31 loss 6.7865 val_nll 7.1864 best 7.1864@31
+epoch  33 loss 6.7106 val_nll 7.1363 best 7.1363@33
+epoch  35 loss 6.6484 val_nll 7.1346 best 7.1346@35
+epoch  37 loss 6.5718 val_nll 7.1059 best 7.1059@37
+epoch  40 loss 6.5099 val_nll 7.0937 best 7.0937@40
+epoch  41 loss 6.4684 val_nll 7.0787 best 7.0787@41
+epoch  47 loss 6.2942 val_nll 7.0465 best 7.0465@47
+epoch  50 loss 6.2159 val_nll 7.0954 best 7.0465@47
+epoch  60 loss 5.9518 val_nll 7.1205 best 7.0465@47
+epoch  70 loss 5.7252 val_nll 7.1524 best 7.0465@47
+early stop at epoch 72
+[G2] model2_seed1: val MAP mean 0.1974 median 0.1332 | peak-sensor mean 0.3665 median 0.3458 | 0.01 GPU-h
+=== conformal model2 ===
+[model2_seed1] coverage@90 = 0.8845 CI [0.8697, 0.8982] contains 0.90: False | area mean 0.3085 median 0.1451
+=== audit model2 ===
+{
+  "h2": {
+    "spearman_area": 0.8159563292742923,
+    "spearman_p": 0.0,
+    "inefficiency_mean": 107.98781887222783,
+    "inefficiency_median": 10.848427672955975
+  },
+  "map_error": {
+    "learned_mean": 0.20039242107049302,
+    "learned_median": 0.14065276909402052,
+    "exact_mean": 0.16023777154216712,
+    "exact_median": 0.022668104127897146,
+    "peak_sensor_mean": 0.35560398282612177,
+    "peak_sensor_median": 0.3150528444401277,
+    "learned_p50_p90_p99": [
+      0.14065276909402052,
+      0.44355958036668863,
+      0.7579883128853908
+    ]
+  },
+  "nll_mean": 7.074369430541992,
+  "jsd_mean": 0.5228621059544007,
+  "jsd_median": 0.6730915390798463,
+  "latency_ms_per_scenario": 0.4968225955963134
+}
+=== dose model2 ===
+/usr4/spclpgm/eric1/conformal-source-regions/src/dose_response.py:104: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  k1_rho = [spearmanr(curves_l[b], curves_e[b]).statistic for b in range(B)]
+/usr4/spclpgm/eric1/conformal-source-regions/src/dose_response.py:154: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  k3_rho = [spearmanr(sw_l[b], sw_e[b]).statistic for b in range(B)]
+{
+  "knob1": {
+    "spearman_per_scenario_mean": 0.6697206482351674,
+    "spearman_per_scenario_median": 0.7730012058189372,
+    "slope_ratio_mean_curves": 0.7063131955634712,
+    "slope_ratio_per_scenario_median": 0.6887202768341851,
+    "slope_learned_mean": -0.024398844401041665,
+    "slope_exact_mean": -0.0345439453125
+  },
+  "knob2": {
+    "confined_over_spread_learned_mean": 1.960756178931675,
+    "confined_over_spread_exact_mean": 177.71666261300487,
+    "confined_over_spread_learned_median": 1.0274427324389244,
+    "confined_over_spread_exact_median": 1.5765870639859552,
+    "spearman_ratio_agreement": 0.8043123328521009,
+    "confined_broader_learned_frac": 0.52,
+    "confined_broader_exact_frac": 0.64
+  },
+  "knob3": {
+    "spearman_per_scenario_mean": 0.35955187847479814,
+    "spearman_per_scenario_median": 0.4504687313477795,
+    "slope_ratio_mean_curves": 0.40986741787920294,
+    "slope_ratio_per_scenario_median": 0.33333333333333176,
+    "slope_learned_mean": 0.03318708147321429,
+    "slope_exact_mean": 0.08097028459821429
+  },
+  "Ns": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "sigma_values": [
+    0.010000000000000004,
+    0.014677992676220697,
+    0.02154434690031885,
+    0.0316227766016838,
+    0.046415888336127815,
+    0.06812920690579614,
+    0.10000000000000002
+  ]
+}
+=== figures ===
+fig3 done
+fig4 done
+fig5 done (flagship scenario 39)
+fig2 done (geometry scenario 0)
+fig1 done
+=== DISTILL CHAIN DONE ===
+exit: 0

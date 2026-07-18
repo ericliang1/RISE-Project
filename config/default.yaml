@@ -59,6 +59,20 @@ splits:
   calib: 2000
   test: 2000
 
+# Post-hoc physics-distilled variant (clearly labeled non-preregistered):
+# IDENTICAL DeepSets architecture, IDENTICAL 10k train split and optimizer;
+# only the loss changes -- cross-entropy to the exact Bayes posterior of each
+# training scenario (physics-likelihood distillation) instead of the smoothed
+# one-hot target.  Artifacts carry the tag "model2".
+distill:
+  max_epochs: 200
+  early_stop_patience: 25
+  mix_lambda: 1.0                 # loss = mix*CE(exact posterior) + (1-mix)*CE(smoothed)
+                                  # early stop on val teacher-CE (matches the objective)
+  teacher_blur_std_cells: 0.0     # >0: temper the teacher by convolving with a
+                                  # Gaussian of this std (cells) — physics shape
+                                  # at an optimization-friendly sharpness
+
 dose_response:
   n_base: 50                      # base scenarios; source locations Latin-hypercube spread
   master_sensors: 12              # frozen master layout + fixed insertion order
