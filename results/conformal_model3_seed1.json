@@ -1,0 +1,211 @@
+{
+  "tag": "model3_seed1",
+  "main": {
+    "alpha": 0.1,
+    "tail_qhat": 0.07981417722520477,
+    "coverage": 0.896,
+    "cp_ci": [
+      0.8817860663196057,
+      0.9090405198705483
+    ],
+    "n": 2000,
+    "covered": 1792,
+    "area_mean": 0.2646585693359375,
+    "area_median": 0.06591796875
+  },
+  "aux": {
+    "level_0.80": {
+      "alpha": 0.19999999999999996,
+      "tail_qhat": 0.14788531946728528,
+      "coverage": 0.788,
+      "cp_ci": [
+        0.7694213550999073,
+        0.8057303781485592
+      ],
+      "n": 2000,
+      "covered": 1576,
+      "area_mean": 0.212561279296875,
+      "area_median": 0.044677734375
+    },
+    "level_0.95": {
+      "alpha": 0.050000000000000044,
+      "tail_qhat": 0.04837721779364415,
+      "coverage": 0.9455,
+      "cp_ci": [
+        0.9346299677387182,
+        0.955039229200515
+      ],
+      "n": 2000,
+      "covered": 1891,
+      "area_mean": 0.301991943359375,
+      "area_median": 0.0858154296875
+    }
+  },
+  "sweep": [
+    {
+      "nominal": 0.5,
+      "conformal": 0.4885,
+      "raw_hpd": 0.307
+    },
+    {
+      "nominal": 0.515,
+      "conformal": 0.4975,
+      "raw_hpd": 0.324
+    },
+    {
+      "nominal": 0.53,
+      "conformal": 0.5085,
+      "raw_hpd": 0.3365
+    },
+    {
+      "nominal": 0.545,
+      "conformal": 0.5245,
+      "raw_hpd": 0.3545
+    },
+    {
+      "nominal": 0.56,
+      "conformal": 0.54,
+      "raw_hpd": 0.3725
+    },
+    {
+      "nominal": 0.575,
+      "conformal": 0.552,
+      "raw_hpd": 0.391
+    },
+    {
+      "nominal": 0.59,
+      "conformal": 0.565,
+      "raw_hpd": 0.4075
+    },
+    {
+      "nominal": 0.605,
+      "conformal": 0.579,
+      "raw_hpd": 0.423
+    },
+    {
+      "nominal": 0.62,
+      "conformal": 0.5985,
+      "raw_hpd": 0.4415
+    },
+    {
+      "nominal": 0.635,
+      "conformal": 0.614,
+      "raw_hpd": 0.458
+    },
+    {
+      "nominal": 0.65,
+      "conformal": 0.6325,
+      "raw_hpd": 0.4795
+    },
+    {
+      "nominal": 0.665,
+      "conformal": 0.654,
+      "raw_hpd": 0.4995
+    },
+    {
+      "nominal": 0.6799999999999999,
+      "conformal": 0.6725,
+      "raw_hpd": 0.5195
+    },
+    {
+      "nominal": 0.6950000000000001,
+      "conformal": 0.6895,
+      "raw_hpd": 0.544
+    },
+    {
+      "nominal": 0.71,
+      "conformal": 0.7035,
+      "raw_hpd": 0.563
+    },
+    {
+      "nominal": 0.725,
+      "conformal": 0.7135,
+      "raw_hpd": 0.5805
+    },
+    {
+      "nominal": 0.74,
+      "conformal": 0.7315,
+      "raw_hpd": 0.602
+    },
+    {
+      "nominal": 0.755,
+      "conformal": 0.747,
+      "raw_hpd": 0.6235
+    },
+    {
+      "nominal": 0.77,
+      "conformal": 0.7595,
+      "raw_hpd": 0.6505
+    },
+    {
+      "nominal": 0.7849999999999999,
+      "conformal": 0.7765,
+      "raw_hpd": 0.6775
+    },
+    {
+      "nominal": 0.8,
+      "conformal": 0.788,
+      "raw_hpd": 0.7055
+    },
+    {
+      "nominal": 0.815,
+      "conformal": 0.808,
+      "raw_hpd": 0.7265
+    },
+    {
+      "nominal": 0.83,
+      "conformal": 0.8175,
+      "raw_hpd": 0.751
+    },
+    {
+      "nominal": 0.845,
+      "conformal": 0.833,
+      "raw_hpd": 0.7775
+    },
+    {
+      "nominal": 0.86,
+      "conformal": 0.854,
+      "raw_hpd": 0.803
+    },
+    {
+      "nominal": 0.875,
+      "conformal": 0.867,
+      "raw_hpd": 0.824
+    },
+    {
+      "nominal": 0.89,
+      "conformal": 0.885,
+      "raw_hpd": 0.8505
+    },
+    {
+      "nominal": 0.905,
+      "conformal": 0.9,
+      "raw_hpd": 0.875
+    },
+    {
+      "nominal": 0.9199999999999999,
+      "conformal": 0.904,
+      "raw_hpd": 0.896
+    },
+    {
+      "nominal": 0.935,
+      "conformal": 0.928,
+      "raw_hpd": 0.913
+    },
+    {
+      "nominal": 0.95,
+      "conformal": 0.9455,
+      "raw_hpd": 0.943
+    },
+    {
+      "nominal": 0.965,
+      "conformal": 0.961,
+      "raw_hpd": 0.9645
+    },
+    {
+      "nominal": 0.98,
+      "conformal": 0.9755,
+      "raw_hpd": 0.98
+    }
+  ]
+}

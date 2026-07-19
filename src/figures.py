@@ -32,7 +32,8 @@ from dose_response import subset_dict
 
 C_BASE = "#2a78d6"      # baseline learned
 C_EXACT = "#008300"     # exact oracle
-C_IMPR = "#e87ba4"      # improved learned
+C_IMPR = "#e87ba4"      # fixed-temper distilled (M1)
+C_CURR = "#eda100"      # progressive curriculum distilled (M2)
 C_GRID = "#e3e2df"
 C_TEXT = "#0b0b0b"
 C_MUT = "#52514e"
@@ -88,6 +89,10 @@ def have_model2(data_dir):
     return (data_dir / "audit_scatter_model2_seed1.npz").exists()
 
 
+def have_model3(data_dir):
+    return (data_dir / "audit_scatter_model3_seed1.npz").exists()
+
+
 # ---------------------------------------------------------------- fig 3
 def fig3_coverage(cfg, fig_dir, results_dir):
     with open(results_dir / "conformal_model_seed1.json") as f:
@@ -116,10 +121,13 @@ def fig3_coverage(cfg, fig_dir, results_dir):
 # ---------------------------------------------------------------- fig 4
 def fig4_audit(cfg, fig_dir, data_dir):
     zb = np.load(data_dir / "audit_scatter_model_seed1.npz")
-    series = [("Baseline (preregistered)", C_BASE, zb)]
+    series = [("M0: location-supervised", C_BASE, zb)]
     if have_model2(data_dir):
-        series.append(("Physics-distilled (same model)", C_IMPR,
+        series.append(("M1: fixed-temper distilled", C_IMPR,
                        np.load(data_dir / "audit_scatter_model2_seed1.npz")))
+    if have_model3(data_dir):
+        series.append(("M2: progressive distilled", C_CURR,
+                       np.load(data_dir / "audit_scatter_model3_seed1.npz")))
 
     fig, axes = plt.subplots(1, 2, figsize=(6.6, 3.0))
     ax = axes[0]
@@ -164,12 +172,15 @@ def fig5_dose(cfg, fig_dir, data_dir, device):
     n = cfg["grid"]["n"]
     alpha = cfg["conformal"]["alpha"]
     use2 = have_model2(data_dir)
-    snap_tag = "model2" if use2 else "model"
+    use3 = have_model3(data_dir)
+    snap_tag = "model3" if use3 else "model2" if use2 else "model"
     zb = np.load(data_dir / "dose_curves_model_seed1.npz")
     Ns, base_l, curves_e = zb["Ns"], zb["curves_l"], zb["curves_e"]
     impr_l = (np.load(data_dir / "dose_curves_model2_seed1.npz")["curves_l"]
               if use2 else None)
-    snap_curves = impr_l if use2 else base_l
+    curr_l = (np.load(data_dir / "dose_curves_model3_seed1.npz")["curves_l"]
+              if use3 else None)
+    snap_curves = curr_l if use3 else impr_l if use2 else base_l
 
     # flagship: strong, clean exact contraction
     slopes = curves_e[:, -1] - curves_e[:, 0]
@@ -185,7 +196,7 @@ def fig5_dose(cfg, fig_dir, data_dir, device):
     fig = plt.figure(figsize=(6.8, 4.1))
     gs = fig.add_gridspec(2, len(snapNs), height_ratios=[1.3, 1], hspace=0.28)
     order = d1["order"][flag]
-    snap_col = C_IMPR if use2 else C_BASE
+    snap_col = C_CURR if use3 else C_IMPR if use2 else C_BASE
     for j, N in enumerate(snapNs):
         ax = fig.add_subplot(gs[0, j])
         sub = subset_dict(d1, flag, order[:N])
@@ -197,9 +208,11 @@ def fig5_dose(cfg, fig_dir, data_dir, device):
 
     ax = fig.add_subplot(gs[1, :])
     ax.plot(Ns, curves_e.mean(0), color=C_EXACT, lw=2, label="Exact oracle")
-    ax.plot(Ns, base_l.mean(0), color=C_BASE, lw=2, label="Baseline")
+    ax.plot(Ns, base_l.mean(0), color=C_BASE, lw=2, label="M0")
     if use2:
-        ax.plot(Ns, impr_l.mean(0), color=C_IMPR, lw=2, label="Distilled")
+        ax.plot(Ns, impr_l.mean(0), color=C_IMPR, lw=2, label="M1")
+    if use3:
+        ax.plot(Ns, curr_l.mean(0), color=C_CURR, lw=2, label="M2")
     ax.plot(Ns, curves_e[flag], color=C_EXACT, lw=1.1, ls="--", alpha=0.8)
     ax.plot(Ns, snap_curves[flag], color=snap_col, lw=1.1, ls="--", alpha=0.8,
             label="Shown scenario (dashed)")
@@ -217,9 +230,10 @@ def fig5_dose(cfg, fig_dir, data_dir, device):
 def fig2_scenarios(cfg, fig_dir, data_dir, device):
     n = cfg["grid"]["n"]
     alpha = cfg["conformal"]["alpha"]
+    use3 = have_model3(data_dir)
     use2 = have_model2(data_dir)
-    tag = "model2" if use2 else "model"
-    lcol = C_IMPR if use2 else C_BASE
+    tag = "model3" if use3 else "model2" if use2 else "model"
+    lcol = C_CURR if use3 else C_IMPR if use2 else C_BASE
     t_l = tail_threshold(
         np.load(data_dir / f"scores_{tag}_seed1.npz")["tails"], alpha)
     t_e = tail_threshold(np.load(data_dir / "scores_exact.npz")["tails"], alpha)

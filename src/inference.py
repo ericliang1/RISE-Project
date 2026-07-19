@@ -37,8 +37,10 @@ def load_model(cfg, ckpt_path, device):
 
 
 def ckpt_stem(arch, seed):
-    """Checkpoint filename stem for an architecture tag."""
-    return f"seed{seed}" if arch in ("v1", "model") else f"model2_seed{seed}"
+    """Checkpoint filename stem for a model tag."""
+    if arch in ("v1", "model"):
+        return f"seed{seed}"
+    return f"{arch}_seed{seed}"
 
 
 @torch.no_grad()

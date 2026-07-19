@@ -1,0 +1,25 @@
+{
+  "h2": {
+    "spearman_area": 0.8536624602833103,
+    "spearman_p": 0.0,
+    "inefficiency_mean": 51.77992375290483,
+    "inefficiency_median": 5.857201142390861
+  },
+  "map_error": {
+    "learned_mean": 0.17375667934129996,
+    "learned_median": 0.09773116394419565,
+    "exact_mean": 0.16023777154216712,
+    "exact_median": 0.022668104127897146,
+    "peak_sensor_mean": 0.35560398282612177,
+    "peak_sensor_median": 0.3150528444401277,
+    "learned_p50_p90_p99": [
+      0.09773116394419565,
+      0.43231185128164096,
+      0.7813440979322376
+    ]
+  },
+  "nll_mean": 6.314043998718262,
+  "jsd_mean": 0.557304682987248,
+  "jsd_median": 0.6565631235895317,
+  "latency_ms_per_scenario": 0.4918336868286133
+}

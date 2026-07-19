@@ -1,0 +1,211 @@
+{
+  "tag": "model2_seed2",
+  "main": {
+    "alpha": 0.1,
+    "tail_qhat": 0.10341002308676563,
+    "coverage": 0.895,
+    "cp_ci": [
+      0.8807310461301026,
+      0.9080986199648267
+    ],
+    "n": 2000,
+    "covered": 1790,
+    "area_mean": 0.235463134765625,
+    "area_median": 0.054443359375
+  },
+  "aux": {
+    "level_0.80": {
+      "alpha": 0.19999999999999996,
+      "tail_qhat": 0.18328684255971267,
+      "coverage": 0.792,
+      "cp_ci": [
+        0.7735400510859451,
+        0.8095997927667052
+      ],
+      "n": 2000,
+      "covered": 1584,
+      "area_mean": 0.18666064453125,
+      "area_median": 0.0384521484375
+    },
+    "level_0.95": {
+      "alpha": 0.050000000000000044,
+      "tail_qhat": 0.05675553233365334,
+      "coverage": 0.9465,
+      "cp_ci": [
+        0.9357145572909712,
+        0.9559512869808573
+      ],
+      "n": 2000,
+      "covered": 1893,
+      "area_mean": 0.2802735595703125,
+      "area_median": 0.072265625
+    }
+  },
+  "sweep": [
+    {
+      "nominal": 0.5,
+      "conformal": 0.505,
+      "raw_hpd": 0.3975
+    },
+    {
+      "nominal": 0.515,
+      "conformal": 0.5155,
+      "raw_hpd": 0.415
+    },
+    {
+      "nominal": 0.53,
+      "conformal": 0.533,
+      "raw_hpd": 0.4325
+    },
+    {
+      "nominal": 0.545,
+      "conformal": 0.5425,
+      "raw_hpd": 0.446
+    },
+    {
+      "nominal": 0.56,
+      "conformal": 0.5535,
+      "raw_hpd": 0.462
+    },
+    {
+      "nominal": 0.575,
+      "conformal": 0.57,
+      "raw_hpd": 0.476
+    },
+    {
+      "nominal": 0.59,
+      "conformal": 0.587,
+      "raw_hpd": 0.4975
+    },
+    {
+      "nominal": 0.605,
+      "conformal": 0.6035,
+      "raw_hpd": 0.512
+    },
+    {
+      "nominal": 0.62,
+      "conformal": 0.6135,
+      "raw_hpd": 0.5335
+    },
+    {
+      "nominal": 0.635,
+      "conformal": 0.628,
+      "raw_hpd": 0.548
+    },
+    {
+      "nominal": 0.65,
+      "conformal": 0.6475,
+      "raw_hpd": 0.5695
+    },
+    {
+      "nominal": 0.665,
+      "conformal": 0.661,
+      "raw_hpd": 0.5865
+    },
+    {
+      "nominal": 0.6799999999999999,
+      "conformal": 0.6755,
+      "raw_hpd": 0.6095
+    },
+    {
+      "nominal": 0.6950000000000001,
+      "conformal": 0.691,
+      "raw_hpd": 0.626
+    },
+    {
+      "nominal": 0.71,
+      "conformal": 0.704,
+      "raw_hpd": 0.6475
+    },
+    {
+      "nominal": 0.725,
+      "conformal": 0.7155,
+      "raw_hpd": 0.6635
+    },
+    {
+      "nominal": 0.74,
+      "conformal": 0.726,
+      "raw_hpd": 0.685
+    },
+    {
+      "nominal": 0.755,
+      "conformal": 0.7395,
+      "raw_hpd": 0.7065
+    },
+    {
+      "nominal": 0.77,
+      "conformal": 0.7575,
+      "raw_hpd": 0.723
+    },
+    {
+      "nominal": 0.7849999999999999,
+      "conformal": 0.7735,
+      "raw_hpd": 0.748
+    },
+    {
+      "nominal": 0.8,
+      "conformal": 0.792,
+      "raw_hpd": 0.767
+    },
+    {
+      "nominal": 0.815,
+      "conformal": 0.809,
+      "raw_hpd": 0.788
+    },
+    {
+      "nominal": 0.83,
+      "conformal": 0.8245,
+      "raw_hpd": 0.815
+    },
+    {
+      "nominal": 0.845,
+      "conformal": 0.8405,
+      "raw_hpd": 0.837
+    },
+    {
+      "nominal": 0.86,
+      "conformal": 0.8515,
+      "raw_hpd": 0.852
+    },
+    {
+      "nominal": 0.875,
+      "conformal": 0.8635,
+      "raw_hpd": 0.869
+    },
+    {
+      "nominal": 0.89,
+      "conformal": 0.8855,
+      "raw_hpd": 0.89
+    },
+    {
+      "nominal": 0.905,
+      "conformal": 0.902,
+      "raw_hpd": 0.9035
+    },
+    {
+      "nominal": 0.9199999999999999,
+      "conformal": 0.9135,
+      "raw_hpd": 0.918
+    },
+    {
+      "nominal": 0.935,
+      "conformal": 0.9295,
+      "raw_hpd": 0.9375
+    },
+    {
+      "nominal": 0.95,
+      "conformal": 0.9465,
+      "raw_hpd": 0.9555
+    },
+    {
+      "nominal": 0.965,
+      "conformal": 0.9695,
+      "raw_hpd": 0.974
+    },
+    {
+      "nominal": 0.98,
+      "conformal": 0.981,
+      "raw_hpd": 0.9835
+    }
+  ]
+}

@@ -34,7 +34,7 @@ def jsd_rows(P, Q, eps=1e-300):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=1)
-    ap.add_argument("--arch", choices=["model", "model2"], default="model")
+    ap.add_argument("--arch", choices=["model", "model2", "model3"], default="model")
     ap.add_argument("--config", default=None)
     args = ap.parse_args()
     cfg = load_config(args.config)

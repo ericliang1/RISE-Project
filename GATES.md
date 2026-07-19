@@ -279,6 +279,30 @@ model2_lam10b (see results/distill_variant_selection.json). An earlier
 set-transformer variant was implemented and abandoned before any results
 were produced.
 
+## M2 curriculum (explored, dropped from the paper)
+
+A progressive smooth-to-sharp teacher schedule (hold 0.75 -> linear anneal to
+sigma_end in {0.30, 0.15, 0}, checkpointed by val HPD-90 area with a 0.85
+coverage floor after fixing a criterion pathology: teacher-CE selects blurry
+mid-anneal students) was fully evaluated. Validation areas 0.061/0.061/0.068
+(sharper end-targets monotonically worse); winner sigma_end=0.30 evaluated
+once on test: coverage 0.896, inefficiency median 4.84 — BETWEEN M0 (5.6x)
+and M1 (3.9x), i.e. the curriculum does NOT improve on the fixed temper.
+Dropped from the paper narrative at the author's direction; recorded here and
+in one appendix sentence. Artifacts: model3_* checkpoints,
+distill_variant_selection_model3_seed1.json, conformal/audit/dose model3
+JSONs.
+
+## Seed stability (3 seeds per model)
+
+| model | coverage | ineff median | Spearman | JSD | MAP med |
+|---|---|---|---|---|---|
+| M0 | 0.875/0.896/0.912 | 5.57/5.80/5.86 | 0.848-0.854 | 0.556 | 0.098-0.103 |
+| M1 | 0.899/0.895/0.891 | 3.92/4.11/4.02 | 0.890-0.897 | 0.499 | 0.092-0.094 |
+
+No overlap on any sharpness metric; M0 3-seed coverage brackets 0.90,
+further supporting the seed-1 fluctuation analysis.
+
 ## Summary of findings the paper text must absorb
 
 1. The 32-node GL-in-log-q rate marginalization (Sec. 4.3) is numerically

@@ -72,6 +72,14 @@ distill:
   teacher_blur_std_cells: 0.0     # >0: temper the teacher by convolving with a
                                   # Gaussian of this std (cells) — physics shape
                                   # at an optimization-friendly sharpness
+  # M2: teacher-sharpening curriculum (tag model3). Blur held at sigma_start,
+  # annealed linearly to sigma_end between hold_epochs and anneal_end, then held.
+  # Checkpoint selection: val teacher-CE against the FIXED final (sigma_end)
+  # teacher; early stopping counts only after anneal_end.
+  curriculum_sigma_start: 0.75
+  curriculum_sigma_end: 0.15      # validation-selected among {0.30, 0.15, 0.0}
+  curriculum_hold_epochs: 30
+  curriculum_anneal_end: 140
 
 dose_response:
   n_base: 50                      # base scenarios; source locations Latin-hypercube spread

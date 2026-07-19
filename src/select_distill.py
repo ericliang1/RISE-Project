@@ -39,6 +39,7 @@ def val_stats(stem, cfg, device, d_val, P_val_teacher):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--candidates", nargs="+", required=True)
+    ap.add_argument("--winner-stem", default="model2_seed1")
     ap.add_argument("--config", default=None)
     args = ap.parse_args()
     cfg = load_config(args.config)
@@ -54,11 +55,11 @@ def main():
     winner = min(stats, key=lambda s: s["val_hpd90_area_median"])
     ckpt_dir = resolve(cfg, "checkpoints_dir")
     shutil.copyfile(ckpt_dir / f"{winner['stem']}.pt",
-                    ckpt_dir / "model2_seed1.pt")
+                    ckpt_dir / f"{args.winner_stem}.pt")
     out = {"rule": "min median val raw-HPD-0.90 area", "candidates": stats,
            "winner": winner["stem"]}
-    with open(resolve(cfg, "results_dir") / "distill_variant_selection.json",
-              "w") as f:
+    with open(resolve(cfg, "results_dir") /
+              f"distill_variant_selection_{args.winner_stem}.json", "w") as f:
         json.dump(out, f, indent=2)
     print("winner:", winner["stem"])
 

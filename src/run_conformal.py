@@ -23,7 +23,7 @@ from inference import ckpt_stem, heatmaps, load_model, load_split
 
 def get_probs(tag, split, cfg, device):
     data_dir = resolve(cfg, "data_dir")
-    if tag.startswith(("model_seed", "model2_seed")):
+    if tag.startswith(("model_seed", "model2_seed", "model3_seed")):
         arch, seed_s = tag.rsplit("_seed", 1)
         seed = int(seed_s)
         ckpt_path = resolve(cfg, "checkpoints_dir") / f"{ckpt_stem(arch, seed)}.pt"
@@ -46,7 +46,7 @@ def get_probs(tag, split, cfg, device):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--probs", choices=["model", "model2", "exact"], required=True)
+    ap.add_argument("--probs", choices=["model", "model2", "model3", "exact"], required=True)
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--config", default=None)
     args = ap.parse_args()

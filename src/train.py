@@ -63,22 +63,60 @@ def d4_augment(batch, xs, rng, device):
     return out, xs_new, codes
 
 
-def blur_teacher(P, n, std_cells, trunc=3.0):
+def blur_teacher(P, n, std_cells, trunc=3.0, device="cpu"):
     """Convolve teacher posteriors (S, n*n) with an isotropic Gaussian
     (std in cells, truncated at trunc*std), renormalized.  D4-equivariant, so
-    it commutes with the augmentation permutation."""
+    it commutes with the augmentation permutation.  std <= 0.02 -> identity
+    (raw teacher).  Computed in chunks on `device`, returned on CPU."""
+    if std_cells <= 0.02:
+        return P
     r = int(np.ceil(trunc * std_cells))
     xs = torch.arange(-r, r + 1, dtype=torch.float32)
     g1 = torch.exp(-xs ** 2 / (2 * std_cells ** 2))
     k2 = torch.outer(g1, g1)
-    k2 = (k2 / k2.sum())[None, None]
+    k2 = ((k2 / k2.sum())[None, None]).to(device)
     img = P.reshape(-1, 1, n, n)
     out = torch.empty_like(img)
     for lo in range(0, img.shape[0], 2048):
         hi = min(lo + 2048, img.shape[0])
-        out[lo:hi] = torch.nn.functional.conv2d(img[lo:hi], k2, padding=r)
+        out[lo:hi] = torch.nn.functional.conv2d(
+            img[lo:hi].to(device), k2, padding=r).cpu()
     out = out.reshape(-1, n * n)
     return out / out.sum(dim=1, keepdim=True)
+
+
+def curriculum_sigma(epoch, cs):
+    """Teacher blur schedule: hold at sigma_start, linear anneal to sigma_end
+    between hold_epochs and anneal_end, then hold at sigma_end."""
+    s0 = float(cs["curriculum_sigma_start"])
+    s1 = float(cs["curriculum_sigma_end"])
+    hold = int(cs["curriculum_hold_epochs"])
+    end = int(cs["curriculum_anneal_end"])
+    if epoch < hold:
+        return s0
+    if epoch >= end:
+        return s1
+    frac = (epoch - hold) / max(end - hold, 1)
+    return s0 + (s1 - s0) * frac
+
+
+def val_area_criterion(model, d, device, mass=0.90, cov_floor=0.85):
+    """Checkpoint criterion for curriculum runs: median validation raw-HPD
+    area at `mass`, guarded by a raw-coverage floor (an epoch whose raw HPD
+    coverage collapses cannot win on sharpness alone).  Returns +inf when the
+    floor is violated.  Same quantity as the cross-variant selection rule."""
+    from conformal import region_mask
+    P = heatmaps(model, d, device).astype(np.float64)
+    n_cells = P.shape[1]
+    areas = np.empty(len(P))
+    covered = np.empty(len(P), dtype=bool)
+    for i in range(len(P)):
+        m = region_mask(P[i], 1.0 - mass)
+        areas[i] = m.sum() / n_cells
+        covered[i] = m[d["true_cell"][i]]
+    if covered.mean() < cov_floor:
+        return float("inf")
+    return float(np.median(areas))
 
 
 def teacher_ce(model, d, P_teacher, device, batch_size=512):
@@ -142,29 +180,37 @@ def d4_target_perms(n, device):
     return torch.tensor(inv, device=device)
 
 
-def train_one_seed(cfg, seed, device, distill=False):
+def train_one_seed(cfg, seed, device, distill=False, curriculum=False):
     tr = cfg["training"]
     torch.manual_seed(cfg["seeds"]["torch_train_base"] + seed
-                      + (5000 if distill else 0))
+                      + (9000 if curriculum else 5000 if distill else 0))
     np_rng = np.random.default_rng(seed)
 
     data_dir = resolve(cfg, "data_dir")
     d_train = load_split(data_dir, "train")
     d_val = load_split(data_dir, "val")
-    P_teacher = None
+    n_g = cfg["grid"]["n"]
+    P_teacher = P_train_raw = None
+    cur_sigma = None
+    cs = cfg["distill"]
     if distill:
         z = np.load(data_dir / "train_posterior.npz")
         assert (z["ids"] == d_train["ids"]).all()
-        P_teacher = torch.tensor(z["probs"].astype(np.float32))
-        inv_perms = d4_target_perms(cfg["grid"]["n"], device)
+        P_train_raw = torch.tensor(z["probs"].astype(np.float32))
+        inv_perms = d4_target_perms(n_g, device)
         zv = np.load(data_dir / "val_posterior.npz")
         assert (zv["ids"] == d_val["ids"]).all()
-        P_val_teacher = torch.tensor(zv["probs"].astype(np.float32))
-        mix = float(cfg["distill"].get("mix_lambda", 1.0))
-        blur = float(cfg["distill"].get("teacher_blur_std_cells", 0.0))
-        if blur > 0:
-            P_teacher = blur_teacher(P_teacher, cfg["grid"]["n"], blur)
-            P_val_teacher = blur_teacher(P_val_teacher, cfg["grid"]["n"], blur)
+        P_val_raw = torch.tensor(zv["probs"].astype(np.float32))
+        mix = float(cs.get("mix_lambda", 1.0))
+        if curriculum:
+            # selection criterion is fixed: CE vs the FINAL (sigma_end) teacher
+            P_val_teacher = blur_teacher(P_val_raw, n_g,
+                                         float(cs["curriculum_sigma_end"]),
+                                         device=device)
+        else:
+            blur = float(cs.get("teacher_blur_std_cells", 0.0))
+            P_teacher = blur_teacher(P_train_raw, n_g, blur, device=device)
+            P_val_teacher = blur_teacher(P_val_raw, n_g, blur, device=device)
 
     model = DeepSetsLocalizer(cfg).to(device)
     n_params = count_params(model)
@@ -188,7 +234,8 @@ def train_one_seed(cfg, seed, device, distill=False):
 
     ckpt_dir = resolve(cfg, "checkpoints_dir")
     ckpt_dir.mkdir(parents=True, exist_ok=True)
-    stem = f"model2_seed{seed}" if distill else f"seed{seed}"
+    stem = (f"model3_seed{seed}" if curriculum
+            else f"model2_seed{seed}" if distill else f"seed{seed}")
     ckpt_path = ckpt_dir / f"{stem}.pt"
     log_path = ckpt_dir / f"train_log_{stem}.csv"
 
@@ -198,6 +245,12 @@ def train_one_seed(cfg, seed, device, distill=False):
         writer = csv.writer(logf)
         writer.writerow(["epoch", "train_loss", "val_nll", "lr", "wall_s"])
         for epoch in range(max_epochs):
+            if curriculum:
+                sig_e = round(curriculum_sigma(epoch, cs), 4)
+                if sig_e != cur_sigma:
+                    P_teacher = blur_teacher(P_train_raw, n_g, sig_e,
+                                             device=device)
+                    cur_sigma = sig_e
             model.train()
             perm = np_rng.permutation(n_train)
             tot_loss, n_batches = 0.0, 0
@@ -231,7 +284,12 @@ def train_one_seed(cfg, seed, device, distill=False):
                 tot_loss += float(loss)
                 n_batches += 1
             sched.step()
-            if distill:
+            if curriculum:
+                # sharpness-first criterion with a raw-coverage floor: CE vs a
+                # sharp teacher penalizes slightly-misplaced sharpness so hard
+                # that it would select the blurry mid-anneal student
+                vnll = val_area_criterion(model, d_val, device)
+            elif distill:
                 # early-stop criterion matches the objective: mean CE of the
                 # model's val heatmaps against the exact val posteriors
                 vnll = teacher_ce(model, d_val, P_val_teacher, device)
@@ -243,13 +301,16 @@ def train_one_seed(cfg, seed, device, distill=False):
             if vnll < best_nll:
                 best_nll, best_epoch, since_best = vnll, epoch, 0
                 torch.save({"model_state": model.state_dict(), "arch": "v1",
-                            "distill": distill, "epoch": epoch, "val_nll": vnll,
+                            "distill": distill, "curriculum": curriculum,
+                            "epoch": epoch, "val_nll": vnll,
                             "seed": seed, "n_params": n_params}, ckpt_path)
-            else:
+            elif not curriculum or epoch >= int(cs["curriculum_anneal_end"]):
+                # curriculum runs may not early-stop before the anneal completes
                 since_best += 1
             if epoch % 10 == 0 or since_best == 0:
+                extra = f" sigma {cur_sigma:.2f}" if curriculum else ""
                 print(f"epoch {epoch:3d} loss {tot_loss/n_batches:.4f} "
-                      f"val_nll {vnll:.4f} best {best_nll:.4f}@{best_epoch}",
+                      f"val_nll {vnll:.4f} best {best_nll:.4f}@{best_epoch}{extra}",
                       flush=True)
             if since_best >= patience:
                 print(f"early stop at epoch {epoch}", flush=True)
@@ -267,6 +328,10 @@ def main():
                     help="override distill.mix_lambda")
     ap.add_argument("--teacher-blur", type=float, default=None,
                     help="override distill.teacher_blur_std_cells")
+    ap.add_argument("--curriculum", action="store_true",
+                    help="progressive teacher sharpening (tag model3; implies --distill)")
+    ap.add_argument("--sigma-end", type=float, default=None,
+                    help="override distill.curriculum_sigma_end")
     ap.add_argument("--config", default=None)
     args = ap.parse_args()
     cfg = load_config(args.config)
@@ -274,10 +339,14 @@ def main():
         cfg["distill"]["mix_lambda"] = args.mix_lambda
     if args.teacher_blur is not None:
         cfg["distill"]["teacher_blur_std_cells"] = args.teacher_blur
+    if args.sigma_end is not None:
+        cfg["distill"]["curriculum_sigma_end"] = args.sigma_end
+    if args.curriculum:
+        args.distill = True
     device = get_device()
 
     ckpt_path, best_nll, best_epoch, wall_h, n_params, d_val = \
-        train_one_seed(cfg, args.seed, device, args.distill)
+        train_one_seed(cfg, args.seed, device, args.distill, args.curriculum)
 
     # G2 evaluation on validation: model MAP vs peak-sensor heuristic
     model = DeepSetsLocalizer(cfg).to(device)
@@ -288,7 +357,8 @@ def main():
     gpu = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "cpu"
 
     results_dir = resolve(cfg, "results_dir")
-    key = f"model2_seed{args.seed}" if args.distill else f"seed{args.seed}"
+    key = (f"model3_seed{args.seed}" if args.curriculum
+           else f"model2_seed{args.seed}" if args.distill else f"seed{args.seed}")
     entry = {
         f"{key}_val_map_error_mean": m_mean,
         f"{key}_val_map_error_median": m_med,

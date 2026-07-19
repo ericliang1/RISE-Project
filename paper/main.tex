@@ -19,9 +19,9 @@
 
 \newcommand{\Cref}{C_{\mathrm{ref}}}
 
-\title{Conformal Source Regions for Sparse-Sensor Pollution
-Localization: A Benchmark with Exact Posteriors that
-Audits --- and Trains --- Learned Localizers}
+\title{Physics-Posterior Distillation: Narrowing the\\
+Amortization Gap in Calibrated Sparse-Sensor\\
+Source Localization}
 
 \author{%
   Anonymous Author(s)\\
@@ -35,551 +35,449 @@ Audits --- and Trains --- Learned Localizers}
 \maketitle
 
 \begin{abstract}
-When a gas leak or pollution release happens, responders must answer a deceptively
-simple question: \emph{where is it coming from?} --- increasingly from only a handful of
-cheap, fixed sensors. A learned localizer can output a heatmap of likely sources, but a
-heatmap alone does not say how much to trust it. We introduce a benchmark for
-uncertainty-aware source localization whose defining asset is the \emph{exact Bayesian
-posterior} of every scenario, shipped with the data, and show that this asset does double
-duty. \textbf{First, it audits.} Pairing split conformal prediction with the exact
-posteriors yields a preregistered three-way test of any localizer: calibration (do $90\%$
-regions cover $90\%$?), sharpness (are regions as tight as the data physically permit?),
-and a causal information dose--response (do regions track added sensors, geometry, and
-noise the way the physics dictates?). On a standard DeepSets baseline the verdict is
-differentiated: calibrated (conformal-on-exact-posterior attains $90.7\%$; the learned
-localizer $89.6\%$, with $87.5\%$ for a second seed quantified as a finite-sample
-fluctuation), but a median $5.6\times$ too wide --- the network, not the data, is the
-bottleneck --- and directionally correct on every knob at only half the oracle's magnitude.
-\textbf{Second, it trains.} Using the same shipped posteriors as a \emph{physics-derived
-training signal} --- distilling each scenario's exact posterior, mildly tempered, into the
-identical architecture on identical data --- sharpens regions to $3.9\times$ and nearly
-restores oracle-proportional sensor response ($0.47 \to 0.87$ slope ratio); raw
-(untempered) physics targets fail, an optimization finding in its own right. The study
-also surfaced a floating-point failure mode that silently destroys conformal coverage on
-sharp probability maps, among other portable implementation lessons. To our knowledge this
-is the first benchmark in this domain to ship exact per-scenario posteriors, the first to
-pair finite-sample conformal regions with an exact-posterior sharpness audit, and the
-first to test learned localization uncertainty causally through a controlled
-dose--response protocol.
+Amortized neural solvers for Bayesian inverse problems can be fast and, with conformal
+calibration, provably well-covered --- yet calibration says nothing about whether their
+uncertainty is unnecessarily broad. We study this \emph{amortization gap} in sparse-sensor
+pollution-source localization, where a tractable advection--diffusion simulator lets us
+compute the exact Bayesian posterior of every training and evaluation scenario. These
+exact posteriors serve twice: as dense, physics-derived \emph{supervision}, and as the
+\emph{reference} that measures how much of the Bayesian information limit a learned solver
+recovers. Standard location-label training produces a conformally calibrated DeepSets
+localizer whose $90\%$ regions are nevertheless a median $5.6\times$ larger than the
+exact-posterior regions, and which reacts to added sensors at only $47\%$ of the
+Bayes-optimal rate. Distilling mildly tempered exact posteriors into the \emph{identical}
+architecture --- changing only the training target --- reduces the median inefficiency to
+$3.9\times$ and raises the sensor-response ratio to $0.87$; raw, untempered posterior
+targets fail to optimize. Point accuracy barely changes
+throughout: the deficiency was posterior approximation, not localization. All coverage
+claims are conformally verified at matched $90\%$ coverage, separating calibration from
+sharpness. The simulator, frozen scenarios, exact per-scenario posteriors, and full
+pipeline are released.
 \end{abstract}
 
 \section{Introduction}
 
-Locating the source of an airborne pollutant from a sparse sensor network is a classic
-inverse problem whose legal stakes are rising. Under the U.S.\ EPA Super-Emitter Program,
-certified third parties notify operators of remotely detected methane events ($\geq$100
-kg/hr), and an operator within 50 m of the reported coordinates must investigate and report
-[U.S. EPA, 2024]; EU Regulation 2024/1787 mandates measurement, reporting, and verification
-of energy-sector methane [European Union, 2024]; and UNEP's Methane Alert and Response
-System delivered 1{,}200 satellite-based notifications in its first two years --- of which
-one per cent were responded to [UNEP, 2024]. When attributing an emission to a
-\emph{location} carries consequences, the \emph{uncertainty} of that attribution must
-itself be trustworthy: a localizer that is confidently wrong is worse than one that
-honestly reports ``somewhere in this larger region.''
+Neural amortized inference has made Bayesian inverse problems fast: a network trained on
+simulator draws maps observations to a posterior estimate in a millisecond, and split
+conformal prediction can wrap that estimate into regions with finite-sample coverage
+guarantees. For decision-relevant inverse problems --- our running example is locating a
+pollutant release from a handful of fixed sensors, a task with growing regulatory stakes
+[U.S. EPA, 2024; European Union, 2024; UNEP, 2024] --- this combination looks like
+everything one could ask for: speed and provable calibration. It is not. Coverage is a
+statement about \emph{frequency}, not \emph{efficiency}: a $90\%$ region that covers
+$90\%$ of the time may still be far larger than the observations warrant, and a localizer
+that is calibrated but vague fails the responder who must decide where to send a crew.
 
-Three properties matter. \textbf{Calibration} (trustworthiness): a claimed $90\%$ region
-should contain the true source $90\%$ of the time. \textbf{Sharpness} (actionability):
-among calibrated regions, smaller is better, and a region should be as tight as the data
-physically allow --- a large region is itself a signal that the sensor network is
-inadequate. \textbf{Dose--response stability} (trust under change): sensors are added and
-lost constantly, so a region should shrink when information arrives and grow when it is
-removed, tracking what an oracle would do.
+The obstacle to doing better is the supervision itself. Standard training data provide
+only the \emph{realized} parameter --- ``the source for this example was here'' --- so the
+network is never shown what its uncertainty \emph{should} look like: which alternative
+locations also explain the readings, when the posterior should form a ridge or split into
+modes, how much an additional sensor should tighten the answer. Posterior shape must be
+inferred statistically across many one-label examples, and the same limitation afflicts
+evaluation: without a reference posterior, one cannot say whether a calibrated region is
+efficient or bloated. \textbf{Our core observation is that when training data come from a
+tractable simulator --- as they do throughout simulation-based inference --- the complete
+Bayesian posterior of every training scenario can be computed offline and used both ways:
+as a dense, physics-derived teacher, and as the reference standard that measures how much
+of the Bayesian information limit the amortized solver recovers.}
 
-\paragraph{Contributions.} Three, in order of emphasis:
-\textbf{(1) A benchmark whose central asset is exact posteriors.} A controlled
-advection--diffusion simulator with an analytic Green's-function forward model, a frozen
-14{,}000-scenario benchmark, constructed dose--response sets --- and, for every scenario,
-the \emph{exact grid posterior} of the source location, shipped with the artifact. The
-posteriors power a preregistered three-way audit of any localizer: finite-sample
-conformal calibration, a sharpness audit against the physical information limit, and a
-causal information dose--response protocol.
-\textbf{(2) A preregistered audit of a standard recipe.} We deliberately assemble
-off-the-shelf components --- DeepSets [Zaheer et al., 2017] and split conformal prediction
-[Angelopoulos and Bates, 2021] --- and measure whether the resulting uncertainty is
-calibrated, sharp, and stable (it is calibrated; it is not sharp; Sec.~\ref{sec:h1}--\ref{sec:h3}).
-\textbf{(3) The posteriors double as a training signal.} Distilling each scenario's exact
-posterior --- tempered to a learnable sharpness --- into the \emph{identical} architecture
-on \emph{identical} data substantially improves every uncertainty-quality metric the audit
-measures (exploratory, validation-selected; Secs.~\ref{sec:distillmethod},
-\ref{sec:distill}).
-Verbatim: \emph{To our knowledge, this is the first public benchmark in this domain to
-ship exact per-scenario posteriors, the first study to combine finite-sample conformal
-spatial regions with an exact-posterior sharpness audit for sparse-sensor atmospheric
-advection--diffusion source localization, and the first to test learned localization
-uncertainty causally via a controlled information dose--response protocol against exact
-posteriors.} We claim no new conformal algorithm, no new architecture, no coverage under
-distribution shift, no field deployability, and no abstention capability; the distillation
-recipe is an application of teacher--student learning whose teacher is exact physics
-rather than another network.
+\paragraph{Contributions.}
+\textbf{(1) Physics-posterior distillation for amortized inverse problems.} We formulate
+training against exact simulator posteriors as soft targets (Sec.~\ref{sec:m1}),
+symmetry-consistently augmented, and show that changing \emph{only} the supervision ---
+same architecture, data, optimizer, and inference cost --- substantially improves
+uncertainty quality: median calibrated-region inefficiency $5.6\times \to 3.9\times$,
+sensor-response ratio $0.47 \to 0.87$, with point accuracy nearly unchanged. We further
+identify a necessary ingredient: \emph{raw} exact-posterior targets fail to optimize;
+mild Gaussian tempering of the teacher is what makes the physics signal learnable.
+\textbf{(2) An exact-posterior audit of the amortization gap.} Applying the identical
+conformal procedure to learned and exact posteriors places both at verified $90\%$
+coverage, so region-size ratios isolate sharpness from calibration; a controlled
+dose--response protocol measures whether learned uncertainty reacts to added sensors,
+degraded geometry, and noise in Bayes-proportional fashion (Sec.~\ref{sec:audit}). The
+enabling infrastructure --- simulator, frozen splits, per-scenario exact posteriors, and a
+preregistered evaluation protocol with validation gates --- is released as a public
+benchmark.
 
 \paragraph{Findings at a glance.}
-(i)~\textbf{H1:} the conformal machinery is sound --- applied to the exact posterior it
-attains $90.7\%$ coverage; the learned localizer attains $89.6\%$ (seed 2) and $87.5\%$
-(seed 1, a quantified $p = 0.0045$ finite-sample fluctuation; Sec.~\ref{sec:h1}).
-(ii)~\textbf{H2:} calibrated is not sharp --- learned regions are a median $5.6\times$
-larger than the data permit; the network, not the data, is the bottleneck
-(Sec.~\ref{sec:h2}).
-(iii)~\textbf{H3:} the learned regions respond in the physically correct direction on all
-three information knobs, at roughly half the oracle's magnitude (Sec.~\ref{sec:h3}).
-(iv)~\textbf{The benchmark trains as well as it audits:} distilling its shipped exact
-posteriors --- mildly tempered --- into the \emph{same} model on the \emph{same} data
-sharpens regions to $3.9\times$ and lifts the sensor-response slope ratio from $0.47$ to
-$0.87$; raw physics targets fail (Secs.~\ref{sec:distillmethod}, \ref{sec:distill}).
-(v)~Three implementation lessons that transfer beyond this benchmark: the standard
-conformal score silently saturates in floating point on sharp heatmaps; fixed-node rate
-quadrature cannot marginalize peaked likelihoods; and at this data scale the specified
-architecture memorizes unless the problem's exact symmetry group is injected as
-augmentation (Secs.~\ref{sec:conformal}--\ref{sec:oracle}, \ref{sec:deepsets}).
+(i) Point-label supervision yields calibration without efficiency: $5.6\times$ median
+inefficiency and half-strength information response (Sec.~\ref{sec:r-m0}).
+(ii) Fixed tempered physics-posterior distillation recovers a third of the sharpness gap
+and most of the sensor-response gap; raw teachers are an optimization trap
+(Sec.~\ref{sec:r-m1}).
+(iii) The residual gap to the Bayes limit --- $3.9\times$ at the median --- quantifies
+what amortization leaves on the table at this data scale (Sec.~\ref{sec:r-gap}).
+(iv) Portable implementation lessons: the standard conformal score silently saturates in
+floating point on sharp probability maps; fixed-node rate quadrature cannot marginalize
+peaked likelihoods; the specified architecture memorizes without symmetry augmentation
+(Secs.~\ref{sec:conformal}--\ref{sec:oracle}, \ref{sec:m0}).
 
 \section{Related Work}
 
-\paragraph{Source term estimation and Bayesian inversion.} Estimating the location and rate of an
-atmospheric release is reviewed by Hutchinson et al.\ [2017]. Bayesian/MCMC plume inversion
-[Newman et al., 2024] quantifies uncertainty rigorously but is per-scenario and heavy, and
-its credibility depends on the assumed dispersion model. Physics-informed neural networks
-recover advection--diffusion sources [Chuprov et al., 2025, Anague et al., 2025] but
-provide no finite-sample coverage. ``Information density'' in inverse problems [Bangerth
-et al., 2022] formalizes why some regions are recoverable and others are not.
+\paragraph{Simulation-based inference and posterior distillation.} Amortized neural
+posterior estimation trains on simulator draws and is the standard route to fast Bayesian
+inversion. Closest to our method, Distill-Belief [Shi et al., 2026] distills a
+Bayes-correct particle-filter teacher into a student for closed-loop source localization;
+we distill \emph{exact grid posteriors} with an explicit tempering/annealing treatment and
+measure the result against the same posteriors at matched conformal coverage. CP4SBI
+[Cabezas et al., 2025] conformally calibrates SBI credible sets but does not use
+posteriors as supervision nor audit sharpness against an exact reference.
 
-\paragraph{Conformal prediction for localization and inverse problems.} Conformal prediction
-[Angelopoulos and Bates, 2021] has recently reached localization: acoustic source
-localization with Gaussian processes [Rozenfeld and Laufer-Goldshtein, 2025]; task-driven
-UQ for imaging inverse problems [Wen et al., 2024]; multi-source detection on networks
-[Jian et al., 2026]; anatomical landmark localization [Jonkers et al., 2025]. Edwards and
-Smith [2025] treat radiological plume identification with categorical and Bayesian
-networks. Distill-Belief [Shi et al., 2026] distills a Bayes-correct particle-filter
-teacher for closed-loop source localization --- closest in spirit to our post-hoc
-physics-distilled variant (Sec.~\ref{sec:distill}). Closest in machinery, CP4SBI [Cabezas
-et al., 2025] conformally calibrates simulation-based-inference credible sets, but with no
-atmospheric domain, no exact-posterior sharpness audit, and no dose--response protocol.
+\paragraph{Conformal prediction for localization and inverse problems.} Conformal methods
+provide distribution-free coverage for acoustic localization [Rozenfeld and
+Laufer-Goldshtein, 2025], imaging inverse problems [Wen et al., 2024], network source
+detection [Jian et al., 2026], and anatomical landmarks [Jonkers et al., 2025]. We use
+conformal prediction not as a contribution but as a \emph{control}: it equalizes coverage
+across models so that region size becomes a pure sharpness measurement.
 
-\paragraph{Positioning.} Along five axes --- (A) amortized inference, (B) finite-sample region
-coverage, (C) audit vs.\ an exact/reference posterior, (D) controlled causal test of
-uncertainty, (E) sparse atmospheric sensors --- prior work occupies subsets
-(Table~\ref{tab:positioning}); this study is the first to occupy all five simultaneously.
+\paragraph{Source term estimation.} Atmospheric source term estimation is reviewed by
+Hutchinson et al.\ [2017]; Bayesian/MCMC plume inversion [Newman et al., 2024] is
+rigorous but per-scenario and slow; physics-informed neural networks recover
+advection--diffusion sources [Chuprov et al., 2025; Anague et al., 2025] without
+finite-sample coverage. ``Information density'' in inverse problems [Bangerth et al.,
+2022] formalizes recoverability; our exact-posterior audit operationalizes a closely
+related question --- how much of the recoverable information an amortized solver uses.
 
-\begin{table}[t]
-  \caption{Positioning matrix. \checkmark\ = addressed; (\checkmark) = partially. Axes: A amortized inference,
-  B finite-sample region coverage, C audit vs.\ exact/reference posterior, D controlled causal test of
-  uncertainty, E sparse atmospheric sensors.}
-  \label{tab:positioning}
-  \centering
-  \small
-  \begin{tabular}{lccccc}
-    \toprule
-    Work & A & B & C & D & E \\
-    \midrule
-    PINN plume inversion [Chuprov et al., 2025, Anague et al., 2025] & (\checkmark) & & & & \checkmark \\
-    Bayesian/MCMC STE [Newman et al., 2024] & & & (\checkmark) & & \checkmark \\
-    Conformal acoustic loc. [Rozenfeld and Laufer-Goldshtein, 2025] & (\checkmark) & \checkmark & & & \\
-    Conformal imaging UQ [Wen et al., 2024] & (\checkmark) & \checkmark & & & \\
-    Conformal network detection [Jian et al., 2026] & (\checkmark) & \checkmark & & & \\
-    Distill-Belief [Shi et al., 2026] & \checkmark & & \checkmark & & (\checkmark) \\
-    CP4SBI [Cabezas et al., 2025] & \checkmark & \checkmark & & & \\
-    \textbf{This work} & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+\section{Setup: Simulator, Observations, and Exact Posteriors}
+\label{sec:setup}
 
-\section{Problem Setup and Physics}
-
-A scalar concentration $C(\boldsymbol{x}, t)$ on $\Omega = [0, 1]^2$, $t \in (0, 1]$, is
-transported by a constant wind $\boldsymbol{u} = (u, v)$ and isotropic diffusion $D$:
-\begin{equation}
-\frac{\partial C}{\partial t} + u \frac{\partial C}{\partial x} + v \frac{\partial C}{\partial y}
-= D \left( \frac{\partial^2 C}{\partial x^2} + \frac{\partial^2 C}{\partial y^2} \right) + S(\boldsymbol{x}, t),
-\qquad \boldsymbol{x} \in \Omega,\ t \in (0, 1].
-\label{eq:pde}
-\end{equation}
-For a continuous point release at $\boldsymbol{x}_s$ switched on at $t = 0$, regularized by a small
-source blob of width $\sigma_s = 1/128$, the unit-rate response is the superposition of
-spreading, advected Gaussians:
+A scalar concentration on $\Omega = [0,1]^2$ obeys the constant-coefficient
+advection--diffusion equation with wind $\boldsymbol{u}$, diffusivity $D$, and a continuous
+point release of rate $q$ at $\boldsymbol{x}_s$ regularized by a blob of width
+$\sigma_s = 1/128$; the unit-rate sensor response has the closed Green's-function form
 \begin{equation}
 A(\boldsymbol{x}, t; \boldsymbol{x}_s, \boldsymbol{u}, D)
 = \int_0^t \frac{1}{\pi\, w_s} \exp\!\left(-\frac{\lVert \boldsymbol{x} - \boldsymbol{x}_s - \boldsymbol{u}\, s\rVert^2}{w_s}\right) \mathrm{d}s,
-\qquad w_s = 4 D s + 2\sigma_s^2 .
+\qquad w_s = 4 D s + 2\sigma_s^2 ,
 \label{eq:greens}
 \end{equation}
-The age integral is evaluated by 64-node Gauss--Legendre quadrature after the log-age
-substitution $s = t\, e^{-\tau}$, $\tau \in [0, 12]$ (bound tuned empirically;
-Appendix~\ref{app:quadrature}); responses are generated in \texttt{float32} and validated
-in \texttt{float64}. A release of rate $q$ produces field $q A$.
+evaluated by 64-node Gauss--Legendre quadrature after a log-age substitution
+(validated in Appendix~\ref{app:quadrature}). Sensor $i$ takes 30 noisy normalized
+readings $y_{ik} = q A(\boldsymbol{x}_i, t_k)/\Cref + \varepsilon_{ik}$,
+$\varepsilon_{ik} \sim \mathcal{N}(0, \sigma^2)$, with Bernoulli reading dropout (dropped
+readings omitted, never imputed). Scenario parameters are drawn from the prior of
+Table~\ref{tab:prior}; splits (10k/1k/2k/2k) are by complete scenario. A gallery of
+scenarios and benchmark statistics are in Appendix~\ref{app:gallery}
+(Figures~\ref{fig:gallery}--\ref{fig:stats}).
 
-\paragraph{Observation model.} Sensor $i$ at $\boldsymbol{x}_i$ takes 30 readings at $t_k = k/30$:
-\begin{equation}
-y_{ik} = \frac{q\, A(\boldsymbol{x}_i, t_k; \boldsymbol{x}_s, \boldsymbol{u}, D)}{\Cref} + \varepsilon_{ik},
-\qquad \varepsilon_{ik} \sim \mathcal{N}(0, \sigma^2),
-\label{eq:obs}
-\end{equation}
-with independent Bernoulli reading dropout; dropped readings are \emph{omitted}, never
-imputed, so the model must handle variable-length inputs. The data-generation prior is in
-Table~\ref{tab:prior}. Splits are by \emph{complete scenario} to prevent leakage
-(Sec.~\ref{sec:protocol}).
+\paragraph{Exact posteriors.} For candidate cell $c$ of a $64 \times 64$ grid with
+unit-rate response vector $\boldsymbol{g}_c$ at the (known) meteorology,
+$p(\boldsymbol{y} \mid c, q) = \mathcal{N}(\boldsymbol{y}; q\boldsymbol{g}_c, \sigma^2\mathbf{I})$; marginalizing
+$q$ over its LogUniform prior and normalizing over cells yields the exact grid posterior
+$p(c \mid \boldsymbol{y})$ --- exact with respect to the synthetic simulator and its grid
+discretization, not real atmospheric physics. It uses the true meteorology and noise
+level: the tightest honest region the data permit. Numerical care is required: the
+$q$-likelihood peak can be $\sim\!1000\times$ narrower than fixed quadrature node spacing,
+so we use a peak-aware composite rule validated to $<10^{-6}$
+(Sec.~\ref{sec:oracle}, Appendix~\ref{app:sanity}). Posteriors are computed offline for
+\emph{all} splits --- for train and validation they become teachers
+(Sec.~\ref{sec:m1}); for calibration and test they become the audit
+reference (Sec.~\ref{sec:audit}).
 
 \begin{table}[t]
-  \caption{Benchmark data-generation prior. All quantities sampled independently per scenario.
-  LogUniform$(a, b)$ is uniform in $\log$-space.}
+  \caption{Data-generation prior (sampled independently per scenario;
+  LogUniform$(a,b)$ is uniform in $\log$-space).}
   \label{tab:prior}
   \centering
   \small
-  \begin{tabular}{lll}
+  \begin{tabular}{lll@{\qquad}lll}
     \toprule
-    Quantity & Symbol & Distribution \\
-    \midrule
-    Source location & $\boldsymbol{x}_s$ & Uniform$([0.1, 0.9]^2)$ \\
-    Release rate & $q$ & LogUniform$(0.5, 5)$ \\
-    Wind speed & $\lVert\boldsymbol{u}\rVert$ & Uniform$(0.5, 2.0)$ \\
-    Wind direction & $\theta_u$ & Uniform$(0, 2\pi)$ \\
-    Diffusivity & $D$ & LogUniform$(0.002, 0.02)$ \\
-    Sensor count & $N$ & Uniform integer $\{4, \ldots, 12\}$ \\
-    Sensor positions & $\boldsymbol{x}_i$ & i.i.d.\ Uniform$([0, 1]^2)$ \\
-    Noise std & $\sigma$ & LogUniform$(0.01, 0.10)$ \\
-    Reading dropout & $p_{\mathrm{drop}}$ & Uniform$(0, 0.20)$ \\
-    Observation times & $t_k$ & $k/30,\ k = 1, \ldots, 30$ \\
-    \midrule
-    Train / Val / Calib / Test & & 10{,}000 / 1{,}000 / 2{,}000 / 2{,}000 \\
-    Dose--response base scenarios & & 50 (12-sensor master layouts) \\
+    Source location & $\boldsymbol{x}_s$ & U$([0.1, 0.9]^2)$ &
+    Sensor count & $N$ & U int $\{4..12\}$ \\
+    Release rate & $q$ & LogU$(0.5, 5)$ &
+    Sensor positions & $\boldsymbol{x}_i$ & i.i.d.\ U$([0, 1]^2)$ \\
+    Wind speed & $\lVert\boldsymbol{u}\rVert$ & U$(0.5, 2.0)$ &
+    Noise std & $\sigma$ & LogU$(0.01, 0.10)$ \\
+    Wind direction & $\theta_u$ & U$(0, 2\pi)$ &
+    Reading dropout & $p_{\mathrm{drop}}$ & U$(0, 0.20)$ \\
+    Diffusivity & $D$ & LogU$(0.002, 0.02)$ &
+    Observation times & $t_k$ & $k/30$, $k \leq 30$ \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \section{Method}
 
-\subsection{Amortized posterior (DeepSets classifier)}
-\label{sec:deepsets}
+\subsection{M0: amortized posterior estimation and its supervision gap}
+\label{sec:m0}
 
-The localizer is a permutation-invariant DeepSets network [Zaheer et al., 2017] of
-4{,}869{,}568 parameters, chosen deliberately as a standard, unremarkable architecture.
-Each retained reading is tokenized as
-$\boldsymbol{z}_{ik} = [\, \mathrm{Fourier}(x_i), \mathrm{Fourier}(y_i),
-\mathrm{Fourier}(t_k), \operatorname{asinh}(y_{ik}/\sigma) \,]$
-with frequencies $\{1, 2, 4, 8\}$. A per-token MLP ($\to 256 \to 256$, GELU + LayerNorm)
-embeds each token; embeddings are pooled by \emph{both} masked mean and masked max,
-concatenated; a context MLP ($5 \to 64 \to 64$) encodes $(u, v, \log D, \log \sigma, N)$;
-a decoder ($576 \to 1024 \to 4096$) produces a softmax $P_j(\cdot)$ over a $64 \times 64$
-grid. Training minimizes cross-entropy to a smoothed target (Gaussian bump, std 0.75
-cells, truncated at $3\sigma$, centered on the true source): AdamW, lr $3\times10^{-4}$
-cosine-decayed to $3\times10^{-5}$, weight decay $10^{-4}$, batch 256, $\leq 200$ epochs,
-early stopping on validation NLL (patience 25), mixed precision, two seeds. Because
-targets are sampled from the prior, the softmax is an \emph{amortized approximation to the
-grid posterior} $p(c \mid \boldsymbol{y})$.
+The estimator (fixed across all methods) is a permutation-invariant DeepSets network
+[Zaheer et al., 2017] of 4.87M parameters: Fourier-featurized reading tokens
+$[\mathrm{Fourier}(x_i), \mathrm{Fourier}(y_i), \mathrm{Fourier}(t_k),
+\operatorname{asinh}(y_{ik}/\sigma)]$, a shared token MLP, masked mean+max pooling, a
+meteorology-context MLP, and a decoder producing a softmax over the $64^2$ grid. Baseline
+supervision is the standard one: cross-entropy to a smoothed one-hot target (Gaussian
+bump, std 0.75 cells) at the realized source; AdamW, cosine schedule, batch 256, early
+stopping on validation NLL, two-plus seeds. One protocol amendment proved necessary: each
+batch receives a random D4 symmetry of the square applied jointly to sensors, wind, and
+source --- an exact simulator symmetry under which the prior is invariant --- without which
+this architecture \emph{memorizes} the 10k training scenarios with zero generalization
+(Appendix~\ref{app:training}). The supervision gap is structural: the realized location
+tells the network nothing per-example about ambiguity ridges, multimodality, or how
+uncertainty should respond to the sensor configuration.
 
-\paragraph{Amendment: symmetry augmentation (deviation).}
-As preregistered, this recipe \emph{memorizes}: training NLL falls to 1.5 while validation
-NLL never beats the uniform level ($\approx 7.96$; $\log 4096 = 8.32$) and validation MAP
-error (0.44) is worse than the peak-sensor baseline (0.37) --- verified not attributable to
-mixed precision, learning rate, or the context branch. We therefore apply to each batch a
-random D4 symmetry of the unit square (rotation $k \cdot 90^{\circ}$ + reflection) jointly
-to sensors, wind, and source --- an \emph{exact} physics symmetry (validated to
-$2\times10^{-13}$) under which the prior is invariant, so augmented scenarios are exact
-prior draws. Nothing else changes; validation NLL then tracks training loss with no
-overfitting gap. Finding: at this data scale the benchmark \emph{requires} symmetry
-augmentation to be learnable by the specified architecture.
+\subsection{M1: physics-posterior distillation with a fixed tempered teacher}
+\label{sec:m1}
 
-\subsection{Conformal regions}
+We replace the target with the scenario's exact posterior, tempered by an isotropic
+Gaussian of $\sigma_T = 0.75$ cells (matching the baseline bump):
+\begin{equation}
+\mathcal{L}_{\mathrm{distill}}(\theta)
+= - \sum_{c} \big[ G_{\sigma_T} * p(\cdot \mid \boldsymbol{y}) \big](c)\,
+  \log p_\theta(c \mid \boldsymbol{y}),
+\label{eq:distill}
+\end{equation}
+with the teacher grid permuted by the exact same D4 element as the inputs under
+augmentation (tempering is isotropic, so it commutes with the permutation). Early
+stopping uses validation teacher cross-entropy --- the criterion must match the
+objective: selecting by true-cell NLL, under which the sharp teacher itself scores
+poorly, truncates training and \emph{worsens} sharpness ($10.8\times$). Everything else
+--- architecture, data, optimizer, schedule, inference cost --- is unchanged from M0.
+Figure~\ref{fig:targets} contrasts the three supervision signals on one scenario:
+the point-label bump carries no ambiguity structure, the raw posterior is too sharp to
+optimize, and the tempered teacher preserves the physics shape at a learnable scale.
+Tempering is not cosmetic: with the raw teacher ($\sigma_T = 0$), training fails
+outright (Sec.~\ref{sec:r-m1}), and a smooth-to-sharp teacher annealing schedule we
+explored did not improve on the fixed temper (Appendix~\ref{app:training}).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig7_targets.pdf}
+  \caption{\textbf{Three supervision signals} for the same scenario (star = true
+  source; triangles = sensors). Left: the standard smoothed point-label target (M0).
+  Center: the raw exact posterior --- Bayes-optimal but an optimization trap.
+  Right: the tempered teacher used by M1 --- the same physics shape at a learnable
+  sharpness.}
+  \label{fig:targets}
+\end{figure}
+
+\subsection{Conformal regionization: separating calibration from sharpness}
 \label{sec:conformal}
 
-With $P_j$ the heatmap for calibration scenario $j$ and $c^\star_j$ the true cell, we use
-the randomized highest-density-mass score
-\begin{equation}
-s_j \;=\; \sum_{c:\, P_j(c) > P_j(c^\star_j)} P_j(c) \;+\; U_j \cdot \sum_{c:\, P_j(c) = P_j(c^\star_j)} P_j(c),
-\qquad U_j \sim \mathrm{Uniform}(0, 1).
-\label{eq:score}
-\end{equation}
-With $n = 2000$ and $\alpha = 0.10$, the threshold $\hat{q}$ is the
-$\lceil (n+1)(1-\alpha) \rceil$-th smallest score; the region is the smallest set of
-top-ranked cells whose cumulative mass reaches $\hat{q}$. Under exchangeability,
-$\Pr( c^\star \in \mathcal{C}_\alpha(\boldsymbol{y}) ) \geq 1 - \alpha$
---- a guarantee that is \emph{marginal}, \emph{in-distribution}, \emph{not conditional},
-and does \emph{not} survive distribution shift.
+All models (and the exact posteriors themselves) are wrapped by the identical randomized
+highest-density-mass split conformal procedure: score
+$s_j = \sum_{c: P_j(c) > P_j(c^\star_j)} P_j(c) + U_j \cdot (\text{tied mass})$ on 2000
+calibration scenarios, threshold at the $\lceil (n{+}1)(1{-}\alpha)\rceil$-th smallest
+score, regions filled by descending probability. Under exchangeability every wrapped model
+enjoys $\Pr(c^\star \in \mathcal{C}_\alpha) \geq 1-\alpha$ --- marginal, in-distribution,
+not conditional, and not shift-robust. This is the control that makes sharpness
+measurable: with coverage equalized by construction, region size differences reflect
+posterior quality alone. One numerical amendment is mandatory on sharp maps: the
+exceedance mass $1 - \epsilon$ with $\epsilon \sim 10^{-30}$ rounds to exactly $1.0$,
+creating a score atom that silently destroyed coverage ($0.84$ instead of $0.90$ on the
+exact posterior); we compute throughout in complement (tail-mass) space, which is
+exact-arithmetic-equivalent and representable at both ends
+(thresholds reach $4\times10^{-199}$).
 
-\paragraph{Amendment: numerically safe implementation.}
-For sharp heatmaps, $s_j = 1 - \epsilon$ with $\epsilon$ down to $10^{-30}$ rounds to
-exactly $1.0$ (catastrophic cancellation), creating an atom of tied scores that silently
-breaks the region rule: conformal-on-exact-posterior covered $0.84$ instead of $0.90$
-when Eq.~\eqref{eq:score} was evaluated naively. We compute throughout with the complement
-tail mass $t_j = 1 - s_j$ (exact in exact arithmetic, representable at both ends ---
-$t$-thresholds reach $4\times10^{-199}$), building regions by excluding the largest
-ascending-mass tail. Coverage semantics are unchanged. Caution: this failure mode awaits
-any conformal pipeline over sharp probability maps.
-
-\subsection{Exact-posterior oracle}
+\subsection{Measurement: the exact-posterior audit}
+\label{sec:audit}
 \label{sec:oracle}
 
-For each candidate cell $c$ with unit-rate response $\boldsymbol{g}_c$ at the known meteorology,
-$p(\boldsymbol{y} \mid c, q) = \mathcal{N}(\boldsymbol{y};\ q \boldsymbol{g}_c,\ \sigma^2 \mathbf{I})$; the rate is
-marginalized over LogUniform$(0.5, 5)$ and the posterior normalized over all 4096 cells:
-\begin{equation}
-p(\boldsymbol{y} \mid c) = \int p(\boldsymbol{y} \mid c, q)\, \pi(q)\, \mathrm{d}q,
-\qquad
-p(c \mid \boldsymbol{y}) = \frac{p(\boldsymbol{y} \mid c)}{\sum_{c'} p(\boldsymbol{y} \mid c')}.
-\label{eq:posterior}
-\end{equation}
-This oracle uses the true meteorology and noise level: it is the tightest honest region
-the data permit, and the reference for H2/H3.
-
-\paragraph{Amendment: peak-aware rate quadrature (deviation).}
-The preregistered fixed 32-node Gauss--Legendre rule in $\log q$ is inadequate: the
-integrand is a Gaussian in $q$ of width $\sigma / \lVert \boldsymbol{g}_c \rVert$ --- up to
-$\sim\!1000\times$ narrower than the node spacing --- yielding log-posterior errors of many
-nats. We split $[0.5, 5]$ per cell at $\hat{q}_c \pm 8\,\sigma/\lVert \boldsymbol{g}_c\rVert$
-($\hat{q}_c = \langle \boldsymbol{y}, \boldsymbol{g}_c\rangle / \lVert \boldsymbol{g}_c \rVert^2$) with 32 peak +
-$2{\times}16$ outer nodes, in \texttt{float64} log-space; validated against a $10\times$
-deep rule and a 200{,}000-node trapezoid to $<10^{-6}$ (Appendix~\ref{app:sanity}).
-
-\subsection{Dose--response protocol}
-\label{sec:dose}
-
-We manipulate information content on constructed scenario sets and measure how learned and
-exact region areas respond. \textbf{Knob 1 (sensor count):} nested subsets
-$N = 4, \ldots, 12$ of a fixed 12-sensor master layout in a fixed insertion order --- each
-added sensor is a controlled intervention. \textbf{Knob 2 (geometry):} matched pairs at
-$N = 6$, stratified well-spread vs.\ confined single-quadrant (directional ambiguity).
-\textbf{Knob 3 (noise):} a $\sigma$ sweep across $[0.01, 0.10]$ with regenerated readings.
-All manipulations stay in-support; dose--response sets use $p_{\mathrm{drop}} = 0$ so
-interventions are unconfounded. \emph{Wording discipline:} constructed layouts are not
-exchangeable prior draws, so we report region-\emph{size} behavior only on these sets; the
-coverage claim lives exclusively on the random test split.
-
-\subsection{Physics-likelihood distillation: the posteriors as a training signal}
-\label{sec:distillmethod}
-
-The exact posteriors of Sec.~\ref{sec:oracle} are not only an audit reference --- they are
-the Bayes-optimal \emph{training target}. In the baseline recipe each scenario teaches the
-network one thing (``the source was here''); the posterior target teaches the full answer,
-including its shape --- the downwind ambiguity ridge, the multimodal arc behind a confined
-sensor cluster, the tightening that an extra sensor should produce. We therefore train the
-\emph{identical} architecture, on the \emph{identical} 10k scenarios, with the identical
-optimizer, schedule, and augmentation, replacing the smoothed one-hot target with the
-scenario's exact posterior (Eq.~\eqref{eq:posterior}) --- \emph{tempered} by the same
-0.75-cell Gaussian used for the baseline target; under D4 augmentation the target grid is
-permuted by the exact same symmetry. Two implementation rules proved make-or-break:
-(i) \textbf{temper the teacher} --- raw, near-delta posterior targets are an optimization
-trap (validation region area $0.197$, worse than the baseline); (ii) \textbf{early-stop on
-validation teacher cross-entropy}, not true-cell NLL --- the sharp teacher has poor
-true-cell NLL by construction, and the mismatched criterion truncates training and
-\emph{worsens} sharpness ($10.8\times$). Five loss variants (mixture weight
-$\lambda \in \{1, 0.75, 0.5\}$; raw or tempered teacher) were compared by a pre-stated
-validation-only rule (minimum median validation $90\%$-HPD area); the test split was
-evaluated once, for the winner (tempered teacher, $\lambda = 1$). This recipe is
-exploratory (not preregistered) and requires a tractable per-scenario posterior at
-training time --- available by construction wherever training data come from a simulator,
-as here and in simulation-based inference generally.
-
-\section{Experimental Protocol and Preregistered Analyses}
-\label{sec:protocol}
-
-\paragraph{Baselines.} (i) A \emph{peak-sensor heuristic}: point estimate at the sensor with the
-largest time-integrated concentration. (ii) The \emph{exact posterior} (oracle).
-
-\paragraph{Preregistered hypotheses.} \textbf{H1 (calibration):} conformal regions attain verified
-$90\%$ marginal coverage on the test split (exact Clopper--Pearson $95\%$ interval).
-\textbf{H2 (sharpness):} learned region area tracks exact-posterior area at matched
-coverage --- the identical conformal procedure is applied to the exact posteriors, and we
-report the per-scenario Spearman correlation and the mean/median area ratio
-(\emph{inefficiency factor}). \textbf{H3 (dose--response):} under each knob, learned area
-responds monotonically in the same direction and comparable proportion as exact area
-(contraction-slope ratios; per-knob Spearman). \textbf{D1 (descriptive):} learned area
-vs.\ MAP error. Headline metrics: MAP error; coverage@90\% with CP interval; region area;
-H2 Spearman + inefficiency; H3 slope ratios + correlations. Appendix-only: NLL, JSD,
-percentiles, $80\%/95\%$ levels, latency.
-
-\paragraph{Validation gates.} Quadrature convergence; FD solver cross-check ($<1\%$ rel.\ $L_2$);
-symmetry/linearity; exact-posterior sanity (normalization, $\sigma \to 0$ mode recovery,
-broad posteriors for poor layouts, conformal-on-exact at nominal coverage, monotone area
-in $q$ and $\sigma$, brute-force likelihood cross-check); scenario-ID leakage audit;
-$96 \times 96$ grid refinement. All measured values in Appendices~\ref{app:quadrature}--\ref{app:refine}.
-
-\paragraph{Deviations from the preregistration (complete list).}
-Each forced by a correctness failure or ill-posedness caught by the pipeline's own
-blocking gates: (i) D4 augmentation (Sec.~\ref{sec:deepsets}); (ii) tail-space conformal
-scores (Sec.~\ref{sec:conformal}); (iii) peak-aware rate quadrature
-(Sec.~\ref{sec:oracle}); (iv) sanity-check well-posedness --- cell-centered sanity
-sources, identifiability conditioning, $\sigma = 10^{-6}$ (Appendix~\ref{app:sanity});
-(v) grid refinement on the full test split (100-scenario windows are too noisy:
-coverage $0.79$--$0.97$; Appendix~\ref{app:refine}); (vi) absolute-error FD gating for
-no-signal scenarios (Appendix~\ref{app:quadrature}). No hypothesis, metric, or split was
-changed after seeing data. The physics-distilled variant of Sec.~\ref{sec:distill} is a
-clearly-labeled post-hoc \emph{addition}, selected on validation only.
+Three preregistered measurements, all on held-out data. \textbf{Calibration (H1):}
+empirical coverage at $90\%$ with exact Clopper--Pearson intervals. \textbf{Sharpness
+(H2):} with learned and exact regions both at verified $90\%$ conformal coverage, the
+per-scenario area ratio (learned/exact) --- the \emph{inefficiency factor} --- and the
+Spearman correlation of areas. An inefficiency of $1$ would mean the solver extracts all
+the location information the data contain; ratios far above $1$ quantify the amortization
+gap (a ratio below 1 is neither expected nor desirable --- it would indicate
+miscalibration absorbed by conformal inflation elsewhere). \textbf{Dose--response (H3):}
+on constructed scenario sets --- nested sensor subsets $N = 4..12$ added in fixed order,
+matched well-spread vs.\ confined-quadrant geometry pairs, and a noise sweep --- the
+ratio of learned to exact area-response slopes and per-knob rank agreement; region-size
+language only, since constructed sets are not exchangeable prior draws. Auxiliary:
+Jensen--Shannon divergence to the exact posterior, MAP error, latency. Validation gates
+(quadrature convergence, an independent finite-difference solver cross-check, oracle
+sanity checks, a scenario-leakage audit, and a $96^2$ grid-refinement check) are recorded
+in Appendices~\ref{app:quadrature}--\ref{app:refine}; the preregistered-vs-exploratory
+demarcation and all protocol deviations are listed in Appendix~\ref{app:devs}.
 
 \section{Results}
 
 \begin{table}[t]
-  \caption{Headline results (test split, $n = 2000$; coverage target $0.90$; area as
-  fraction of domain). Baseline = preregistered DeepSets (seed 1; seed 2 in
-  Appendix~\ref{app:training}); Distilled = same model, data, and optimizer with the
-  physics-informed target (post-hoc, Sec.~\ref{sec:distill}).}
+  \caption{Main results (test split, $n = 2000$; coverage target $0.90$; area as fraction
+  of the domain; seed 1, spread across three seeds in Table~\ref{tab:seeds}). M1 changes
+  only the training target of M0.}
   \label{tab:headline}
   \centering
   \small
   \begin{tabular}{lcccc}
     \toprule
-    Metric & Baseline & Distilled & Exact oracle & Peak-sensor \\
+    & M0 (point labels) & M1 (distilled) & Exact oracle & Peak sensor \\
     \midrule
-    MAP error (mean) & 0.174 & 0.176 & 0.160 & 0.356 \\
-    MAP error (median) & 0.103 & 0.094 & 0.023 & 0.315 \\
     Coverage @ 90\% & 0.875 & 0.899 & 0.907 & --- \\
-    \quad Clopper--Pearson 95\% CI & [0.860, 0.889] & [0.884, 0.911] & [0.893, 0.919] & --- \\
-    Region area (mean) & 0.168 & 0.235 & 0.221 & --- \\
+    \quad CP 95\% CI & [.860, .889] & [.884, .911] & [.893, .919] & --- \\
     Region area (median) & 0.068 & 0.053 & 0.013 & --- \\
+    Inefficiency (median) & 5.6$\times$ & 3.9$\times$ & 1$\times$ & --- \\
+    Area Spearman vs.\ oracle & 0.848 & 0.893 & --- & --- \\
+    JSD to oracle (nats) & 0.56 & 0.50 & 0 & --- \\
+    Sensor-response ratio & 0.47 & 0.87 & 1.0 & --- \\
+    MAP error (median) & 0.103 & 0.094 & 0.023 & 0.315 \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\subsection{H1: Calibration}
-\label{sec:h1}
+\subsection{Point-label supervision: calibrated but inefficient}
+\label{sec:r-m0}
 
-Test coverage is $0.875$ $[0.860, 0.889]$ for seed 1 --- the target $0.90$ is \emph{not}
-contained --- and $0.896$ $[0.882, 0.909]$ for seed 2, which does contain it; the identical
-procedure on the exact posterior attains $0.907$ $[0.893, 0.919]$
-(Figure~\ref{fig:coverage}). The machinery itself is verified sound: in-sample calibration
-is exact ($0.9005 = 1801/2000$) and the oracle covers at nominal. The seed-1 shortfall was
-therefore investigated rather than accepted: coverage is invariant to the score
-randomization (spread $<0.0005$ over 20 draws), calibration and test scores are
-indistinguishable (KS $p = 0.51$), and swapping the two splits \emph{over}-covers by the
-mirror amount ($0.917$). A permutation test puts the shortfall at $p = 0.0045$ under
-exchangeability: a genuine $\sim$1-in-220 fluctuation of this (model, calibration, test)
-triple, not a defect. With that caveat, the tool supports evidence-grade language
-(``the source is in this region with $90\%$ confidence''), and confidently-wrong outputs
-are eliminated at approximately the stated rate.
+Conformal M0 attains near-nominal coverage --- $0.875$ $[0.860, 0.889]$ for seed 1
+(a shortfall quantified by permutation test as a $p = 0.0045$ finite-sample fluctuation
+of this split pair; seeds 2--3 cover at $0.896$ and $0.912$, the exact posterior at $0.907$;
+Appendix~\ref{app:h1}) --- and Figure~\ref{fig:coverage} shows the conformal curve
+tracking the diagonal where raw HPD regions undercover. Calibration, however, conceals
+inefficiency: at matched $90\%$ coverage M0's regions are a median $5.6\times$ (mean
+$47.6\times$) larger than the exact-posterior regions, with the worst ratios exactly
+where the data are most informative (razor-sharp oracle, learned heatmap saturated near
+$0.4$ of the domain; Figure~\ref{fig:audit}, left). Its response to information is
+directionally correct on all three knobs but weak: $0.47$ sensor-count slope ratio,
+$0.49$ noise. Point accuracy is respectable (median MAP error $0.103$ vs.\ oracle
+$0.023$, peak-sensor baseline $0.315$): what point labels failed to teach is not
+\emph{where}, but \emph{how unsure}.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.5\linewidth]{fig3_coverage.pdf}
-  \caption{\textbf{Coverage vs.\ nominal} (baseline localizer). Raw HPD regions
-  (uncalibrated) undercover; conformal regions track the diagonal. From
-  \texttt{coverage.csv}.}
+  \includegraphics[width=0.48\linewidth]{fig3_coverage.pdf}
+  \caption{\textbf{Coverage vs.\ nominal} (M0). Conformal regions track the diagonal;
+  raw HPD undercovers. Coverage is thereby equalized across models, making region size a
+  pure sharpness measurement.}
   \label{fig:coverage}
 \end{figure}
 
-\subsection{H2: Sharpness (exact-posterior audit)}
-\label{sec:h2}
+\subsection{Fixed-teacher distillation works; the raw teacher does not}
+\label{sec:r-m1}
 
-At matched verified $90\%$ coverage, the per-scenario Spearman correlation between learned
-and exact areas is $0.848$ --- the model ranks scenario difficulty correctly --- but the
-inefficiency factor is $47.6$ (mean) / $5.6$ (median): at the median the learned regions
-are $5.6\times$ larger than the data physically permit, and the mean is dominated by
-scenarios where the exact posterior is razor-sharp (area $\sim 10^{-3}$) while the learned
-heatmap saturates near $0.4$ of the domain (Figure~\ref{fig:audit}, left). The
-preregistered reading applies: \emph{the network, not the data, is the bottleneck}. Large
-\emph{exact} regions indicate the sensor network is the limiting factor (a placement
-signal); large \emph{ratios}, as found here, indicate headroom for better amortized
-inference --- which Sec.~\ref{sec:distill} realizes.
+Replacing the target with the tempered exact posterior (M1) improves every
+uncertainty-quality metric while leaving point accuracy nearly unchanged
+(Table~\ref{tab:headline}): inefficiency $5.6\times \to 3.9\times$, area Spearman
+$0.848 \to 0.893$, JSD $0.56 \to 0.50$, sensor response $0.47 \to 0.87$, geometry
+agreement $0.88 \to 0.90$. The contrast that matters methodologically: the \emph{raw}
+exact-posterior teacher fails outright --- median validation HPD area $0.197$, worse than
+point labels --- and intermediate mixtures underperform full tempered distillation
+(validation areas: raw $\lambda{=}1$: $0.197$; raw $\lambda{=}0.5$: $0.064$; tempered
+$\lambda{=}1$: $0.055$). Near-delta targets provide gradients dominated by a few cells
+the student cannot yet match; tempering to the scale of the baseline bump makes the same
+physics signal learnable. Figure~\ref{fig:zoo} shows the effect across the difficulty
+spectrum: where the oracle is sharp, M0 saturates into a broad blot while M1 concentrates;
+where the oracle is ridged or multimodal, M1 reproduces the ambiguity structure that M0
+only gestures at.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig8_zoo.pdf}
+  \caption{\textbf{Posterior shape across difficulty.} Columns: five test scenarios at
+  oracle HPD-90 area quantiles ($5$--$95\%$). Rows: exact posterior, M0, M1 (same
+  scenario per column; star = true source). Distillation transfers the oracle's shape ---
+  sharp peaks, ridges, multimodality --- that point labels cannot supervise.}
+  \label{fig:zoo}
+\end{figure}
+
+\subsection{The residual amortization gap}
+\label{sec:r-gap}
+
+M1's $3.9\times$ median at verified $90\%$ coverage is our measured estimate of what
+amortization leaves on the table at this architecture and data scale, with the training
+signal largely ruled out as the binding constraint: M1 already uses the Bayes-optimal
+target at a learnable temper. Figure~\ref{fig:dose} shows the mechanism at scenario
+level: as sensors accrue, the distilled model's mean region-area curve tracks the
+oracle's closely where M0 under-reacts. The area--error association
+(Figure~\ref{fig:audit}, right) persists across models, supporting region area as a
+future abstention signal; the full per-scenario improvement distribution and the
+remaining knob responses are in Appendix~\ref{app:gallery}
+(Figures~\ref{fig:improve}--\ref{fig:knobs}). Across three seeds per model the improvement is stable
+(Table~\ref{tab:seeds}); the residual gap concentrates in scenarios whose exact
+posterior is sharpest --- precisely where a $4.9$M-parameter amortized map must compress
+the most information.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{fig4_audit.pdf}
-  \caption{\textbf{Audit scatter.} Left (H2): learned vs.\ exact region area at matched
-  $90\%$ coverage; dotted lines mark each model's median ratio; the physics-distilled
-  variant (magenta) shifts toward the diagonal ($5.6\times \to 3.9\times$). Right (D1):
-  region area vs.\ MAP localization error --- area is a natural abstention signal.}
+  \caption{\textbf{The amortization gap, measured.} Left: learned vs.\ exact region area
+  at matched $90\%$ conformal coverage (dotted lines: median ratios). Physics-posterior
+  distillation moves the cloud toward the diagonal. Right: region area vs.\ MAP error.}
   \label{fig:audit}
 \end{figure}
-
-\subsection{H3: Dose--response}
-\label{sec:h3}
-
-Contraction-slope ratios (learned $\div$ exact) are $0.47$ (Knob 1, sensor count) and
-$0.49$ (Knob 3, noise); per-knob Spearman agreements are $0.81$, $0.88$, $0.75$
-(per-scenario medians). For the geometry pairs (Knob 2), the median confined:spread area
-ratio is $1.20$ (learned) vs.\ $1.58$ (exact) --- means $2.4$ vs.\ $177.7$, the latter
-dominated by a few confined layouts whose exact posterior explodes --- and both methods
-widen under confinement in exactly $64\%$ of pairs. The learned tool reacts in the
-direction the physics dictates on every knob --- tightening as sensors are added, widening
-under ambiguous geometry --- but at roughly \emph{half} the oracle's magnitude, consistent
-with H2: the regions are over-wide precisely where data are most informative
-(Figure~\ref{fig:dose}). \textbf{D1:} region area and MAP error are strongly associated
-(Figure~\ref{fig:audit}, right).
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{fig5_doseresponse.pdf}
-  \caption{\textbf{Dose--response flagship.} Top: one base scenario as sensors accrue
-  $4 \to 12$ (physics-distilled heatmap; region as translucent fill; star = true source).
-  Bottom: mean region area vs.\ $N$ for the exact oracle, baseline, and distilled model
-  (dashed: the shown scenario).}
+  \caption{\textbf{Information dose--response.} Top: one base scenario as sensors accrue
+  $4 \to 12$ (best model's heatmap; region as translucent fill; star = true source).
+  Bottom: mean $90\%$ region area vs.\ $N$ for the exact oracle, M0, and M1.}
   \label{fig:dose}
 \end{figure}
 
-\subsection{The physics-distilled localizer: the audit certifies the improvement}
-\label{sec:distill}
+\begin{table}[t]
+  \caption{Seed stability (three seeds per model): headline metrics as
+  mean [min, max]. Full per-seed values in \texttt{ablation\_seeds.csv}.}
+  \label{tab:seeds}
+  \centering
+  \small
+  \begin{tabular}{lcc}
+    \toprule
+    & M0 (point labels) & M1 (distilled) \\
+    \midrule
+    Coverage @ 90\% & 0.894 [0.875, 0.912] & 0.895 [0.891, 0.899] \\
+    Region area (median) & 0.072 [0.068, 0.074] & 0.053 [0.052, 0.054] \\
+    Inefficiency (median) & 5.74$\times$ [5.57, 5.86] & 4.02$\times$ [3.92, 4.11] \\
+    Area Spearman vs.\ oracle & 0.851 [0.848, 0.854] & 0.893 [0.890, 0.897] \\
+    JSD to oracle (nats) & 0.556 [0.555, 0.557] & 0.499 [0.498, 0.500] \\
+    MAP error (median) & 0.100 [0.098, 0.103] & 0.093 [0.092, 0.094] \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
-H2's diagnosis --- the network, not the data, is the bottleneck --- is testable, and the
-distillation recipe of Sec.~\ref{sec:distillmethod} tests it with everything but the
-training signal held fixed. Results (Table~\ref{tab:headline}; magenta in
-Figures~\ref{fig:audit}--\ref{fig:dose}): coverage $0.899$ $[0.884, 0.911]$; median
-region area $0.068 \to 0.053$; inefficiency median $5.6\times \to 3.9\times$ (mean
-$47.6 \to 28.9$); H2 Spearman $0.848 \to 0.893$; JSD to the exact posterior
-$0.56 \to 0.50$; median MAP error $0.103 \to 0.094$. The dose--response sharpens most:
-the sensor-count slope ratio rises from $0.47$ to $0.87$ --- the distilled model tightens
-at $87\%$ of the oracle's rate when a sensor is added --- and geometry agreement reaches
-$0.90$ (noise: $0.54$). The gains land exactly where the audit located the deficiency ---
-uncertainty \emph{shape} --- and barely move point accuracy, which was never the problem.
-Interpretation: the benchmark's shipped posteriors double as a training resource that
-closes roughly a third of the sharpness gap and most of the sensor-response gap with no
-capacity or data change; the remaining $\sim 3.9\times$ cleanly quantifies what
-amortization itself leaves on the table at this scale.
+\section{Discussion, Limitations, and Broader Relevance}
 
-\section{Discussion, Limitations, and Broader Impact}
+\paragraph{Why this is more than a benchmark.} The exact posteriors are not merely an
+evaluation convenience: the central empirical message is that they constitute a
+\emph{training resource} that standard pipelines leave unused. Changing only the
+supervision target --- no architecture, capacity, data, or inference-time change ---
+moved every uncertainty-quality metric substantially while barely moving point accuracy,
+demonstrating that the original failure was posterior approximation, not localization.
+The benchmark is the instrument that made this effect visible (conformal coverage
+equalization) and measurable (matched-coverage inefficiency; causal dose--response); the
+method is what the measurement enabled.
 
-\paragraph{What the results mean.} The benchmark's exact posteriors earn their storage
-twice. As an \emph{audit reference}: coverage alone would have certified the baseline
-(after conformal calibration) while hiding a $5.6\times$ gap to the physical information
-limit and a blunted response to added sensors --- only the exact-posterior comparison
-exposes both, and conformal calibration meanwhile absorbs even the oracle's own
-discretization overconfidence (Appendix~\ref{app:refine}). As a \emph{training signal}:
-the same posteriors, distilled with tempering into the same model, recover a third of the
-sharpness gap and most of the dose--response gap --- so the audit's diagnosis (``the
-network is the bottleneck'') is not just descriptive but actionable, and the residual
-$3.9\times$ isolates what amortization itself costs. We frame the benchmark as a
-\emph{neutral screening instrument} for uncertainty claims: failing the audit is
-disqualifying, passing is necessary but not sufficient --- and the instrument demonstrably
-detects failure, certifies improvement, and quantifies remaining headroom.
+\paragraph{Positioning.} Within simulation-based inference, the recipe is general:
+wherever training scenarios come from a simulator with a tractable (or accurately
+approximable) likelihood, per-scenario posterior targets can be computed offline and
+distilled --- our teacher is exact physics rather than a learned network
+[cf.\ Shi et al., 2026]. Within scientific ML, it is a physics-\emph{derived} supervision
+signal, distinct from PDE-residual (PINN-style) losses: the physics enters through the
+target, and deployment cost is untouched. Within conformal UQ, we use calibration as an
+experimental control rather than a contribution, which we believe is the right division of
+labor: conformal guarantees what it can (coverage), and supervision quality determines
+what it cannot (sharpness).
 
-\paragraph{Implementation lessons (portable).} (1) The mass-above conformal score of
-Eq.~\eqref{eq:score} silently loses its guarantee in floating point on sharp heatmaps;
-compute in tail space. (2) Fixed-node quadrature cannot marginalize a rate likelihood
-whose peak width varies by orders of magnitude across hypotheses; place nodes
-peak-adaptively. (3) At $10^4$ training scenarios the specified architecture memorizes
-unless the problem's exact symmetry group is injected; and near-delta distillation targets
-fail where mildly tempered ones succeed.
-
-\paragraph{Limitations.} The study is synthetic, two-dimensional, single stationary source,
-constant and known wind and diffusivity, Gaussian noise of known level, no obstacles,
-turbulence, or background; the guarantee is marginal and in-distribution. \emph{Real sites
-violate every one of these.} The societal claim is strictly that the reliability machinery
-works and is worth transferring. We claim no new conformal algorithm, no new architecture,
-no coverage under shift, no field deployability, no abstention (though D1 supports it as
-future work). Regulation is cited purely as motivation. \textbf{Future work:} robust/weighted
-conformal for misspecified meteorology; a Fisher-information localizability score
-[Bangerth et al., 2022] with abstention; sim-to-real recalibration on controlled-release
-data (METEC-style).
+\paragraph{Limitations.} The study is synthetic and two-dimensional, with a single
+stationary source, constant known meteorology, Gaussian noise of known level, and no
+obstacles, turbulence, or background; ``exact'' means exact for this simulator and grid
+discretization, not for real atmospheric physics. Coverage guarantees are marginal and
+in-distribution; nothing here addresses distribution shift or field deployment.
+Distillation requires tractable per-scenario posteriors at training time --- automatic in
+this benchmark, an approximation problem in messier simulators. Point accuracy is essentially
+unchanged by the method --- it improves uncertainty, not localization. We claim no new
+conformal algorithm and no new architecture.
 
 \section{Conclusion}
 
-We presented a benchmark for uncertainty-aware source localization built around a single
-asset --- the exact Bayesian posterior of every scenario, shipped with the data --- and
-showed that this asset both audits and trains. As an audit, it tests any localizer three
-ways (finite-sample coverage, sharpness against the physical information limit, causal
-dose--response) and returned a differentiated, preregistered verdict on a standard
-baseline: calibrated, not sharp, directionally stable. As a training signal, the same
-posteriors --- distilled with tempering into the same model on the same data --- sharpen
-regions from $5.6\times$ to $3.9\times$ the physical limit and nearly restore
-oracle-proportional response to added sensors, certifying the audit's diagnosis and
-isolating the residual cost of amortization. The implementation lessons on conformal
-scores, quadrature, symmetry, and teacher tempering transfer well beyond pollution
-localization.
+Exact simulator posteriors can serve as dense physics-derived supervision that improves
+the sharpness and information sensitivity of amortized Bayesian inverse solvers without
+changing their architecture or inference-time cost. On a sparse-sensor source
+localization benchmark built to measure exactly this --- conformal coverage equalization
+plus an exact-posterior reference --- point-label training left a $5.6\times$
+sharpness gap and half-strength information response; tempered physics-posterior distillation reduced
+the gap to $3.9\times$ and restored $87\%$ of the Bayes-proportional sensor response.
+The residual gap is a measured property of amortization at this scale, and the
+released benchmark makes both the supervision and the measurement available to any
+simulator-based inverse problem.
 
 \section*{Reproducibility Statement}
 
-A single configuration file drives every stage; a single script
-(\texttt{scripts/run\_all.sh}) regenerates the study from a clean checkout. Scenario
-regeneration is bit-identical (SHA-256 verified). We release the generator, frozen
-scenario IDs and seeds, configs, exact per-scenario posteriors for the train, validation,
-calibration, and test splits, dose--response sets, model checkpoints, and a ready-to-run
-subset. Total compute: $\approx 1.6$ GPU-hours on one NVIDIA L40S ($0.011$ GPU-h per
-baseline seed; $\approx 0.1$ GPU-h for all distillation variants) and 300 MB of data ---
-far under the preregistered 12--20 GPU-hour / 10 GB budget.
+A single configuration file drives every stage; one script regenerates the study from a
+clean checkout; scenario regeneration is bit-identical (SHA-256 verified). We release the
+simulator and generator, frozen scenario IDs, exact per-scenario posteriors for all
+splits, dose--response sets, checkpoints for all models and seeds, and the audit pipeline.
+Total compute: $\approx$ 2 GPU-hours on one NVIDIA L40S; 300 MB of data.
 
 \section*{References}
 {\small
@@ -606,106 +504,151 @@ far under the preregistered 12--20 GPU-hour / 10 GB budget.
 
 \appendix
 
-\section{Quadrature and Validation Details}
+\section{Quadrature and Physics Validation}
 \label{app:quadrature}
 
-Age integral: 64-node Gauss--Legendre under $s = t\,e^{-\tau}$, $\tau_{\max} = 12$ (tuned:
-at $\tau_{\max} = 40$ the convergence gate fails at $2\times10^{-4}$; the truncated tail
-contributes $\lesssim 10^{-6}$ relative even for a sensor at the source). Gates: 64- vs
-128-node median relative error $3.6\times10^{-11}$ (gate $<10^{-6}$; the 90th percentile,
-$6.9\times10^{-4}$, concentrates on probes many orders of magnitude below the noise floor;
-generation and oracle share the same operator and remain exactly self-consistent).
-Zero-wind closed form (exponential integrals): median relative error $1.2\times10^{-13}$.
-Second-order finite-difference cross-check (central differences, Heun, CFL-stable,
-$h = 1/768$, enlarged Dirichlet domain), 20 random scenarios: maximum $0.50\%$ relative
-$L_2$ at sensors, median $0.06\%$, over the 17 scenarios with signal; the 3 no-signal
-scenarios (reference RMS $10^{-18}$--$10^{-9}$) agree in absolute RMS to
-$\leq 8.8\times10^{-11}$ (gated at $10^{-4}$, $1\%$ of the smallest noise std, since
-relative error is ill-posed at zero signal). Symmetry equivariance: $1.7\times10^{-13}$;
-linearity: $2.7\times10^{-16}$.
+Age-integral quadrature: 64-node Gauss--Legendre under $s = t e^{-\tau}$,
+$\tau_{\max} = 12$ (tuned; at $\tau_{\max}=40$ the gate fails at $2\times10^{-4}$).
+64- vs 128-node median relative error $3.6\times10^{-11}$ (gate $<10^{-6}$). Zero-wind
+closed form (exponential integrals): median relative error $1.2\times10^{-13}$.
+Independent second-order finite-difference solver (central differences, Heun, CFL-stable,
+$h = 1/768$, enlarged Dirichlet domain), 20 random scenarios: max $0.50\%$ relative $L_2$
+at sensors (median $0.06\%$) over the 17 scenarios with signal; the 3 no-signal scenarios
+agree in absolute RMS to $\leq 8.8\times10^{-11}$ (gated at $10^{-4}$, $1\%$ of the
+smallest noise std). Symmetry equivariance $1.7\times10^{-13}$; linearity
+$2.7\times10^{-16}$; scenario-ID leakage audit: zero overlap, zero duplicated content.
 
-\section{Exact-Posterior Sanity Checks}
+\section{Exact-Posterior Numerics and Sanity Checks}
 \label{app:sanity}
 
-Normalization within $3.4\times10^{-13}$ (gate $10^{-6}$). Mode $\to$ true cell as
-$\sigma \to 0$: 24/24, with the check made well-posed by snapping sanity sources to cell
-centers (the candidate set \emph{is} the centers), conditioning on identifiability (a
-sensor must see the plume above the smallest noise floor; all-upwind layouts differ by
-$\sim10^{-30}$ between adjacent cells), and $\sigma = 10^{-6}$. Confined layouts yield
-visibly broad posteriors ($90\%$ HPD area $0.48$ vs.\ $0.064$ well-spread).
-Conformal-on-exact-posterior: $0.907$ $[0.893, 0.919]$. Area contracts with $q$ for
-$87.5\%$ of 24 cell-centered scenarios (mean $\Delta = -0.005$) and grows with $\sigma$
-for $100\%$ (mean $+0.024$); per-realization $q$-monotonicity is not guaranteed at the
-rate-prior edges, where the prior truncates the location--rate confusion set
-asymmetrically. Brute-force marginalization cross-check: $\leq 9.4\times10^{-7}$
-(gate $10^{-6}$).
+Rate marginalization uses a peak-aware composite Gauss--Legendre rule (panels split at
+$\hat{q}_c \pm 8\sigma/\lVert\boldsymbol{g}_c\rVert$; 32 peak + $2{\times}16$ outer nodes,
+\texttt{float64} log-space), validated against a $10\times$-node deep rule and a
+200{,}000-node trapezoid to $\leq 9.4\times10^{-7}$ in log-posterior; the preregistered
+fixed 32-node rule errs by many nats. Normalization within $3.4\times10^{-13}$. Mode
+$\to$ true cell as $\sigma \to 0$: 24/24 (sanity sources at cell centers; identifiability
+conditioning; $\sigma = 10^{-6}$). Confined layouts yield broad posteriors ($90\%$ HPD
+area $0.48$ vs.\ $0.064$ well-spread). Conformal-on-exact-posterior: $0.907$
+$[0.893, 0.919]$. Area contracts with $q$ ($87.5\%$ of scenarios, mean
+$\Delta = -0.005$) and grows with $\sigma$ ($100\%$, $+0.024$).
 
-\section{Training Details and Seed Spread}
+\section{Training Details and the Memorization Finding}
 \label{app:training}
 
-Baseline: hyperparameters as in Sec.~\ref{sec:deepsets} (+ D4 augmentation); two seeds;
-$0.011$ GPU-h per seed on an NVIDIA L40S; early stop at epochs 106/100; best validation
-NLL 6.31/6.29. Seed spread: coverage@90 $0.875$ vs.\ $0.896$; MAP mean $0.174$ vs.\
-$0.175$; H2 Spearman $0.848$ vs.\ $0.851$; inefficiency median $5.57$ vs.\ $5.80$ --- the
-scientific conclusions are seed-stable; the coverage fluctuation is analyzed in
-Sec.~\ref{sec:h1}. Distilled variant (Sec.~\ref{sec:distill}): identical model and data;
-validation-selected among five loss variants (raw teacher $\lambda \in \{1, .75, .5\}$
-and tempered teacher $\lambda \in \{1, .75\}$; median validation HPD-90 areas $0.197$,
-$0.106$, $0.064$, $0.055$, $0.056$ respectively); winner: tempered, $\lambda = 1$
-(epoch 193 of 200). All learning curves in \texttt{train\_log\_*.csv}.
+Baseline hyperparameters in Sec.~\ref{sec:m0}; $0.011$ GPU-h per seed (L40S). Without D4
+augmentation the preregistered recipe memorizes: train NLL $\to 1.5$ while validation NLL
+never improves below the uniform level ($\approx 7.96$; $\log 4096 = 8.32$) and
+validation MAP error (0.44) is worse than the peak-sensor heuristic (0.37); verified not
+attributable to mixed precision, learning rate, or the context branch
+(Figure~\ref{fig:memo}).
 
-\section{Additional Coverage Levels and Auxiliary Metrics}
-\label{app:aux}
-
-\begin{table}[h]
-  \caption{Auxiliary metrics. Coverage and median area at three nominal levels; scalar
-  diagnostics below (baseline / distilled).}
-  \label{tab:aux}
+\begin{figure}[h]
   \centering
-  \small
-  \begin{tabular}{lccc}
-    \toprule
-    & 80\% & 90\% & 95\% \\
-    \midrule
-    Coverage, baseline & 0.787 & 0.875 & 0.944 \\
-    Coverage, distilled & 0.799 & 0.899 & 0.949 \\
-    Area (median), baseline & 0.050 & 0.068 & 0.092 \\
-    \midrule
-    NLL (mean), baseline / distilled & \multicolumn{3}{c}{6.34 / 6.26} \\
-    JSD to exact posterior (mean, nats) & \multicolumn{3}{c}{0.56 / 0.50} \\
-    MAP error percentiles 50/90/99, baseline & \multicolumn{3}{c}{0.10 / 0.43 / 0.78} \\
-    Inference latency (ms/scenario, batch 1) & \multicolumn{3}{c}{0.48} \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+  \includegraphics[width=0.85\linewidth]{fig11_memorization.pdf}
+  \caption{\textbf{Memorization without symmetry augmentation.} Training loss falls
+  either way (left), but without the exact D4 augmentation validation NLL never leaves
+  the uniform level (right).}
+  \label{fig:memo}
+\end{figure} M1: early stop on
+validation teacher-CE; winner selected on validation among $\{\lambda, \text{temper}\}$
+variants (Sec.~\ref{sec:r-m1}). A progressive smooth-to-sharp teacher
+annealing schedule (hold $\sigma_T = 0.75$, linear anneal to
+$\sigma_{\mathrm{end}} \in \{0.30, 0.15, 0\}$) was explored with validation-only
+selection and did not improve on the fixed temper (best curriculum validation HPD-90
+median area $0.061$ vs.\ $0.055$ fixed; test inefficiency $4.8\times$ vs.\
+$3.9\times$), with sharper end-targets monotonically worse; it is therefore omitted from
+the main method. Selection records in the released artifact.
+
+\section{Calibration Detail (H1) and Auxiliary Metrics}
+\label{app:h1}
+
+M0 seed-1 coverage $0.875$ $[0.860, 0.889]$ misses $0.90$; investigation: in-sample
+calibration exact ($0.9005$), coverage invariant to score randomization ($<0.0005$ over
+20 draws), calib/test scores indistinguishable (KS $p = 0.51$), split-swap
+\emph{over}-covers ($0.917$), permutation $p = 0.0045$ --- a finite-sample fluctuation of
+this (model, split) pair. Coverage at $80/90/95\%$: M0 $0.787/0.875/0.944$; M1
+$0.799/0.899/0.949$. Latency $0.48$ ms/scenario (batch 1). MAP percentiles (M0):
+$0.10/0.43/0.78$.
+
+\section{Grid Refinement}
+\label{app:refine}
+
+Recomputing exact posteriors at $96^2$ on the full test split changes conformal coverage
+by $-0.007$ and median area by $-0.006$ --- the $64^2$ grid is adequate (the
+preregistered 100-scenario version cannot resolve the effect: 100-scenario coverage
+windows span $0.79$--$0.97$).
+
+\section{Preregistration and Deviations}
+\label{app:devs}
+
+The three-way audit (H1/H2/H3), the five headline metrics, splits, and gates were
+preregistered; M1 and M2 are exploratory additions with validation-only selection, test
+evaluated once per final variant. Protocol deviations, each forced by a correctness
+failure or ill-posedness caught by the pipeline's own blocking gates: (i) D4 augmentation
+(Sec.~\ref{sec:m0}); (ii) tail-space conformal scores (Sec.~\ref{sec:conformal});
+(iii) peak-aware rate quadrature (Appendix~\ref{app:sanity}); (iv) well-posed sanity
+formulations (Appendix~\ref{app:sanity}); (v) full-split grid refinement
+(Appendix~\ref{app:refine}); (vi) absolute-error FD gating at zero signal
+(Appendix~\ref{app:quadrature}). No preregistered hypothesis, metric, or split was
+changed after seeing data.
+
+\section{Benchmark Gallery and Additional Visualizations}
+\label{app:gallery}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{fig6_dataset.pdf}
+  \caption{\textbf{Benchmark gallery.} Eight test scenarios: concentration field at
+  $t = 1$ (purple), sensors (triangles, shaded by time-averaged reading), wind direction
+  (arrow), true source (star). Sensor count, noise, wind, and geometry vary per the prior
+  of Table~\ref{tab:prior}.}
+  \label{fig:gallery}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{fig9_stats.pdf}
+  \caption{\textbf{Benchmark statistics.} Top: prior draws (release rate, noise,
+  sensor count; training split). Bottom: peak reading SNR; oracle HPD-90 area and oracle
+  MAP error on the test split --- the benchmark spans effectively unidentifiable to
+  near-exactly identifiable scenarios.}
+  \label{fig:stats}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{fig10_improvement.pdf}
+  \caption{\textbf{Per-scenario improvement.} Left: inefficiency ECDFs (dashed:
+  oracle parity). Right: paired per-scenario ratios; points below the diagonal are
+  scenarios where distillation sharpened the region.}
+  \label{fig:improve}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\linewidth]{fig12_knobs.pdf}
+  \caption{\textbf{Remaining dose--response knobs.} Left: mean region area under the
+  noise sweep (Knob 3). Right: matched geometry pairs (Knob 2); points above the diagonal
+  widen under the confined layout, as the physics dictates.}
+  \label{fig:knobs}
+\end{figure}
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=\linewidth]{fig1_pipeline.pdf}
-  \caption{\textbf{Pipeline} on a real median-difficulty test scenario (baseline model;
-  star = true source, triangles = sensors): sensors + meteorology $\to$ DeepSets heatmap
-  $\to$ $90\%$ conformal region; the exact grid posterior audits.}
+  \caption{\textbf{Pipeline} on a real median-difficulty test scenario (M0; star = true
+  source, triangles = sensors): readings $\to$ amortized heatmap $\to$ $90\%$ conformal
+  region; the exact grid posterior is teacher (train/val) and reference (calib/test).}
   \label{fig:pipeline}
 \end{figure}
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=\linewidth]{fig2_easy_vs_ambiguous.pdf}
-  \caption{\textbf{Easy vs.\ ambiguous scenario} (learned heatmaps from the
-  physics-distilled model): layout, exact posterior, learned heatmap, and both $90\%$
-  regions. The confined layout induces the directional-ambiguity arc in the exact
-  posterior; both regions widen accordingly.}
+  \caption{\textbf{Easy vs.\ ambiguous scenario} (heatmaps from the best distilled
+  model): layout, exact posterior, learned heatmap, both $90\%$ regions. The confined
+  layout induces the directional-ambiguity arc; both regions widen accordingly.}
   \label{fig:scenarios}
 \end{figure}
-
-\section{Grid-Refinement Check}
-\label{app:refine}
-
-Recomputing exact posteriors on a $96 \times 96$ grid and re-running the identical
-conformal procedure on the \emph{full} test split changes coverage by $-0.007$ ($0.9005$
-vs.\ $0.9070$) and median area by $-0.006$ (finer cells resolve sharper regions),
-confirming the $64 \times 64$ grid is adequate. (We use the full split rather than the
-preregistered 100 scenarios: 100-scenario windows have coverage $0.79$--$0.97$ and cannot
-resolve the effect.) Normalization error at $96^2$: $1.4\times10^{-13}$.
 
 \end{document}
