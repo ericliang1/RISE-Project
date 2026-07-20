@@ -168,6 +168,19 @@ Table~\ref{tab:prior}; splits (10k/1k/2k/2k) are by complete scenario. A gallery
 scenarios and benchmark statistics are in Appendix~\ref{app:gallery}
 (Figures~\ref{fig:gallery}--\ref{fig:stats}).
 
+\paragraph{Physical correspondence.} The setup is dimensionless, but its parameter
+ranges are dimensionally forced onto physically sensible scales by choosing a domain
+length and observation window. Under $L = 500$ m (a facility-scale site) and
+$T = 5$ min, the wind prior corresponds to $0.8$--$3.3$ m/s (light-to-moderate winds),
+the diffusivity prior to horizontal eddy diffusivities of $1.7$--$17$ m$^2$/s, readings
+arrive every 10 s, grid cells are $7.8$ m, and the source blob is a $\sim$4 m piece of
+equipment. Because readings are reference-normalized, release rate and noise map to
+signal-to-noise ratios rather than absolute emission rates. The idealization --- 2-D,
+constant known meteorology, no obstacles or background --- is deliberate: it is what
+makes the exact posterior computable, so the uncertainty machinery can be validated
+against ground truth before confronting real atmospheric complexity
+(Sec.~\ref{sec:discussion}).
+
 \paragraph{Exact posteriors.} For candidate cell $c$ of a $64 \times 64$ grid with
 unit-rate response vector $\boldsymbol{g}_c$ at the (known) meteorology,
 $p(\boldsymbol{y} \mid c, q) = \mathcal{N}(\boldsymbol{y}; q\boldsymbol{g}_c, \sigma^2\mathbf{I})$; marginalizing
@@ -474,6 +487,7 @@ responses are in Appendix~\ref{app:gallery}
 \end{table}
 
 \section{Discussion, Limitations, and Broader Relevance}
+\label{sec:discussion}
 
 \paragraph{Why this is more than a benchmark.} The exact posteriors are not merely an
 evaluation convenience: the central empirical message is that they constitute a
@@ -484,6 +498,17 @@ demonstrating that the original failure was posterior approximation, not localiz
 The benchmark is the instrument that made this effect visible (conformal coverage
 equalization) and measurable (matched-coverage inefficiency; causal dose--response); the
 method is what the measurement enabled.
+
+\paragraph{Operational reading.} Under the facility-scale correspondence of
+Sec.~\ref{sec:setup}, the median $90\%$ region shrinks from an equivalent radius of
+$74$ m (M0) to $65$ m (M1), with the physical limit at $32$ m --- movement toward the
+$50$ m radius at which, e.g., U.S.\ Super-Emitter Program obligations attach to an
+identified operator [U.S. EPA, 2024]. Region area is also a direct proxy for follow-up
+survey effort, so the M0 $\to$ M1 improvement corresponds to $\sim$$22\%$ less search
+area per alert at identical confidence; and the stratified audit doubles as network
+guidance --- with 4--6 sensors the network, not the model, binds ($1.2\times$ from the
+physical limit), while at 10--12 sensors the model binds and training quality dominates.
+We state plainly that these are readings of a synthetic testbed, not deployment claims.
 
 \paragraph{Positioning.} Within simulation-based inference, the recipe is general:
 wherever training scenarios come from a simulator with a tractable (or accurately
