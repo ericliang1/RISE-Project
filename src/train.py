@@ -180,7 +180,21 @@ def d4_target_perms(n, device):
     return torch.tensor(inv, device=device)
 
 
-def train_one_seed(cfg, seed, device, distill=False, curriculum=False):
+def concat_scenarios(a, b):
+    """Concatenate two scenario dicts (shared `times`)."""
+    out = {}
+    for k in a:
+        out[k] = a[k] if k == "times" else np.concatenate([a[k], b[k]], axis=0)
+    return out
+
+
+def slice_scenarios(d, n):
+    """First n scenarios of a scenario dict."""
+    return {k: (v if k == "times" else v[:n]) for k, v in d.items()}
+
+
+def train_one_seed(cfg, seed, device, distill=False, curriculum=False,
+                   train_size=None, use_xl=False, stem_override=None):
     tr = cfg["training"]
     torch.manual_seed(cfg["seeds"]["torch_train_base"] + seed
                       + (9000 if curriculum else 5000 if distill else 0))
@@ -188,6 +202,10 @@ def train_one_seed(cfg, seed, device, distill=False, curriculum=False):
 
     data_dir = resolve(cfg, "data_dir")
     d_train = load_split(data_dir, "train")
+    if use_xl:
+        d_train = concat_scenarios(d_train, load_split(data_dir, "train_xl"))
+    if train_size is not None:
+        d_train = slice_scenarios(d_train, train_size)
     d_val = load_split(data_dir, "val")
     n_g = cfg["grid"]["n"]
     P_teacher = P_train_raw = None
@@ -195,8 +213,16 @@ def train_one_seed(cfg, seed, device, distill=False, curriculum=False):
     cs = cfg["distill"]
     if distill:
         z = np.load(data_dir / "train_posterior.npz")
-        assert (z["ids"] == d_train["ids"]).all()
-        P_train_raw = torch.tensor(z["probs"].astype(np.float32))
+        probs = z["probs"]
+        ids = z["ids"]
+        if use_xl:
+            zx = np.load(data_dir / "train_xl_posterior.npz")
+            probs = np.concatenate([probs, zx["probs"]], axis=0)
+            ids = np.concatenate([ids, zx["ids"]])
+        if train_size is not None:
+            probs, ids = probs[:train_size], ids[:train_size]
+        assert (ids == d_train["ids"]).all()
+        P_train_raw = torch.tensor(probs.astype(np.float32))
         inv_perms = d4_target_perms(n_g, device)
         zv = np.load(data_dir / "val_posterior.npz")
         assert (zv["ids"] == d_val["ids"]).all()
@@ -234,8 +260,9 @@ def train_one_seed(cfg, seed, device, distill=False, curriculum=False):
 
     ckpt_dir = resolve(cfg, "checkpoints_dir")
     ckpt_dir.mkdir(parents=True, exist_ok=True)
-    stem = (f"model3_seed{seed}" if curriculum
-            else f"model2_seed{seed}" if distill else f"seed{seed}")
+    stem = stem_override or (f"model3_seed{seed}" if curriculum
+                             else f"model2_seed{seed}" if distill
+                             else f"seed{seed}")
     ckpt_path = ckpt_dir / f"{stem}.pt"
     log_path = ckpt_dir / f"train_log_{stem}.csv"
 

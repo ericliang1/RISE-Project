@@ -235,6 +235,8 @@
     "test_posterior_wall_s": 60.986204624176025,
     "train_posterior_max_norm_err": 2.0794477251229182e-13,
     "train_posterior_wall_s": 301.5291817188263,
+    "train_xl_posterior_max_norm_err": 4.779510121011299e-13,
+    "train_xl_posterior_wall_s": 900.3694784641266,
     "val_posterior_max_norm_err": 5.6066262743570405e-14,
     "val_posterior_wall_s": 30.993515253067017
   },

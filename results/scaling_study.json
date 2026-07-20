@@ -1,0 +1,66 @@
+[
+  {
+    "coverage": 0.8815,
+    "area_median": 0.3009033203125,
+    "ineff_median": 20.038845979100408,
+    "ineff_mean": 202.91686049348394,
+    "size": 2500,
+    "mode": "M0"
+  },
+  {
+    "coverage": 0.9165,
+    "area_median": 0.1502685546875,
+    "ineff_median": 11.010769230769231,
+    "ineff_mean": 101.57234525435088,
+    "size": 2500,
+    "mode": "M1"
+  },
+  {
+    "coverage": 0.8935,
+    "area_median": 0.1356201171875,
+    "ineff_median": 9.946527777777778,
+    "ineff_mean": 92.50631269974116,
+    "size": 5000,
+    "mode": "M0"
+  },
+  {
+    "coverage": 0.9095,
+    "area_median": 0.079345703125,
+    "ineff_median": 6.059477963200685,
+    "ineff_mean": 51.215469739631075,
+    "size": 5000,
+    "mode": "M1"
+  },
+  {
+    "coverage": 0.875,
+    "area_median": 0.068359375,
+    "ineff_median": 5.572089314194578,
+    "ineff_mean": 47.63314472859747,
+    "size": 10000,
+    "mode": "M0"
+  },
+  {
+    "coverage": 0.8985,
+    "area_median": 0.052978515625,
+    "ineff_median": 3.924304035032843,
+    "ineff_mean": 28.909651649849433,
+    "size": 10000,
+    "mode": "M1"
+  },
+  {
+    "coverage": 0.908,
+    "area_median": 0.0380859375,
+    "ineff_median": 2.9301682692307693,
+    "ineff_mean": 19.242402103319886,
+    "size": 40000,
+    "mode": "M0"
+  },
+  {
+    "coverage": 0.8965,
+    "area_median": 0.0284423828125,
+    "ineff_median": 2.1438246097337004,
+    "ineff_mean": 13.373528491454326,
+    "size": 40000,
+    "mode": "M1"
+  }
+]

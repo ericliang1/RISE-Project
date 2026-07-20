@@ -1,0 +1,689 @@
+=== integrity check ===
+train_xl scenarios: 30000
+benchmark integrity: OK
+=== exact posteriors: train_xl ===
+exact posteriors: train_xl (grid 64x64)
+  500/30000  (34 ms/scen)
+  1000/30000  (32 ms/scen)
+  1500/30000  (31 ms/scen)
+  2000/30000  (31 ms/scen)
+  2500/30000  (31 ms/scen)
+  3000/30000  (31 ms/scen)
+  3500/30000  (31 ms/scen)
+  4000/30000  (31 ms/scen)
+  4500/30000  (31 ms/scen)
+  5000/30000  (31 ms/scen)
+  5500/30000  (31 ms/scen)
+  6000/30000  (31 ms/scen)
+  6500/30000  (31 ms/scen)
+  7000/30000  (31 ms/scen)
+  7500/30000  (31 ms/scen)
+  8000/30000  (30 ms/scen)
+  8500/30000  (30 ms/scen)
+  9000/30000  (30 ms/scen)
+  9500/30000  (30 ms/scen)
+  10000/30000  (30 ms/scen)
+  10500/30000  (30 ms/scen)
+  11000/30000  (30 ms/scen)
+  11500/30000  (30 ms/scen)
+  12000/30000  (30 ms/scen)
+  12500/30000  (30 ms/scen)
+  13000/30000  (30 ms/scen)
+  13500/30000  (30 ms/scen)
+  14000/30000  (30 ms/scen)
+  14500/30000  (30 ms/scen)
+  15000/30000  (30 ms/scen)
+  15500/30000  (30 ms/scen)
+  16000/30000  (30 ms/scen)
+  16500/30000  (30 ms/scen)
+  17000/30000  (30 ms/scen)
+  17500/30000  (30 ms/scen)
+  18000/30000  (30 ms/scen)
+  18500/30000  (30 ms/scen)
+  19000/30000  (30 ms/scen)
+  19500/30000  (30 ms/scen)
+  20000/30000  (30 ms/scen)
+  20500/30000  (30 ms/scen)
+  21000/30000  (30 ms/scen)
+  21500/30000  (30 ms/scen)
+  22000/30000  (30 ms/scen)
+  22500/30000  (30 ms/scen)
+  23000/30000  (30 ms/scen)
+  23500/30000  (30 ms/scen)
+  24000/30000  (30 ms/scen)
+  24500/30000  (30 ms/scen)
+  25000/30000  (30 ms/scen)
+  25500/30000  (30 ms/scen)
+  26000/30000  (30 ms/scen)
+  26500/30000  (30 ms/scen)
+  27000/30000  (30 ms/scen)
+  27500/30000  (30 ms/scen)
+  28000/30000  (30 ms/scen)
+  28500/30000  (30 ms/scen)
+  29000/30000  (30 ms/scen)
+  29500/30000  (30 ms/scen)
+  30000/30000  (30 ms/scen)
+  done in 900s, max |1-sum(p)| = 4.78e-13
+=== stratified audit + significance ===
+{
+  "wilcoxon_stat": 1182054.0,
+  "wilcoxon_p": 5.514999074259412e-13,
+  "test": "one-sided Wilcoxon signed-rank on paired log inefficiency ratios (H1: M0 > M1)",
+  "ineff_median_M0_ci95": [
+    5.572089314194578,
+    4.739726027397261,
+    6.851956739184794
+  ],
+  "ineff_median_M1_ci95": [
+    3.924304035032843,
+    3.326923076923077,
+    4.781718749999959
+  ],
+  "median_log_ratio_improvement_ci95": [
+    0.23062222457792697,
+    0.19662009852108692,
+    0.2656668057890275
+  ],
+  "frac_scenarios_M1_sharper": 0.606
+}
+fig14 done
+=== scaling study ===
+=== M0 @ 2500 ===
+baseline seed 1: 4.87M params
+/usr4/spclpgm/eric1/conformal-source-regions/src/train.py:311: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+  tot_loss += float(loss)
+epoch   0 loss 8.2594 val_nll 8.0812 best 8.0812@0
+epoch   1 loss 8.0375 val_nll 8.0099 best 8.0099@1
+epoch   2 loss 7.9876 val_nll 7.9901 best 7.9901@2
+epoch   3 loss 7.9821 val_nll 7.9752 best 7.9752@3
+epoch   4 loss 7.9666 val_nll 7.9655 best 7.9655@4
+epoch   9 loss 7.9486 val_nll 7.9607 best 7.9607@9
+epoch  10 loss 7.9407 val_nll 7.9680 best 7.9607@9
+epoch  11 loss 7.9381 val_nll 7.9577 best 7.9577@11
+epoch  20 loss 7.8478 val_nll 7.9780 best 7.9577@11
+epoch  30 loss 7.5315 val_nll 8.0055 best 7.9577@11
+epoch  36 loss 7.3102 val_nll 7.9371 best 7.9371@36
+epoch  37 loss 7.2870 val_nll 7.9259 best 7.9259@37
+epoch  38 loss 7.2413 val_nll 7.9133 best 7.9133@38
+epoch  39 loss 7.2181 val_nll 7.8981 best 7.8981@39
+epoch  40 loss 7.1806 val_nll 7.8726 best 7.8726@40
+epoch  41 loss 7.1437 val_nll 7.8512 best 7.8512@41
+epoch  42 loss 7.1397 val_nll 7.8381 best 7.8381@42
+epoch  43 loss 7.1039 val_nll 7.8250 best 7.8250@43
+epoch  44 loss 7.0538 val_nll 7.8079 best 7.8079@44
+epoch  45 loss 7.0320 val_nll 7.7858 best 7.7858@45
+epoch  46 loss 7.0137 val_nll 7.7752 best 7.7752@46
+epoch  47 loss 6.9714 val_nll 7.7374 best 7.7374@47
+epoch  48 loss 6.9418 val_nll 7.7301 best 7.7301@48
+epoch  49 loss 6.9213 val_nll 7.6911 best 7.6911@49
+epoch  50 loss 6.8841 val_nll 7.6873 best 7.6873@50
+epoch  51 loss 6.8530 val_nll 7.6660 best 7.6660@51
+epoch  52 loss 6.8147 val_nll 7.6503 best 7.6503@52
+epoch  53 loss 6.7746 val_nll 7.6383 best 7.6383@53
+epoch  54 loss 6.7563 val_nll 7.6046 best 7.6046@54
+epoch  55 loss 6.7275 val_nll 7.6028 best 7.6028@55
+epoch  56 loss 6.7165 val_nll 7.5954 best 7.5954@56
+epoch  57 loss 6.7007 val_nll 7.5834 best 7.5834@57
+epoch  58 loss 6.6532 val_nll 7.5697 best 7.5697@58
+epoch  59 loss 6.6263 val_nll 7.5643 best 7.5643@59
+epoch  60 loss 6.5925 val_nll 7.5655 best 7.5643@59
+epoch  61 loss 6.5806 val_nll 7.5354 best 7.5354@61
+epoch  62 loss 6.5549 val_nll 7.5338 best 7.5338@62
+epoch  63 loss 6.5289 val_nll 7.5168 best 7.5168@63
+epoch  64 loss 6.5151 val_nll 7.5010 best 7.5010@64
+epoch  65 loss 6.4650 val_nll 7.4954 best 7.4954@65
+epoch  66 loss 6.4421 val_nll 7.4690 best 7.4690@66
+epoch  68 loss 6.4324 val_nll 7.4620 best 7.4620@68
+epoch  70 loss 6.3733 val_nll 7.4509 best 7.4509@70
+epoch  71 loss 6.3523 val_nll 7.4487 best 7.4487@71
+epoch  72 loss 6.3357 val_nll 7.4405 best 7.4405@72
+epoch  74 loss 6.2944 val_nll 7.4371 best 7.4371@74
+epoch  75 loss 6.2765 val_nll 7.4357 best 7.4357@75
+epoch  77 loss 6.2416 val_nll 7.4250 best 7.4250@77
+epoch  78 loss 6.2151 val_nll 7.4189 best 7.4189@78
+epoch  79 loss 6.1986 val_nll 7.4174 best 7.4174@79
+epoch  80 loss 6.1939 val_nll 7.4111 best 7.4111@80
+epoch  81 loss 6.1527 val_nll 7.4096 best 7.4096@81
+epoch  84 loss 6.1146 val_nll 7.4079 best 7.4079@84
+epoch  86 loss 6.0736 val_nll 7.4067 best 7.4067@86
+epoch  87 loss 6.0621 val_nll 7.4045 best 7.4045@87
+epoch  88 loss 6.0492 val_nll 7.3856 best 7.3856@88
+epoch  90 loss 5.9976 val_nll 7.3889 best 7.3856@88
+epoch  95 loss 5.9382 val_nll 7.3833 best 7.3833@95
+epoch  97 loss 5.9014 val_nll 7.3805 best 7.3805@97
+epoch  98 loss 5.8958 val_nll 7.3672 best 7.3672@98
+epoch 100 loss 5.8503 val_nll 7.3678 best 7.3672@98
+epoch 109 loss 5.7490 val_nll 7.3626 best 7.3626@109
+epoch 110 loss 5.7290 val_nll 7.3813 best 7.3626@109
+epoch 120 loss 5.6101 val_nll 7.3688 best 7.3626@109
+epoch 130 loss 5.5105 val_nll 7.3699 best 7.3626@109
+early stop at epoch 134
+{'coverage': 0.8815, 'area_median': 0.3009033203125, 'ineff_median': 20.038845979100408, 'ineff_mean': 202.91686049348394, 'size': 2500, 'mode': 'M0'}
+=== M1 @ 2500 ===
+distill seed 1: 4.87M params
+epoch   0 loss 8.3503 val_nll 8.2956 best 8.2956@0
+epoch   1 loss 8.2611 val_nll 8.2682 best 8.2682@1
+epoch   2 loss 8.2414 val_nll 8.2599 best 8.2599@2
+epoch   3 loss 8.2316 val_nll 8.2586 best 8.2586@3
+epoch   4 loss 8.2220 val_nll 8.2411 best 8.2411@4
+epoch   5 loss 8.2054 val_nll 8.2312 best 8.2312@5
+epoch   6 loss 8.1948 val_nll 8.2175 best 8.2175@6
+epoch   7 loss 8.1653 val_nll 8.1895 best 8.1895@7
+epoch   8 loss 8.1379 val_nll 8.1662 best 8.1662@8
+epoch   9 loss 8.1161 val_nll 8.1535 best 8.1535@9
+epoch  10 loss 8.0992 val_nll 8.1460 best 8.1460@10
+epoch  11 loss 8.0989 val_nll 8.1360 best 8.1360@11
+epoch  12 loss 8.0850 val_nll 8.1313 best 8.1313@12
+epoch  17 loss 8.0009 val_nll 8.1208 best 8.1208@17
+epoch  18 loss 7.9699 val_nll 8.0962 best 8.0962@18
+epoch  19 loss 7.9063 val_nll 8.0544 best 8.0544@19
+epoch  20 loss 7.8338 val_nll 8.0034 best 8.0034@20
+epoch  21 loss 7.7588 val_nll 7.9538 best 7.9538@21
+epoch  22 loss 7.6967 val_nll 7.8987 best 7.8987@22
+epoch  23 loss 7.6316 val_nll 7.8366 best 7.8366@23
+epoch  24 loss 7.5553 val_nll 7.7856 best 7.7856@24
+epoch  25 loss 7.5048 val_nll 7.7238 best 7.7238@25
+epoch  26 loss 7.4278 val_nll 7.6874 best 7.6874@26
+epoch  27 loss 7.3987 val_nll 7.6312 best 7.6312@27
+epoch  28 loss 7.3498 val_nll 7.5975 best 7.5975@28
+epoch  29 loss 7.2987 val_nll 7.5599 best 7.5599@29
+epoch  30 loss 7.2661 val_nll 7.5349 best 7.5349@30
+epoch  31 loss 7.2062 val_nll 7.5106 best 7.5106@31
+epoch  32 loss 7.1781 val_nll 7.4800 best 7.4800@32
+epoch  33 loss 7.1477 val_nll 7.4793 best 7.4793@33
+epoch  34 loss 7.1256 val_nll 7.4349 best 7.4349@34
+epoch  35 loss 7.0925 val_nll 7.4154 best 7.4154@35
+epoch  36 loss 7.0696 val_nll 7.4125 best 7.4125@36
+epoch  37 loss 7.0362 val_nll 7.3854 best 7.3854@37
+epoch  38 loss 7.0099 val_nll 7.3648 best 7.3648@38
+epoch  39 loss 7.0080 val_nll 7.3550 best 7.3550@39
+epoch  40 loss 6.9800 val_nll 7.3580 best 7.3550@39
+epoch  41 loss 6.9355 val_nll 7.3251 best 7.3251@41
+epoch  42 loss 6.9405 val_nll 7.3071 best 7.3071@42
+epoch  44 loss 6.8741 val_nll 7.2973 best 7.2973@44
+epoch  45 loss 6.8613 val_nll 7.2830 best 7.2830@45
+epoch  46 loss 6.8330 val_nll 7.2811 best 7.2811@46
+epoch  47 loss 6.8257 val_nll 7.2618 best 7.2618@47
+epoch  48 loss 6.8145 val_nll 7.2451 best 7.2451@48
+epoch  49 loss 6.7907 val_nll 7.2319 best 7.2319@49
+epoch  50 loss 6.7662 val_nll 7.2414 best 7.2319@49
+epoch  51 loss 6.7542 val_nll 7.2242 best 7.2242@51
+epoch  52 loss 6.7289 val_nll 7.2141 best 7.2141@52
+epoch  53 loss 6.7128 val_nll 7.2045 best 7.2045@53
+epoch  54 loss 6.7045 val_nll 7.1993 best 7.1993@54
+epoch  55 loss 6.6850 val_nll 7.1889 best 7.1889@55
+epoch  58 loss 6.6397 val_nll 7.1708 best 7.1708@58
+epoch  60 loss 6.6002 val_nll 7.1711 best 7.1708@58
+epoch  61 loss 6.6080 val_nll 7.1706 best 7.1706@61
+epoch  62 loss 6.5847 val_nll 7.1520 best 7.1520@62
+epoch  63 loss 6.5659 val_nll 7.1430 best 7.1430@63
+epoch  65 loss 6.5374 val_nll 7.1424 best 7.1424@65
+epoch  66 loss 6.5378 val_nll 7.1336 best 7.1336@66
+epoch  68 loss 6.5212 val_nll 7.1277 best 7.1277@68
+epoch  69 loss 6.5032 val_nll 7.1175 best 7.1175@69
+epoch  70 loss 6.4685 val_nll 7.1253 best 7.1175@69
+epoch  72 loss 6.4720 val_nll 7.1155 best 7.1155@72
+epoch  74 loss 6.4385 val_nll 7.1060 best 7.1060@74
+epoch  75 loss 6.4272 val_nll 7.1050 best 7.1050@75
+epoch  77 loss 6.4177 val_nll 7.1019 best 7.1019@77
+epoch  78 loss 6.4076 val_nll 7.0987 best 7.0987@78
+epoch  79 loss 6.3911 val_nll 7.0915 best 7.0915@79
+epoch  80 loss 6.3895 val_nll 7.1049 best 7.0915@79
+epoch  81 loss 6.3589 val_nll 7.0874 best 7.0874@81
+epoch  83 loss 6.3505 val_nll 7.0873 best 7.0873@83
+epoch  87 loss 6.3131 val_nll 7.0852 best 7.0852@87
+epoch  88 loss 6.2992 val_nll 7.0827 best 7.0827@88
+epoch  89 loss 6.3009 val_nll 7.0774 best 7.0774@89
+epoch  90 loss 6.2719 val_nll 7.0782 best 7.0774@89
+epoch  91 loss 6.2635 val_nll 7.0718 best 7.0718@91
+epoch  93 loss 6.2529 val_nll 7.0614 best 7.0614@93
+epoch  95 loss 6.2326 val_nll 7.0609 best 7.0609@95
+epoch  99 loss 6.2024 val_nll 7.0563 best 7.0563@99
+epoch 100 loss 6.1885 val_nll 7.0581 best 7.0563@99
+epoch 101 loss 6.1985 val_nll 7.0555 best 7.0555@101
+epoch 104 loss 6.1638 val_nll 7.0542 best 7.0542@104
+epoch 107 loss 6.1369 val_nll 7.0410 best 7.0410@107
+epoch 110 loss 6.1183 val_nll 7.0541 best 7.0410@107
+epoch 120 loss 6.0552 val_nll 7.0415 best 7.0410@107
+epoch 127 loss 5.9932 val_nll 7.0398 best 7.0398@127
+epoch 130 loss 5.9956 val_nll 7.0411 best 7.0398@127
+epoch 140 loss 5.9436 val_nll 7.0489 best 7.0398@127
+epoch 141 loss 5.9421 val_nll 7.0372 best 7.0372@141
+epoch 145 loss 5.9196 val_nll 7.0351 best 7.0351@145
+epoch 150 loss 5.8924 val_nll 7.0390 best 7.0351@145
+epoch 160 loss 5.8651 val_nll 7.0424 best 7.0351@145
+epoch 162 loss 5.8564 val_nll 7.0339 best 7.0339@162
+epoch 164 loss 5.8429 val_nll 7.0307 best 7.0307@164
+epoch 165 loss 5.8636 val_nll 7.0298 best 7.0298@165
+epoch 169 loss 5.8275 val_nll 7.0278 best 7.0278@169
+epoch 170 loss 5.8286 val_nll 7.0334 best 7.0278@169
+epoch 180 loss 5.8093 val_nll 7.0311 best 7.0278@169
+epoch 190 loss 5.7835 val_nll 7.0359 best 7.0278@169
+early stop at epoch 194
+{'coverage': 0.9165, 'area_median': 0.1502685546875, 'ineff_median': 11.010769230769231, 'ineff_mean': 101.57234525435088, 'size': 2500, 'mode': 'M1'}
+=== M0 @ 5000 ===
+baseline seed 1: 4.87M params
+epoch   0 loss 8.1577 val_nll 8.0183 best 8.0183@0
+epoch   1 loss 7.9979 val_nll 7.9668 best 7.9668@1
+epoch   3 loss 7.9725 val_nll 7.9600 best 7.9600@3
+epoch   5 loss 7.9589 val_nll 7.9480 best 7.9480@5
+epoch   6 loss 7.9533 val_nll 7.9478 best 7.9478@6
+epoch   8 loss 7.9439 val_nll 7.9361 best 7.9361@8
+epoch  10 loss 7.9377 val_nll 7.9519 best 7.9361@8
+epoch  11 loss 7.9296 val_nll 7.9332 best 7.9332@11
+epoch  12 loss 7.9193 val_nll 7.9254 best 7.9254@12
+epoch  14 loss 7.8981 val_nll 7.9126 best 7.9126@14
+epoch  15 loss 7.8672 val_nll 7.9068 best 7.9068@15
+epoch  16 loss 7.8146 val_nll 7.8536 best 7.8536@16
+epoch  17 loss 7.7547 val_nll 7.8254 best 7.8254@17
+epoch  18 loss 7.6988 val_nll 7.7937 best 7.7937@18
+epoch  19 loss 7.6301 val_nll 7.7523 best 7.7523@19
+epoch  20 loss 7.5575 val_nll 7.6924 best 7.6924@20
+epoch  21 loss 7.4648 val_nll 7.6095 best 7.6095@21
+epoch  22 loss 7.3833 val_nll 7.5289 best 7.5289@22
+epoch  23 loss 7.2935 val_nll 7.4288 best 7.4288@23
+epoch  24 loss 7.2129 val_nll 7.3832 best 7.3832@24
+epoch  25 loss 7.1575 val_nll 7.3045 best 7.3045@25
+epoch  26 loss 7.0898 val_nll 7.2710 best 7.2710@26
+epoch  27 loss 7.0401 val_nll 7.2165 best 7.2165@27
+epoch  28 loss 6.9922 val_nll 7.1881 best 7.1881@28
+epoch  29 loss 6.9540 val_nll 7.1609 best 7.1609@29
+epoch  30 loss 6.9156 val_nll 7.1358 best 7.1358@30
+epoch  31 loss 6.8843 val_nll 7.1004 best 7.1004@31
+epoch  32 loss 6.8383 val_nll 7.0790 best 7.0790@32
+epoch  33 loss 6.8093 val_nll 7.0714 best 7.0714@33
+epoch  34 loss 6.7864 val_nll 7.0293 best 7.0293@34
+epoch  35 loss 6.7629 val_nll 7.0129 best 7.0129@35
+epoch  37 loss 6.6961 val_nll 6.9698 best 6.9698@37
+epoch  39 loss 6.6477 val_nll 6.9494 best 6.9494@39
+epoch  40 loss 6.6253 val_nll 6.9705 best 6.9494@39
+epoch  41 loss 6.6033 val_nll 6.9387 best 6.9387@41
+epoch  42 loss 6.5829 val_nll 6.9353 best 6.9353@42
+epoch  43 loss 6.5567 val_nll 6.9060 best 6.9060@43
+epoch  46 loss 6.4945 val_nll 6.8847 best 6.8847@46
+epoch  47 loss 6.4664 val_nll 6.8835 best 6.8835@47
+epoch  48 loss 6.4497 val_nll 6.8814 best 6.8814@48
+epoch  50 loss 6.4222 val_nll 6.8706 best 6.8706@50
+epoch  51 loss 6.4008 val_nll 6.8474 best 6.8474@51
+epoch  54 loss 6.3504 val_nll 6.8395 best 6.8395@54
+epoch  55 loss 6.3358 val_nll 6.8354 best 6.8354@55
+epoch  56 loss 6.3013 val_nll 6.8294 best 6.8294@56
+epoch  59 loss 6.2660 val_nll 6.8096 best 6.8096@59
+epoch  60 loss 6.2572 val_nll 6.7914 best 6.7914@60
+epoch  63 loss 6.2053 val_nll 6.7842 best 6.7842@63
+epoch  66 loss 6.1453 val_nll 6.7781 best 6.7781@66
+epoch  70 loss 6.0896 val_nll 6.7699 best 6.7699@70
+epoch  71 loss 6.0822 val_nll 6.7640 best 6.7640@71
+epoch  75 loss 6.0241 val_nll 6.7563 best 6.7563@75
+epoch  76 loss 6.0030 val_nll 6.7491 best 6.7491@76
+epoch  80 loss 5.9375 val_nll 6.7439 best 6.7439@80
+epoch  90 loss 5.8095 val_nll 6.7451 best 6.7439@80
+epoch  93 loss 5.7815 val_nll 6.7386 best 6.7386@93
+epoch 100 loss 5.6861 val_nll 6.7655 best 6.7386@93
+epoch 103 loss 5.6598 val_nll 6.7263 best 6.7263@103
+epoch 110 loss 5.5771 val_nll 6.7584 best 6.7263@103
+epoch 120 loss 5.4814 val_nll 6.7516 best 6.7263@103
+early stop at epoch 128
+{'coverage': 0.8935, 'area_median': 0.1356201171875, 'ineff_median': 9.946527777777778, 'ineff_mean': 92.50631269974116, 'size': 5000, 'mode': 'M0'}
+=== M1 @ 5000 ===
+distill seed 1: 4.87M params
+epoch   0 loss 8.3221 val_nll 8.2733 best 8.2733@0
+epoch   1 loss 8.2476 val_nll 8.2321 best 8.2321@1
+epoch   2 loss 8.2268 val_nll 8.2244 best 8.2244@2
+epoch   3 loss 8.2007 val_nll 8.1813 best 8.1813@3
+epoch   4 loss 8.1541 val_nll 8.1430 best 8.1430@4
+epoch   5 loss 8.1283 val_nll 8.1333 best 8.1333@5
+epoch   6 loss 8.1148 val_nll 8.1210 best 8.1210@6
+epoch   7 loss 8.1009 val_nll 8.1116 best 8.1116@7
+epoch   8 loss 8.0871 val_nll 8.0986 best 8.0986@8
+epoch   9 loss 8.0690 val_nll 8.0749 best 8.0749@9
+epoch  10 loss 8.0061 val_nll 8.0152 best 8.0152@10
+epoch  11 loss 7.8821 val_nll 7.8736 best 7.8736@11
+epoch  12 loss 7.7093 val_nll 7.7005 best 7.7005@12
+epoch  13 loss 7.5487 val_nll 7.5641 best 7.5641@13
+epoch  14 loss 7.4415 val_nll 7.4787 best 7.4787@14
+epoch  15 loss 7.3515 val_nll 7.4107 best 7.4107@15
+epoch  16 loss 7.2934 val_nll 7.3753 best 7.3753@16
+epoch  17 loss 7.2275 val_nll 7.2995 best 7.2995@17
+epoch  18 loss 7.1750 val_nll 7.2572 best 7.2572@18
+epoch  19 loss 7.1289 val_nll 7.2521 best 7.2521@19
+epoch  20 loss 7.0923 val_nll 7.1889 best 7.1889@20
+epoch  21 loss 7.0439 val_nll 7.1631 best 7.1631@21
+epoch  22 loss 7.0140 val_nll 7.1390 best 7.1390@22
+epoch  23 loss 6.9758 val_nll 7.1043 best 7.1043@23
+epoch  24 loss 6.9503 val_nll 7.0695 best 7.0695@24
+epoch  25 loss 6.9175 val_nll 7.0583 best 7.0583@25
+epoch  26 loss 6.8882 val_nll 7.0320 best 7.0320@26
+epoch  27 loss 6.8582 val_nll 7.0076 best 7.0076@27
+epoch  28 loss 6.8454 val_nll 6.9970 best 6.9970@28
+epoch  29 loss 6.8229 val_nll 6.9914 best 6.9914@29
+epoch  30 loss 6.7887 val_nll 6.9632 best 6.9632@30
+epoch  31 loss 6.7665 val_nll 6.9525 best 6.9525@31
+epoch  32 loss 6.7574 val_nll 6.9436 best 6.9436@32
+epoch  33 loss 6.7320 val_nll 6.9215 best 6.9215@33
+epoch  34 loss 6.7096 val_nll 6.9210 best 6.9210@34
+epoch  35 loss 6.7009 val_nll 6.8881 best 6.8881@35
+epoch  36 loss 6.6835 val_nll 6.8842 best 6.8842@36
+epoch  37 loss 6.6681 val_nll 6.8767 best 6.8767@37
+epoch  39 loss 6.6432 val_nll 6.8544 best 6.8544@39
+epoch  40 loss 6.6246 val_nll 6.8591 best 6.8544@39
+epoch  41 loss 6.6194 val_nll 6.8337 best 6.8337@41
+epoch  43 loss 6.5799 val_nll 6.8327 best 6.8327@43
+epoch  44 loss 6.5728 val_nll 6.8121 best 6.8121@44
+epoch  45 loss 6.5637 val_nll 6.7964 best 6.7964@45
+epoch  46 loss 6.5440 val_nll 6.7900 best 6.7900@46
+epoch  47 loss 6.5253 val_nll 6.7662 best 6.7662@47
+epoch  48 loss 6.5164 val_nll 6.7653 best 6.7653@48
+epoch  50 loss 6.4979 val_nll 6.7550 best 6.7550@50
+epoch  52 loss 6.4608 val_nll 6.7389 best 6.7389@52
+epoch  54 loss 6.4541 val_nll 6.7320 best 6.7320@54
+epoch  55 loss 6.4440 val_nll 6.7226 best 6.7226@55
+epoch  58 loss 6.4064 val_nll 6.7140 best 6.7140@58
+epoch  60 loss 6.3927 val_nll 6.7152 best 6.7140@58
+epoch  61 loss 6.3817 val_nll 6.7033 best 6.7033@61
+epoch  62 loss 6.3686 val_nll 6.6922 best 6.6922@62
+epoch  63 loss 6.3396 val_nll 6.6906 best 6.6906@63
+epoch  65 loss 6.3384 val_nll 6.6860 best 6.6860@65
+epoch  66 loss 6.3280 val_nll 6.6816 best 6.6816@66
+epoch  69 loss 6.2967 val_nll 6.6792 best 6.6792@69
+epoch  70 loss 6.2907 val_nll 6.6965 best 6.6792@69
+epoch  71 loss 6.2828 val_nll 6.6570 best 6.6570@71
+epoch  75 loss 6.2385 val_nll 6.6540 best 6.6540@75
+epoch  78 loss 6.2220 val_nll 6.6533 best 6.6533@78
+epoch  79 loss 6.2062 val_nll 6.6458 best 6.6458@79
+epoch  80 loss 6.2034 val_nll 6.6423 best 6.6423@80
+epoch  81 loss 6.2007 val_nll 6.6352 best 6.6352@81
+epoch  84 loss 6.1693 val_nll 6.6208 best 6.6208@84
+epoch  86 loss 6.1541 val_nll 6.6175 best 6.6175@86
+epoch  90 loss 6.1286 val_nll 6.6054 best 6.6054@90
+epoch 100 loss 6.0599 val_nll 6.6095 best 6.6054@90
+epoch 102 loss 6.0390 val_nll 6.6009 best 6.6009@102
+epoch 105 loss 6.0263 val_nll 6.5977 best 6.5977@105
+epoch 110 loss 5.9934 val_nll 6.6155 best 6.5977@105
+epoch 111 loss 5.9938 val_nll 6.5958 best 6.5958@111
+epoch 113 loss 5.9775 val_nll 6.5942 best 6.5942@113
+epoch 118 loss 5.9405 val_nll 6.5933 best 6.5933@118
+epoch 120 loss 5.9329 val_nll 6.5854 best 6.5854@120
+epoch 130 loss 5.8813 val_nll 6.5976 best 6.5854@120
+epoch 140 loss 5.8373 val_nll 6.5877 best 6.5854@120
+early stop at epoch 145
+{'coverage': 0.9095, 'area_median': 0.079345703125, 'ineff_median': 6.059477963200685, 'ineff_mean': 51.215469739631075, 'size': 5000, 'mode': 'M1'}
+=== M0 @ 10000 ===
+baseline seed 1: 4.87M params
+epoch   0 loss 8.0882 val_nll 7.9760 best 7.9760@0
+epoch   1 loss 7.9923 val_nll 7.9484 best 7.9484@1
+epoch   2 loss 7.9718 val_nll 7.9370 best 7.9370@2
+epoch   5 loss 7.9564 val_nll 7.9292 best 7.9292@5
+epoch   7 loss 7.9418 val_nll 7.9288 best 7.9288@7
+epoch   8 loss 7.9249 val_nll 7.8952 best 7.8952@8
+epoch   9 loss 7.8750 val_nll 7.8345 best 7.8345@9
+epoch  10 loss 7.7778 val_nll 7.7433 best 7.7433@10
+epoch  11 loss 7.6324 val_nll 7.5939 best 7.5939@11
+epoch  12 loss 7.4040 val_nll 7.3000 best 7.3000@12
+epoch  13 loss 7.2067 val_nll 7.1450 best 7.1450@13
+epoch  14 loss 7.0993 val_nll 7.0640 best 7.0640@14
+epoch  15 loss 7.0127 val_nll 6.9807 best 6.9807@15
+epoch  16 loss 6.9452 val_nll 6.9344 best 6.9344@16
+epoch  17 loss 6.8906 val_nll 6.8882 best 6.8882@17
+epoch  18 loss 6.8363 val_nll 6.8653 best 6.8653@18
+epoch  19 loss 6.8043 val_nll 6.8495 best 6.8495@19
+epoch  20 loss 6.7418 val_nll 6.8294 best 6.8294@20
+epoch  21 loss 6.7111 val_nll 6.7860 best 6.7860@21
+epoch  22 loss 6.6679 val_nll 6.7210 best 6.7210@22
+epoch  23 loss 6.6527 val_nll 6.7164 best 6.7164@23
+epoch  24 loss 6.6192 val_nll 6.6894 best 6.6894@24
+epoch  25 loss 6.5976 val_nll 6.6556 best 6.6556@25
+epoch  27 loss 6.5371 val_nll 6.5958 best 6.5958@27
+epoch  30 loss 6.4793 val_nll 6.5819 best 6.5819@30
+epoch  31 loss 6.4644 val_nll 6.5700 best 6.5700@31
+epoch  32 loss 6.4506 val_nll 6.5599 best 6.5599@32
+epoch  33 loss 6.4342 val_nll 6.5574 best 6.5574@33
+epoch  35 loss 6.4024 val_nll 6.5242 best 6.5242@35
+epoch  39 loss 6.3469 val_nll 6.4657 best 6.4657@39
+epoch  40 loss 6.3186 val_nll 6.4513 best 6.4513@40
+epoch  45 loss 6.2639 val_nll 6.4037 best 6.4037@45
+epoch  48 loss 6.2279 val_nll 6.4015 best 6.4015@48
+epoch  49 loss 6.2146 val_nll 6.3846 best 6.3846@49
+epoch  50 loss 6.1971 val_nll 6.3859 best 6.3846@49
+epoch  51 loss 6.1841 val_nll 6.3824 best 6.3824@51
+epoch  53 loss 6.1669 val_nll 6.3495 best 6.3495@53
+epoch  54 loss 6.1549 val_nll 6.3413 best 6.3413@54
+epoch  60 loss 6.0860 val_nll 6.3805 best 6.3413@54
+epoch  62 loss 6.0645 val_nll 6.3330 best 6.3330@62
+epoch  66 loss 6.0265 val_nll 6.3304 best 6.3304@66
+epoch  68 loss 6.0070 val_nll 6.3188 best 6.3188@68
+epoch  70 loss 6.0008 val_nll 6.3474 best 6.3188@68
+epoch  75 loss 5.9529 val_nll 6.3117 best 6.3117@75
+epoch  80 loss 5.8859 val_nll 6.3406 best 6.3117@75
+epoch  81 loss 5.9016 val_nll 6.3061 best 6.3061@81
+epoch  90 loss 5.8174 val_nll 6.3382 best 6.3061@81
+epoch 100 loss 5.7255 val_nll 6.3400 best 6.3061@81
+early stop at epoch 106
+{'coverage': 0.875, 'area_median': 0.068359375, 'ineff_median': 5.572089314194578, 'ineff_mean': 47.63314472859747, 'size': 10000, 'mode': 'M0'}
+=== M1 @ 10000 ===
+distill seed 1: 4.87M params
+epoch   0 loss 8.2899 val_nll 8.2559 best 8.2559@0
+epoch   1 loss 8.2322 val_nll 8.2048 best 8.2048@1
+epoch   2 loss 8.1634 val_nll 8.1295 best 8.1295@2
+epoch   3 loss 8.1282 val_nll 8.1172 best 8.1172@3
+epoch   4 loss 8.1090 val_nll 8.1058 best 8.1058@4
+epoch   5 loss 8.0814 val_nll 8.0461 best 8.0461@5
+epoch   6 loss 7.9260 val_nll 7.7915 best 7.7915@6
+epoch   7 loss 7.6154 val_nll 7.5205 best 7.5205@7
+epoch   8 loss 7.4065 val_nll 7.3647 best 7.3647@8
+epoch   9 loss 7.2887 val_nll 7.3067 best 7.3067@9
+epoch  10 loss 7.1966 val_nll 7.1796 best 7.1796@10
+epoch  11 loss 7.1040 val_nll 7.1399 best 7.1399@11
+epoch  12 loss 7.0467 val_nll 7.0941 best 7.0941@12
+epoch  13 loss 6.9905 val_nll 7.0189 best 7.0189@13
+epoch  14 loss 6.9461 val_nll 6.9676 best 6.9676@14
+epoch  15 loss 6.8878 val_nll 6.9393 best 6.9393@15
+epoch  16 loss 6.8551 val_nll 6.9250 best 6.9250@16
+epoch  17 loss 6.8220 val_nll 6.8785 best 6.8785@17
+epoch  18 loss 6.7970 val_nll 6.8637 best 6.8637@18
+epoch  19 loss 6.7808 val_nll 6.8518 best 6.8518@19
+epoch  20 loss 6.7279 val_nll 6.8277 best 6.8277@20
+epoch  21 loss 6.7040 val_nll 6.7832 best 6.7832@21
+epoch  22 loss 6.6659 val_nll 6.7613 best 6.7613@22
+epoch  23 loss 6.6564 val_nll 6.7271 best 6.7271@23
+epoch  24 loss 6.6376 val_nll 6.7256 best 6.7256@24
+epoch  25 loss 6.6319 val_nll 6.7239 best 6.7239@25
+epoch  26 loss 6.5969 val_nll 6.6892 best 6.6892@26
+epoch  28 loss 6.5605 val_nll 6.6782 best 6.6782@28
+epoch  30 loss 6.5215 val_nll 6.6409 best 6.6409@30
+epoch  32 loss 6.4985 val_nll 6.5887 best 6.5887@32
+epoch  34 loss 6.4699 val_nll 6.5864 best 6.5864@34
+epoch  37 loss 6.4139 val_nll 6.5804 best 6.5804@37
+epoch  38 loss 6.4247 val_nll 6.5726 best 6.5726@38
+epoch  39 loss 6.4040 val_nll 6.5407 best 6.5407@39
+epoch  40 loss 6.3845 val_nll 6.5147 best 6.5147@40
+epoch  43 loss 6.3693 val_nll 6.5023 best 6.5023@43
+epoch  46 loss 6.3350 val_nll 6.4990 best 6.4990@46
+epoch  47 loss 6.3083 val_nll 6.4861 best 6.4861@47
+epoch  48 loss 6.3050 val_nll 6.4837 best 6.4837@48
+epoch  50 loss 6.2869 val_nll 6.4605 best 6.4605@50
+epoch  53 loss 6.2760 val_nll 6.4517 best 6.4517@53
+epoch  54 loss 6.2491 val_nll 6.4258 best 6.4258@54
+epoch  60 loss 6.1913 val_nll 6.4306 best 6.4258@54
+epoch  61 loss 6.2092 val_nll 6.4063 best 6.4063@61
+epoch  63 loss 6.1775 val_nll 6.3916 best 6.3916@63
+epoch  65 loss 6.1655 val_nll 6.3895 best 6.3895@65
+epoch  68 loss 6.1436 val_nll 6.3855 best 6.3855@68
+epoch  69 loss 6.1320 val_nll 6.3797 best 6.3797@69
+epoch  70 loss 6.1336 val_nll 6.3679 best 6.3679@70
+epoch  75 loss 6.1093 val_nll 6.3512 best 6.3512@75
+epoch  76 loss 6.0834 val_nll 6.3477 best 6.3477@76
+epoch  80 loss 6.0456 val_nll 6.3472 best 6.3472@80
+epoch  81 loss 6.0499 val_nll 6.3462 best 6.3462@81
+epoch  83 loss 6.0473 val_nll 6.3309 best 6.3309@83
+epoch  85 loss 6.0109 val_nll 6.3304 best 6.3304@85
+epoch  90 loss 6.0093 val_nll 6.3382 best 6.3304@85
+epoch  93 loss 5.9672 val_nll 6.3294 best 6.3294@93
+epoch  96 loss 5.9529 val_nll 6.3293 best 6.3293@96
+epoch  97 loss 5.9729 val_nll 6.3054 best 6.3054@97
+epoch 100 loss 5.9302 val_nll 6.3170 best 6.3054@97
+epoch 107 loss 5.8763 val_nll 6.2956 best 6.2956@107
+epoch 110 loss 5.8879 val_nll 6.2904 best 6.2904@110
+epoch 112 loss 5.8704 val_nll 6.2853 best 6.2853@112
+epoch 120 loss 5.8430 val_nll 6.3072 best 6.2853@112
+epoch 130 loss 5.8014 val_nll 6.3017 best 6.2853@112
+epoch 133 loss 5.7949 val_nll 6.2817 best 6.2817@133
+epoch 140 loss 5.7641 val_nll 6.3025 best 6.2817@133
+epoch 142 loss 5.7313 val_nll 6.2722 best 6.2722@142
+epoch 150 loss 5.7158 val_nll 6.2827 best 6.2722@142
+epoch 156 loss 5.7007 val_nll 6.2716 best 6.2716@156
+epoch 160 loss 5.6741 val_nll 6.2807 best 6.2716@156
+epoch 164 loss 5.6797 val_nll 6.2685 best 6.2685@164
+epoch 170 loss 5.6725 val_nll 6.2683 best 6.2683@170
+epoch 180 loss 5.6555 val_nll 6.2717 best 6.2683@170
+epoch 183 loss 5.6462 val_nll 6.2670 best 6.2670@183
+epoch 190 loss 5.6326 val_nll 6.2648 best 6.2648@190
+epoch 193 loss 5.6199 val_nll 6.2615 best 6.2615@193
+{'coverage': 0.8985, 'area_median': 0.052978515625, 'ineff_median': 3.924304035032843, 'ineff_mean': 28.909651649849433, 'size': 10000, 'mode': 'M1'}
+=== M0 @ 40000 ===
+baseline seed 1: 4.87M params
+epoch   0 loss 8.0059 val_nll 7.9513 best 7.9513@0
+epoch   1 loss 7.9566 val_nll 7.9376 best 7.9376@1
+epoch   2 loss 7.8758 val_nll 7.7328 best 7.7328@2
+epoch   3 loss 7.3263 val_nll 7.0535 best 7.0535@3
+epoch   4 loss 6.9435 val_nll 6.8247 best 6.8247@4
+epoch   5 loss 6.7665 val_nll 6.6716 best 6.6716@5
+epoch   6 loss 6.6587 val_nll 6.5943 best 6.5943@6
+epoch   7 loss 6.5824 val_nll 6.5465 best 6.5465@7
+epoch   8 loss 6.5203 val_nll 6.4789 best 6.4789@8
+epoch   9 loss 6.4680 val_nll 6.4125 best 6.4125@9
+epoch  10 loss 6.4255 val_nll 6.3733 best 6.3733@10
+epoch  11 loss 6.3818 val_nll 6.3312 best 6.3312@11
+epoch  12 loss 6.3482 val_nll 6.3163 best 6.3163@12
+epoch  13 loss 6.3158 val_nll 6.2764 best 6.2764@13
+epoch  14 loss 6.2916 val_nll 6.2722 best 6.2722@14
+epoch  16 loss 6.2437 val_nll 6.1991 best 6.1991@16
+epoch  17 loss 6.2160 val_nll 6.1594 best 6.1594@17
+epoch  20 loss 6.1569 val_nll 6.1373 best 6.1373@20
+epoch  22 loss 6.1244 val_nll 6.1203 best 6.1203@22
+epoch  23 loss 6.1059 val_nll 6.0911 best 6.0911@23
+epoch  25 loss 6.0787 val_nll 6.0705 best 6.0705@25
+epoch  27 loss 6.0525 val_nll 6.0513 best 6.0513@27
+epoch  28 loss 6.0397 val_nll 6.0299 best 6.0299@28
+epoch  30 loss 6.0199 val_nll 6.0322 best 6.0299@28
+epoch  31 loss 6.0054 val_nll 6.0052 best 6.0052@31
+epoch  34 loss 5.9779 val_nll 6.0017 best 6.0017@34
+epoch  35 loss 5.9656 val_nll 5.9979 best 5.9979@35
+epoch  37 loss 5.9500 val_nll 5.9613 best 5.9613@37
+epoch  40 loss 5.9245 val_nll 5.9542 best 5.9542@40
+epoch  41 loss 5.9115 val_nll 5.9211 best 5.9211@41
+epoch  46 loss 5.8748 val_nll 5.9083 best 5.9083@46
+epoch  48 loss 5.8579 val_nll 5.8829 best 5.8829@48
+epoch  50 loss 5.8384 val_nll 5.8768 best 5.8768@50
+epoch  56 loss 5.8008 val_nll 5.8680 best 5.8680@56
+epoch  60 loss 5.7691 val_nll 5.8871 best 5.8680@56
+epoch  61 loss 5.7678 val_nll 5.8317 best 5.8317@61
+epoch  66 loss 5.7331 val_nll 5.8114 best 5.8114@66
+epoch  67 loss 5.7260 val_nll 5.8088 best 5.8088@67
+epoch  70 loss 5.7074 val_nll 5.8291 best 5.8088@67
+epoch  73 loss 5.6942 val_nll 5.7768 best 5.7768@73
+epoch  80 loss 5.6536 val_nll 5.7947 best 5.7768@73
+epoch  84 loss 5.6296 val_nll 5.7759 best 5.7759@84
+epoch  85 loss 5.6216 val_nll 5.7659 best 5.7659@85
+epoch  88 loss 5.6051 val_nll 5.7442 best 5.7442@88
+epoch  90 loss 5.5992 val_nll 5.7494 best 5.7442@88
+epoch  91 loss 5.5875 val_nll 5.7294 best 5.7294@91
+epoch 100 loss 5.5407 val_nll 5.7437 best 5.7294@91
+epoch 101 loss 5.5379 val_nll 5.7249 best 5.7249@101
+epoch 103 loss 5.5254 val_nll 5.7198 best 5.7198@103
+epoch 107 loss 5.5075 val_nll 5.7150 best 5.7150@107
+epoch 110 loss 5.4872 val_nll 5.7296 best 5.7150@107
+epoch 117 loss 5.4583 val_nll 5.7057 best 5.7057@117
+epoch 120 loss 5.4455 val_nll 5.7224 best 5.7057@117
+epoch 124 loss 5.4272 val_nll 5.6996 best 5.6996@124
+epoch 128 loss 5.4087 val_nll 5.6905 best 5.6905@128
+epoch 129 loss 5.4014 val_nll 5.6893 best 5.6893@129
+epoch 130 loss 5.4039 val_nll 5.7028 best 5.6893@129
+epoch 133 loss 5.3857 val_nll 5.6848 best 5.6848@133
+epoch 140 loss 5.3621 val_nll 5.6948 best 5.6848@133
+epoch 150 loss 5.3310 val_nll 5.6915 best 5.6848@133
+early stop at epoch 158
+{'coverage': 0.908, 'area_median': 0.0380859375, 'ineff_median': 2.9301682692307693, 'ineff_mean': 19.242402103319886, 'size': 40000, 'mode': 'M0'}
+=== M1 @ 40000 ===
+distill seed 1: 4.87M params
+epoch   0 loss 8.2032 val_nll 8.1167 best 8.1167@0
+epoch   1 loss 7.9365 val_nll 7.4997 best 7.4997@1
+epoch   2 loss 7.2638 val_nll 7.1119 best 7.1119@2
+epoch   3 loss 7.0011 val_nll 6.9223 best 6.9223@3
+epoch   4 loss 6.8555 val_nll 6.8043 best 6.8043@4
+epoch   5 loss 6.7543 val_nll 6.7438 best 6.7438@5
+epoch   6 loss 6.6731 val_nll 6.6530 best 6.6530@6
+epoch   7 loss 6.6090 val_nll 6.6015 best 6.6015@7
+epoch   8 loss 6.5582 val_nll 6.5345 best 6.5345@8
+epoch   9 loss 6.5067 val_nll 6.5046 best 6.5046@9
+epoch  10 loss 6.4657 val_nll 6.4527 best 6.4527@10
+epoch  11 loss 6.4361 val_nll 6.4320 best 6.4320@11
+epoch  12 loss 6.4069 val_nll 6.4284 best 6.4284@12
+epoch  13 loss 6.3763 val_nll 6.3816 best 6.3816@13
+epoch  14 loss 6.3518 val_nll 6.3513 best 6.3513@14
+epoch  15 loss 6.3234 val_nll 6.3420 best 6.3420@15
+epoch  16 loss 6.3038 val_nll 6.2949 best 6.2949@16
+epoch  17 loss 6.2827 val_nll 6.2922 best 6.2922@17
+epoch  20 loss 6.2295 val_nll 6.2662 best 6.2662@20
+epoch  22 loss 6.1974 val_nll 6.2553 best 6.2553@22
+epoch  23 loss 6.1823 val_nll 6.2280 best 6.2280@23
+epoch  25 loss 6.1585 val_nll 6.1975 best 6.1975@25
+epoch  26 loss 6.1449 val_nll 6.1883 best 6.1883@26
+epoch  28 loss 6.1210 val_nll 6.1835 best 6.1835@28
+epoch  30 loss 6.1001 val_nll 6.1472 best 6.1472@30
+epoch  31 loss 6.0921 val_nll 6.1464 best 6.1464@31
+epoch  32 loss 6.0775 val_nll 6.1387 best 6.1387@32
+epoch  34 loss 6.0617 val_nll 6.1242 best 6.1242@34
+epoch  35 loss 6.0502 val_nll 6.1171 best 6.1171@35
+epoch  36 loss 6.0418 val_nll 6.1070 best 6.1070@36
+epoch  38 loss 6.0215 val_nll 6.0987 best 6.0987@38
+epoch  39 loss 6.0140 val_nll 6.0986 best 6.0986@39
+epoch  40 loss 6.0070 val_nll 6.0929 best 6.0929@40
+epoch  41 loss 5.9954 val_nll 6.0699 best 6.0699@41
+epoch  48 loss 5.9441 val_nll 6.0494 best 6.0494@48
+epoch  50 loss 5.9272 val_nll 6.0525 best 6.0494@48
+epoch  51 loss 5.9152 val_nll 6.0283 best 6.0283@51
+epoch  53 loss 5.9053 val_nll 6.0000 best 6.0000@53
+epoch  57 loss 5.8828 val_nll 5.9959 best 5.9959@57
+epoch  60 loss 5.8592 val_nll 6.0514 best 5.9959@57
+epoch  61 loss 5.8548 val_nll 5.9943 best 5.9943@61
+epoch  64 loss 5.8385 val_nll 5.9847 best 5.9847@64
+epoch  66 loss 5.8229 val_nll 5.9710 best 5.9710@66
+epoch  69 loss 5.8091 val_nll 5.9527 best 5.9527@69
+epoch  70 loss 5.7999 val_nll 5.9857 best 5.9527@69
+epoch  79 loss 5.7540 val_nll 5.9218 best 5.9218@79
+epoch  80 loss 5.7490 val_nll 5.9602 best 5.9218@79
+epoch  82 loss 5.7375 val_nll 5.9155 best 5.9155@82
+epoch  88 loss 5.7033 val_nll 5.9071 best 5.9071@88
+epoch  90 loss 5.6968 val_nll 5.9296 best 5.9071@88
+epoch  98 loss 5.6594 val_nll 5.8997 best 5.8997@98
+epoch 100 loss 5.6514 val_nll 5.9282 best 5.8997@98
+epoch 102 loss 5.6474 val_nll 5.8932 best 5.8932@102
+epoch 106 loss 5.6259 val_nll 5.8793 best 5.8793@106
+epoch 110 loss 5.6095 val_nll 5.9146 best 5.8793@106
+epoch 112 loss 5.6005 val_nll 5.8705 best 5.8705@112
+epoch 116 loss 5.5831 val_nll 5.8671 best 5.8671@116
+epoch 120 loss 5.5722 val_nll 5.8682 best 5.8671@116
+epoch 125 loss 5.5511 val_nll 5.8645 best 5.8645@125
+epoch 128 loss 5.5440 val_nll 5.8638 best 5.8638@128
+epoch 129 loss 5.5393 val_nll 5.8614 best 5.8614@129
+epoch 130 loss 5.5379 val_nll 5.8570 best 5.8570@130
+epoch 133 loss 5.5272 val_nll 5.8492 best 5.8492@133
+epoch 140 loss 5.5050 val_nll 5.8495 best 5.8492@133
+epoch 142 loss 5.4967 val_nll 5.8488 best 5.8488@142
+epoch 144 loss 5.4963 val_nll 5.8403 best 5.8403@144
+epoch 150 loss 5.4772 val_nll 5.8516 best 5.8403@144
+epoch 160 loss 5.4569 val_nll 5.8446 best 5.8403@144
+epoch 164 loss 5.4537 val_nll 5.8391 best 5.8391@164
+epoch 170 loss 5.4409 val_nll 5.8365 best 5.8365@170
+epoch 172 loss 5.4357 val_nll 5.8332 best 5.8332@172
+epoch 180 loss 5.4241 val_nll 5.8354 best 5.8332@172
+epoch 182 loss 5.4217 val_nll 5.8313 best 5.8313@182
+epoch 190 loss 5.4149 val_nll 5.8366 best 5.8313@182
+epoch 191 loss 5.4118 val_nll 5.8307 best 5.8307@191
+epoch 193 loss 5.4137 val_nll 5.8273 best 5.8273@193
+{'coverage': 0.8965, 'area_median': 0.0284423828125, 'ineff_median': 2.1438246097337004, 'ineff_mean': 13.373528491454326, 'size': 40000, 'mode': 'M1'}
+fig13 done
+=== ADDITIONS DONE ===
+exit: 0

@@ -1,0 +1,21 @@
+{
+  "wilcoxon_stat": 1182054.0,
+  "wilcoxon_p": 5.514999074259412e-13,
+  "test": "one-sided Wilcoxon signed-rank on paired log inefficiency ratios (H1: M0 > M1)",
+  "ineff_median_M0_ci95": [
+    5.572089314194578,
+    4.739726027397261,
+    6.851956739184794
+  ],
+  "ineff_median_M1_ci95": [
+    3.924304035032843,
+    3.326923076923077,
+    4.781718749999959
+  ],
+  "median_log_ratio_improvement_ci95": [
+    0.23062222457792697,
+    0.19662009852108692,
+    0.2656668057890275
+  ],
+  "frac_scenarios_M1_sharper": 0.606
+}

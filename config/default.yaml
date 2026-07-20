@@ -59,6 +59,11 @@ splits:
   calib: 2000
   test: 2000
 
+# Extra scenarios for the data-scaling study (Sec. "what drives the gap");
+# the frozen benchmark splits are untouched.
+extra_splits:
+  train_xl: 30000
+
 # Post-hoc physics-distilled variant (clearly labeled non-preregistered):
 # IDENTICAL DeepSets architecture, IDENTICAL 10k train split and optimizer;
 # only the loss changes -- cross-entropy to the exact Bayes posterior of each

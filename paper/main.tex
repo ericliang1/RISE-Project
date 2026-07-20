@@ -49,7 +49,12 @@ Bayes-optimal rate. Distilling mildly tempered exact posteriors into the \emph{i
 architecture --- changing only the training target --- reduces the median inefficiency to
 $3.9\times$ and raises the sensor-response ratio to $0.87$; raw, untempered posterior
 targets fail to optimize. Point accuracy barely changes
-throughout: the deficiency was posterior approximation, not localization. All coverage
+throughout: the deficiency was posterior approximation, not localization. A data-scaling
+study shows both supervisions follow parallel power laws with no plateau by 40k
+scenarios --- physics supervision acts as a $\sim$2$\times$ data multiplier
+($p = 5.5\times10^{-13}$, paired) --- and a stratified audit localizes the gap to
+information-rich scenarios, where the model rather than the sensor network is the
+binding constraint. All coverage
 claims are conformally verified at matched $90\%$ coverage, separating calibration from
 sharpness. The simulator, frozen scenarios, exact per-scenario posteriors, and full
 pipeline are released.
@@ -105,8 +110,11 @@ inefficiency and half-strength information response (Sec.~\ref{sec:r-m0}).
 (ii) Fixed tempered physics-posterior distillation recovers a third of the sharpness gap
 and most of the sensor-response gap; raw teachers are an optimization trap
 (Sec.~\ref{sec:r-m1}).
-(iii) The residual gap to the Bayes limit --- $3.9\times$ at the median --- quantifies
-what amortization leaves on the table at this data scale (Sec.~\ref{sec:r-gap}).
+(iii) The gap is data-limited, not a capacity floor: both supervisions scale as
+$\approx$ size$^{-0.46}$ with no plateau by 40k scenarios, and distillation is a
+constant $\sim$2$\times$ data multiplier; stratification shows the gap lives where data
+are richest, and that with sparse sensors the network --- not the model --- is the
+binding constraint (Sec.~\ref{sec:r-gap}).
 (iv) Portable implementation lessons: the standard conformal score silently saturates in
 floating point on sharp probability maps; fixed-node rate quadrature cannot marginalize
 peaked likelihoods; the specified architecture memorizes without symmetry augmentation
@@ -370,22 +378,62 @@ only gestures at.
   \label{fig:zoo}
 \end{figure}
 
-\subsection{The residual amortization gap}
+\subsection{Significance, and what drives the residual gap}
 \label{sec:r-gap}
 
-M1's $3.9\times$ median at verified $90\%$ coverage is our measured estimate of what
-amortization leaves on the table at this architecture and data scale, with the training
-signal largely ruled out as the binding constraint: M1 already uses the Bayes-optimal
-target at a learnable temper. Figure~\ref{fig:dose} shows the mechanism at scenario
-level: as sensors accrue, the distilled model's mean region-area curve tracks the
-oracle's closely where M0 under-reacts. The area--error association
+The M0--M1 improvement is statistically unambiguous: a one-sided paired Wilcoxon
+signed-rank test on per-scenario log inefficiency ratios gives $p = 5.5\times10^{-13}$,
+M1 is sharper on $61\%$ of individual scenarios, and bootstrap $95\%$ CIs on the median
+inefficiency are $5.6\times$ $[4.7, 6.9]$ (M0) vs.\ $3.9\times$ $[3.3, 4.8]$ (M1); the
+ordering is stable across three seeds with no metric overlap (Table~\ref{tab:seeds}).
+
+\paragraph{The gap is data-limited, and distillation is worth $\sim$2$\times$ data.}
+Retraining both supervisions at $\{2.5, 5, 10, 40\}$k scenarios
+(Figure~\ref{fig:scaling}) shows both inefficiencies falling as an approximate power law
+(median inefficiency $\propto$ size$^{-0.46}$) with \emph{no plateau} by 40k --- at this
+architecture the residual gap is predominantly a simulation-budget limit, not a capacity
+floor. The two curves are near-parallel: M1 at any size matches M0 at roughly
+\emph{twice} that size (M1@2.5k $\approx$ M0@5k; M1@10k $\approx$ M0@21k,
+interpolated), so physics-posterior supervision acts as a $\sim$2$\times$ data
+multiplier, constant across the tested range. The best configuration (M1@40k) reaches
+$2.14\times$ at coverage $0.897$.
+
+\paragraph{Where the gap lives.} Stratifying the audit (Figure~\ref{fig:stratified})
+localizes the inefficiency where the \emph{data are richest}: with 4--6 sensors or high
+noise, even M0 sits near the physical limit ($1.2$--$1.9\times$) --- the sensor network,
+not the model, is the binding constraint --- while with 10--12 sensors or low noise the
+model is the constraint ($17\times$ for M0, cut to $11\times$ by M1; $194\times \to
+111\times$ in the sharpest-oracle decile). Distillation also makes conditional coverage
+\emph{more uniform}: M1 stays within $0.888$--$0.909$ across all strata where M0 spans
+$0.861$--$0.896$. (On the broadest-oracle deciles both models' ratios dip below 1; this
+is the marginal-coverage trade-off --- under-covering easy scenarios while over-covering
+sharp ones --- not superiority to Bayes.) Figure~\ref{fig:dose} shows the mechanism at
+scenario level: as sensors accrue, the distilled model's mean region-area curve tracks
+the oracle's closely where M0 under-reacts. The area--error association
 (Figure~\ref{fig:audit}, right) persists across models, supporting region area as a
-future abstention signal; the full per-scenario improvement distribution and the
-remaining knob responses are in Appendix~\ref{app:gallery}
-(Figures~\ref{fig:improve}--\ref{fig:knobs}). Across three seeds per model the improvement is stable
-(Table~\ref{tab:seeds}); the residual gap concentrates in scenarios whose exact
-posterior is sharpest --- precisely where a $4.9$M-parameter amortized map must compress
-the most information.
+future abstention signal; per-scenario improvement distributions and remaining knob
+responses are in Appendix~\ref{app:gallery}
+(Figures~\ref{fig:improve}--\ref{fig:knobs}).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.52\linewidth]{fig13_scaling.pdf}
+  \caption{\textbf{Data-scaling of the amortization gap} (seed 1; small labels =
+  conformal coverage per point). Both supervisions follow $\approx$ size$^{-0.46}$ power
+  laws with no plateau by 40k; the distilled curve is offset by a constant
+  $\sim$2$\times$ in data.}
+  \label{fig:scaling}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig14_stratified.pdf}
+  \caption{\textbf{Stratified audit.} Left: median inefficiency by oracle-difficulty
+  decile --- the gap concentrates where the oracle is sharpest. Right: conditional
+  conformal coverage by sensor-count and noise strata; distillation is both sharper and
+  more uniformly calibrated.}
+  \label{fig:stratified}
+\end{figure}
 
 \begin{figure}[t]
   \centering
@@ -467,9 +515,10 @@ localization benchmark built to measure exactly this --- conformal coverage equa
 plus an exact-posterior reference --- point-label training left a $5.6\times$
 sharpness gap and half-strength information response; tempered physics-posterior distillation reduced
 the gap to $3.9\times$ and restored $87\%$ of the Bayes-proportional sensor response.
-The residual gap is a measured property of amortization at this scale, and the
-released benchmark makes both the supervision and the measurement available to any
-simulator-based inverse problem.
+The residual gap is a measured, data-limited property --- it follows a power law in
+simulation budget, with distillation halving the budget required --- and the released
+benchmark makes the supervision, the measurement, and the scaling protocol available to
+any simulator-based inverse problem.
 
 \section*{Reproducibility Statement}
 
