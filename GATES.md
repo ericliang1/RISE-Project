@@ -303,6 +303,21 @@ JSONs.
 No overlap on any sharpness metric; M0 3-seed coverage brackets 0.90,
 further supporting the seed-1 fluctuation analysis.
 
+## CH4-500 methane-configured testbed (second simulator)
+
+3-D steady Gaussian plume (Briggs/PG stability A-F, ground reflection),
+500x500 m site, Q 10-500 kg/h, winds 1-8 m/s, H=3 m, z_r=2 m, noise 0.2-3
+ppm; same splits/machinery; separate data files ch4_*. Gates: crosswind
+symmetry 4e-14; mass-flux conservation 4e-6; 80 ppm @ 100 m/100 kg/h/D.
+Coverage: exact 0.894, M0 0.900, M1 0.912. Structure: 57% of scenarios
+weakly identifiable (thin steady plumes miss random sparse sensors; a
+network-design finding) — there both models ~1x. Identifiable third
+(oracle <10% of site): ineff median M0 32.5x -> M1 8.5x, M1 sharper on 94%
+(Wilcoxon p=1.6e-8; means 348 -> 63). Overall medians are misleading here
+(dominated by unidentifiable scenarios) — reported stratified. Caveat: the
+inline mode-recovery print in the pipeline log has sloppy denominators
+(skip-counting); not cited anywhere.
+
 ## Summary of findings the paper text must absorb
 
 1. The 32-node GL-in-log-q rate marginalization (Sec. 4.3) is numerically

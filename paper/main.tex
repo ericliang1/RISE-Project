@@ -54,7 +54,9 @@ study shows both supervisions follow parallel power laws with no plateau by 40k
 scenarios --- physics supervision acts as a $\sim$2$\times$ data multiplier
 ($p = 5.5\times10^{-13}$, paired) --- and a stratified audit localizes the gap to
 information-rich scenarios, where the model rather than the sensor network is the
-binding constraint. All coverage
+binding constraint. The recipe replicates on a second, methane-configured
+Gaussian-plume testbed (3-D dispersion, stability classes, kg/h release rates): on
+identifiable scenarios, inefficiency falls from $32.5\times$ to $8.5\times$. All coverage
 claims are conformally verified at matched $90\%$ coverage, separating calibration from
 sharpness. The simulator, frozen scenarios, exact per-scenario posteriors, and full
 pipeline are released.
@@ -115,7 +117,10 @@ $\approx$ size$^{-0.46}$ with no plateau by 40k scenarios, and distillation is a
 constant $\sim$2$\times$ data multiplier; stratification shows the gap lives where data
 are richest, and that with sparse sensors the network --- not the model --- is the
 binding constraint (Sec.~\ref{sec:r-gap}).
-(iv) Portable implementation lessons: the standard conformal score silently saturates in
+(iv) The recipe transfers: on a methane-configured 3-D Gaussian-plume testbed
+(CH4-500), distillation cuts identifiable-scenario inefficiency $32.5\times \to
+8.5\times$, sharper on $94\%$ of scenarios (Sec.~\ref{sec:ch4}).
+(v) Portable implementation lessons: the standard conformal score silently saturates in
 floating point on sharp probability maps; fixed-node rate quadrature cannot marginalize
 peaked likelihoods; the specified architecture memorizes without symmetry augmentation
 (Secs.~\ref{sec:conformal}--\ref{sec:oracle}, \ref{sec:m0}).
@@ -448,6 +453,40 @@ responses are in Appendix~\ref{app:gallery}
   \label{fig:stratified}
 \end{figure}
 
+\subsection{CH4-500: the recipe replicates on a methane-configured testbed}
+\label{sec:ch4}
+
+To test transfer beyond one simulator, we built a second, methane-configured testbed:
+a $500 \times 500$ m facility site with a steady-state three-dimensional Gaussian plume
+(ground reflection; Briggs open-country dispersion under Pasquill--Gifford stability
+classes A--F, known context), release rates $10$--$500$ kg/h spanning the $100$ kg/h
+super-emitter threshold, winds $1$--$8$ m/s, a $3$ m release height, $2$ m sensor masts,
+and $0.2$--$3$ ppm sensor noise --- the model family of practical methane inversion
+[Newman et al., 2024]. The plume is closed-form, so the entire pipeline transfers
+verbatim (implementation gates: exact crosswind symmetry; mass-flux conservation
+$\int\!\!\int u C\, \mathrm{d}z\, \mathrm{d}y = Q$ to $4\times10^{-6}$; $80$ ppm at
+$100$ m from a $100$ kg/h release in D stability). Conformal coverage holds for all three
+posteriors ($0.894$--$0.912$). The structure of the problem differs sharply from ADV-2D:
+thin steady plumes miss randomly placed sparse sensors, so $57\%$ of scenarios are
+weakly identifiable (oracle region $\geq 50\%$ of the site) --- itself a
+network-design finding --- and there both models correctly match the near-prior oracle
+($\approx\!1\times$). On the identifiable third (oracle $<10\%$ of the site), the
+main result replicates and amplifies: median inefficiency falls from $32.5\times$ (M0)
+to $8.5\times$ (M1), with M1 sharper on $94\%$ of scenarios (paired Wilcoxon
+$p = 1.6\times10^{-8}$; means $348 \to 63$). Under these units, that is the difference
+between an unactionable region and one approaching survey scale
+(Figure~\ref{fig:ch4}).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig15_methane.pdf}
+  \caption{\textbf{CH4-500 testbed.} Left: sharpness at matched $90\%$ coverage on
+  methane-configured physics; the identifiable-scenario cloud (small oracle areas) moves
+  toward the diagonal under distillation. Right: an example scenario --- a $3$-D
+  Gaussian plume in physical units with sensors and true source.}
+  \label{fig:ch4}
+\end{figure}
+
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{fig4_audit.pdf}
@@ -526,8 +565,10 @@ stationary source, constant known meteorology, Gaussian noise of known level, an
 obstacles, turbulence, or background; ``exact'' means exact for this simulator and grid
 discretization, not for real atmospheric physics. Coverage guarantees are marginal and
 in-distribution; nothing here addresses distribution shift or field deployment.
-Distillation requires tractable per-scenario posteriors at training time --- automatic in
-this benchmark, an approximation problem in messier simulators. Point accuracy is essentially
+Distillation requires tractable per-scenario posteriors at training time --- automatic
+in both testbeds here, an approximation problem in messier simulators. The CH4-500
+configuration remains idealized (steady-state plume, flat terrain, known stability,
+fixed release height). Point accuracy is essentially
 unchanged by the method --- it improves uncertainty, not localization. We claim no new
 conformal algorithm and no new architecture.
 
