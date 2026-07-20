@@ -1,0 +1,126 @@
+== seeds ==
+  M0 ep 0 crit 7.9814 best 7.9814
+  M0 ep 20 crit 7.9349 best 7.9206
+  M0 s1: {'coverage': 0.9005, 'ineff_median_identifiable': 32.478228228228225, 'ineff_mean_identifiable': 347.8575081313623, 'ineff_median_all': 1.016278052890667, 'area_median': 0.57861328125, 'mode': 'M0', 'seed': 1}
+  M1 ep 0 crit 8.3222 best 8.3222
+  M1 ep 20 crit 7.9239 best 7.9239
+  M1 ep 40 crit 7.7819 best 7.7819
+  M1 ep 60 crit 7.7555 best 7.7398
+  M1 ep 80 crit 7.7156 best 7.7091
+  M1 ep 100 crit 7.7023 best 7.6927
+  M1 ep 120 crit 7.6864 best 7.6795
+  M1 ep 140 crit 7.6733 best 7.6733
+  M1 ep 160 crit 7.6706 best 7.6692
+  M1 ep 180 crit 7.6649 best 7.6649
+  M1 s1: {'coverage': 0.912, 'ineff_median_identifiable': 8.531116642958748, 'ineff_mean_identifiable': 63.376060279307346, 'ineff_median_all': 1.3155524020274214, 'area_median': 0.7242431640625, 'mode': 'M1', 'seed': 1}
+  M0 ep 0 crit 7.9825 best 7.9825
+  M0 ep 20 crit 7.9305 best 7.9268
+  M0 s2: {'coverage': 0.909, 'ineff_median_identifiable': 32.60153903903904, 'ineff_mean_identifiable': 349.25727849340814, 'ineff_median_all': 1.0205831941794221, 'area_median': 0.5810546875, 'mode': 'M0', 'seed': 2}
+  M1 ep 0 crit 8.3188 best 8.3188
+  M1 ep 20 crit 7.9168 best 7.9168
+  M1 ep 40 crit 7.8088 best 7.7985
+  M1 ep 60 crit 7.7562 best 7.7504
+  M1 ep 80 crit 7.7497 best 7.7259
+  M1 ep 100 crit 7.7047 best 7.7003
+  M1 ep 120 crit 7.7004 best 7.6920
+  M1 ep 140 crit 7.6807 best 7.6798
+  M1 ep 160 crit 7.6757 best 7.6746
+  M1 ep 180 crit 7.6735 best 7.6713
+  M1 s2: {'coverage': 0.8985, 'ineff_median_identifiable': 8.68892380204242, 'ineff_mean_identifiable': 62.51065245442731, 'ineff_median_all': 1.293920435785732, 'area_median': 0.71484375, 'mode': 'M1', 'seed': 2}
+  M0 ep 0 crit 8.0121 best 8.0121
+  M0 ep 20 crit 7.9391 best 7.9229
+  M0 ep 40 crit 8.0772 best 7.9229
+  M0 s3: {'coverage': 0.905, 'ineff_median_identifiable': 32.74455705705706, 'ineff_mean_identifiable': 351.0112153306848, 'ineff_median_all': 1.0265695612442187, 'area_median': 0.584228515625, 'mode': 'M0', 'seed': 3}
+  M1 ep 0 crit 8.3193 best 8.3193
+  M1 ep 20 crit 7.9578 best 7.9578
+  M1 ep 40 crit 7.8303 best 7.8214
+  M1 ep 60 crit 7.7659 best 7.7524
+  M1 ep 80 crit 7.7332 best 7.7297
+  M1 ep 100 crit 7.7193 best 7.7133
+  M1 ep 120 crit 7.7023 best 7.6934
+  M1 ep 140 crit 7.6889 best 7.6827
+  M1 ep 160 crit 7.6790 best 7.6784
+  M1 ep 180 crit 7.6771 best 7.6753
+  M1 s3: {'coverage': 0.908, 'ineff_median_identifiable': 8.610902255639097, 'ineff_mean_identifiable': 64.87659378462429, 'ineff_median_all': 1.3074039414267573, 'area_median': 0.72216796875, 'mode': 'M1', 'seed': 3}
+== raw teacher ==
+  M1 ep 0 crit 8.3396 best 8.3396
+  M1 ep 20 crit 8.0816 best 8.0816
+  M1 ep 40 crit 7.8947 best 7.8947
+  M1 ep 60 crit 7.8644 best 7.8496
+  M1 ep 80 crit 7.8448 best 7.8426
+  M1 ep 100 crit 7.8411 best 7.8309
+  M1 ep 120 crit 7.8327 best 7.8280
+  M1 ep 140 crit 7.8334 best 7.8246
+  M1 ep 160 crit 7.8192 best 7.8164
+  M1 ep 180 crit 7.8214 best 7.8163
+  raw: {'coverage': 0.902, 'ineff_median_identifiable': 11.31288056206089, 'ineff_mean_identifiable': 77.38165972028914, 'ineff_median_all': 1.398174672426275, 'area_median': 0.7802734375}
+== dose-response (sensor count) ==
+  dose: {'M0': {'slope_ratio_mean_curves': -0.0032580774031425127, 'spearman_median': -0.7555381860207082}, 'M1': {'slope_ratio_mean_curves': 0.7538888900388526, 'spearman_median': 0.9217662871326239}}
+== scaling ==
+  posterior 2000/30000
+  posterior 4000/30000
+  posterior 6000/30000
+  posterior 8000/30000
+  posterior 10000/30000
+  posterior 12000/30000
+  posterior 14000/30000
+  posterior 16000/30000
+  posterior 18000/30000
+  posterior 20000/30000
+  posterior 22000/30000
+  posterior 24000/30000
+  posterior 26000/30000
+  posterior 28000/30000
+  posterior 30000/30000
+  scale M0 @ 2500
+  M0 ep 0 crit 8.1149 best 8.1149
+  M0 ep 20 crit 7.9828 best 7.9459
+    {'coverage': 0.919, 'ineff_median_identifiable': 33.4161036036036, 'ineff_mean_identifiable': 357.99253976642296, 'ineff_median_all': 1.044401644593968, 'area_median': 0.594970703125, 'size': 2500, 'mode': 'M0'}
+  scale M1 @ 2500
+  M1 ep 0 crit 8.3412 best 8.3412
+  M1 ep 20 crit 8.2892 best 8.2892
+  M1 ep 40 crit 8.1573 best 8.1573
+  M1 ep 60 crit 8.0215 best 8.0215
+  M1 ep 80 crit 7.9749 best 7.9749
+  M1 ep 100 crit 7.9578 best 7.9538
+  M1 ep 120 crit 7.9360 best 7.9360
+  M1 ep 140 crit 7.9339 best 7.9298
+  M1 ep 160 crit 7.9239 best 7.9221
+  M1 ep 180 crit 7.9217 best 7.9169
+    {'coverage': 0.9095, 'ineff_median_identifiable': 15.446052631578947, 'ineff_mean_identifiable': 134.14958228082207, 'ineff_median_all': 1.4038515568316892, 'area_median': 0.7784423828125, 'size': 2500, 'mode': 'M1'}
+  scale M0 @ 10000
+  M0 ep 0 crit 7.9814 best 7.9814
+  M0 ep 20 crit 7.9349 best 7.9206
+    {'coverage': 0.9005, 'ineff_median_identifiable': 32.478228228228225, 'ineff_mean_identifiable': 347.8575081313623, 'ineff_median_all': 1.016278052890667, 'area_median': 0.57861328125, 'size': 10000, 'mode': 'M0'}
+  scale M1 @ 10000
+  M1 ep 0 crit 8.3222 best 8.3222
+  M1 ep 20 crit 7.9239 best 7.9239
+  M1 ep 40 crit 7.7819 best 7.7819
+  M1 ep 60 crit 7.7555 best 7.7398
+  M1 ep 80 crit 7.7156 best 7.7091
+  M1 ep 100 crit 7.7023 best 7.6927
+  M1 ep 120 crit 7.6864 best 7.6795
+  M1 ep 140 crit 7.6733 best 7.6733
+  M1 ep 160 crit 7.6706 best 7.6692
+  M1 ep 180 crit 7.6649 best 7.6649
+    {'coverage': 0.912, 'ineff_median_identifiable': 8.531116642958748, 'ineff_mean_identifiable': 63.376060279307346, 'ineff_median_all': 1.3155524020274214, 'area_median': 0.7242431640625, 'size': 10000, 'mode': 'M1'}
+  scale M0 @ 40000
+  M0 ep 0 crit 7.9567 best 7.9567
+  M0 ep 20 crit 7.6014 best 7.6014
+  M0 ep 40 crit 7.4493 best 7.4319
+  M0 ep 60 crit 7.3874 best 7.3853
+  M0 ep 80 crit 7.4104 best 7.3853
+    {'coverage': 0.905, 'ineff_median_identifiable': 8.574835309617917, 'ineff_mean_identifiable': 70.74578569113552, 'ineff_median_all': 0.9306976441494208, 'area_median': 0.5230712890625, 'size': 40000, 'mode': 'M0'}
+  scale M1 @ 40000
+  M1 ep 0 crit 8.2890 best 8.2890
+  M1 ep 20 crit 7.6930 best 7.6930
+  M1 ep 40 crit 7.6155 best 7.6155
+  M1 ep 60 crit 7.5765 best 7.5741
+  M1 ep 80 crit 7.5532 best 7.5532
+  M1 ep 100 crit 7.5466 best 7.5359
+  M1 ep 120 crit 7.5294 best 7.5259
+  M1 ep 140 crit 7.5202 best 7.5113
+  M1 ep 160 crit 7.5113 best 7.5081
+    {'coverage': 0.9045, 'ineff_median_identifiable': 6.162878787878788, 'ineff_mean_identifiable': 39.32681735653852, 'ineff_median_all': 1.222011842649923, 'area_median': 0.6859130859375, 'size': 40000, 'mode': 'M1'}
+CH4 EXTRAS DONE
+exit: 0

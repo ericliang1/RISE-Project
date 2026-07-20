@@ -22,6 +22,55 @@
     },
     "wilcoxon_p": 1.6077144431334497e-08
   },
+  "CH4_extras": {
+    "dose_knob1": {
+      "M0": {
+        "slope_ratio_mean_curves": -0.0032580774031425127,
+        "spearman_median": -0.7555381860207082
+      },
+      "M1": {
+        "slope_ratio_mean_curves": 0.7538888900388526,
+        "spearman_median": 0.9217662871326239
+      }
+    },
+    "n_seed_rows": 6,
+    "raw_teacher_ineff_median_identifiable": 11.31288056206089
+  },
+  "CH4_extras2": {
+    "dose_knob23": {
+      "M0": {
+        "geo_agreement": 0.2688418027123379,
+        "geo_ratio_exact_median": 1.2397170192638662,
+        "geo_ratio_median": 0.9983108105095693,
+        "noise_slope_ratio": 0.0008442048153434402,
+        "noise_spearman_median": 0.22158493354940512
+      },
+      "M1": {
+        "geo_agreement": 0.8644897959183673,
+        "geo_ratio_exact_median": 1.2397170192638662,
+        "geo_ratio_median": 1.0191626519418915,
+        "noise_slope_ratio": 0.7222453596875316,
+        "noise_spearman_median": 0.7085084675941252
+      }
+    },
+    "mode_recovery": "10/24",
+    "mode_recovery_1e6": "18/24",
+    "significance": {
+      "frac_M1_sharper_identifiable": 0.9397058823529412,
+      "ineff_median_ci_M0_identifiable": [
+        32.478228228228225,
+        28.72223038495445,
+        38.193548387096776
+      ],
+      "ineff_median_ci_M1_identifiable": [
+        8.531116642958748,
+        7.484076433121019,
+        11.106681034482758
+      ],
+      "wilcoxon_p_all": 1.6077144431334497e-08,
+      "wilcoxon_p_identifiable": 5.692833528194017e-111
+    }
+  },
   "G1": {
     "fd_cross_check_absRMS_no_signal": [
       8.421932415929921e-20,

@@ -1,0 +1,131 @@
+{
+  "seeds": [
+    {
+      "coverage": 0.9005,
+      "ineff_median_identifiable": 32.478228228228225,
+      "ineff_mean_identifiable": 347.8575081313623,
+      "ineff_median_all": 1.016278052890667,
+      "area_median": 0.57861328125,
+      "mode": "M0",
+      "seed": 1
+    },
+    {
+      "coverage": 0.912,
+      "ineff_median_identifiable": 8.531116642958748,
+      "ineff_mean_identifiable": 63.376060279307346,
+      "ineff_median_all": 1.3155524020274214,
+      "area_median": 0.7242431640625,
+      "mode": "M1",
+      "seed": 1
+    },
+    {
+      "coverage": 0.909,
+      "ineff_median_identifiable": 32.60153903903904,
+      "ineff_mean_identifiable": 349.25727849340814,
+      "ineff_median_all": 1.0205831941794221,
+      "area_median": 0.5810546875,
+      "mode": "M0",
+      "seed": 2
+    },
+    {
+      "coverage": 0.8985,
+      "ineff_median_identifiable": 8.68892380204242,
+      "ineff_mean_identifiable": 62.51065245442731,
+      "ineff_median_all": 1.293920435785732,
+      "area_median": 0.71484375,
+      "mode": "M1",
+      "seed": 2
+    },
+    {
+      "coverage": 0.905,
+      "ineff_median_identifiable": 32.74455705705706,
+      "ineff_mean_identifiable": 351.0112153306848,
+      "ineff_median_all": 1.0265695612442187,
+      "area_median": 0.584228515625,
+      "mode": "M0",
+      "seed": 3
+    },
+    {
+      "coverage": 0.908,
+      "ineff_median_identifiable": 8.610902255639097,
+      "ineff_mean_identifiable": 64.87659378462429,
+      "ineff_median_all": 1.3074039414267573,
+      "area_median": 0.72216796875,
+      "mode": "M1",
+      "seed": 3
+    }
+  ],
+  "raw_teacher": {
+    "coverage": 0.902,
+    "ineff_median_identifiable": 11.31288056206089,
+    "ineff_mean_identifiable": 77.38165972028914,
+    "ineff_median_all": 1.398174672426275,
+    "area_median": 0.7802734375
+  },
+  "dose_knob1": {
+    "M0": {
+      "slope_ratio_mean_curves": -0.0032580774031425127,
+      "spearman_median": -0.7555381860207082
+    },
+    "M1": {
+      "slope_ratio_mean_curves": 0.7538888900388526,
+      "spearman_median": 0.9217662871326239
+    }
+  },
+  "scaling": [
+    {
+      "coverage": 0.919,
+      "ineff_median_identifiable": 33.4161036036036,
+      "ineff_mean_identifiable": 357.99253976642296,
+      "ineff_median_all": 1.044401644593968,
+      "area_median": 0.594970703125,
+      "size": 2500,
+      "mode": "M0"
+    },
+    {
+      "coverage": 0.9095,
+      "ineff_median_identifiable": 15.446052631578947,
+      "ineff_mean_identifiable": 134.14958228082207,
+      "ineff_median_all": 1.4038515568316892,
+      "area_median": 0.7784423828125,
+      "size": 2500,
+      "mode": "M1"
+    },
+    {
+      "coverage": 0.9005,
+      "ineff_median_identifiable": 32.478228228228225,
+      "ineff_mean_identifiable": 347.8575081313623,
+      "ineff_median_all": 1.016278052890667,
+      "area_median": 0.57861328125,
+      "size": 10000,
+      "mode": "M0"
+    },
+    {
+      "coverage": 0.912,
+      "ineff_median_identifiable": 8.531116642958748,
+      "ineff_mean_identifiable": 63.376060279307346,
+      "ineff_median_all": 1.3155524020274214,
+      "area_median": 0.7242431640625,
+      "size": 10000,
+      "mode": "M1"
+    },
+    {
+      "coverage": 0.905,
+      "ineff_median_identifiable": 8.574835309617917,
+      "ineff_mean_identifiable": 70.74578569113552,
+      "ineff_median_all": 0.9306976441494208,
+      "area_median": 0.5230712890625,
+      "size": 40000,
+      "mode": "M0"
+    },
+    {
+      "coverage": 0.9045,
+      "ineff_median_identifiable": 6.162878787878788,
+      "ineff_mean_identifiable": 39.32681735653852,
+      "ineff_median_all": 1.222011842649923,
+      "area_median": 0.6859130859375,
+      "size": 40000,
+      "mode": "M1"
+    }
+  ]
+}

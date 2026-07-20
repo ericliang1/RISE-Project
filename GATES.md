@@ -318,6 +318,22 @@ network-design finding) — there both models ~1x. Identifiable third
 inline mode-recovery print in the pipeline log has sloppy denominators
 (skip-counting); not cited anywhere.
 
+## CH4-only paper (current main.tex; ADV-2D version backed up as paper/main_adv2d_backup.tex)
+
+The paper was fully reframed onto the CH4-500 methane testbed at author
+direction; ADV-2D dropped from the manuscript (kept in repo + history).
+Preregistration language dropped (that protocol belonged to ADV-2D); the CH4
+paper stands on validation gates + controlled ablations + 3-seed stability +
+validation-only selection. Key CH4 numbers (results/ch4_extras*.json,
+ch4_results.json): identifiable-scenario inefficiency M0 32.5x -> M1 8.5x
+(3-seed stable, no overlap; Wilcoxon p<1e-12, M1 sharper 94%); raw teacher
+11.3x (tempering needed); noise slope ratio 0.001 -> 0.72; sensor-mast slope
+ratio ~0 -> 0.75; geometry agreement 0.27 -> 0.86; scaling no plateau by 40k,
+M1@10k ~ M0@40k (~4x data multiplier); 57% of random layouts weakly
+identifiable (network-design finding); mode recovery 18/24 @ 1e-6 ppm (rest
+= exact along-wind ridge degeneracy). Coverage 0.89-0.91 all posteriors.
+Figs 1-14 regenerated on CH4 (src/methane_figures.py). GPU total ~3 h.
+
 ## Summary of findings the paper text must absorb
 
 1. The 32-node GL-in-log-q rate marginalization (Sec. 4.3) is numerically

@@ -1,0 +1,13 @@
+== audit metrics ==
+== stratified ==
+== knobs 2-3 ==
+== memorization ==
+/usr4/spclpgm/eric1/conformal-source-regions/src/methane_extras2.py:288: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:836.)
+  tot += float(loss); nb += 1
+  aug=True final val 8.011
+  aug=False final val 9.480
+== mode recovery ==
+  mode recovery: 10/24
+CH4 EXTRAS2 DONE
+chained exit: 0
