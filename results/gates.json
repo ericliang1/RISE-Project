@@ -22,6 +22,26 @@
     },
     "wilcoxon_p": 1.6077144431334497e-08
   },
+  "CH4T": {
+    "M0": {
+      "coverage": 0.89,
+      "ineff_median_all": 158.5,
+      "ineff_median_identifiable": 252.0
+    },
+    "M1": {
+      "coverage": 0.898,
+      "ineff_median_all": 100.0,
+      "ineff_median_identifiable": 140.0
+    },
+    "exact_coverage": 0.9515,
+    "weak_frac": 0.058,
+    "wilcoxon_p_all": 1.117875445391786e-62
+  },
+  "CH4T_probe": {
+    "ident_frac": 0.73,
+    "n": 400,
+    "weak_frac": 0.05
+  },
   "CH4_extras": {
     "dose_knob1": {
       "M0": {
