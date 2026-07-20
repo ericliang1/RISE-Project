@@ -1,0 +1,54 @@
+{
+  "oracle_radius_m": 6.9692348287217625,
+  "seeds": [
+    {
+      "coverage": 0.89,
+      "radius_m": 93.76146528139473,
+      "ineff_median": 158.5,
+      "mode": "M0",
+      "seed": 1
+    },
+    {
+      "coverage": 0.898,
+      "radius_m": 73.82127244758681,
+      "ineff_median": 100.0,
+      "mode": "M1",
+      "seed": 1
+    },
+    {
+      "coverage": 0.9045,
+      "radius_m": 97.51949464780179,
+      "ineff_median": 168.5,
+      "mode": "M0",
+      "seed": 2
+    },
+    {
+      "coverage": 0.905,
+      "radius_m": 74.4110656230443,
+      "ineff_median": 104.75,
+      "mode": "M1",
+      "seed": 2
+    },
+    {
+      "coverage": 0.886,
+      "radius_m": 95.45562276136552,
+      "ineff_median": 158.2,
+      "mode": "M0",
+      "seed": 3
+    },
+    {
+      "coverage": 0.896,
+      "radius_m": 73.09395153338976,
+      "ineff_median": 94.5,
+      "mode": "M1",
+      "seed": 3
+    }
+  ],
+  "raw_teacher": {
+    "coverage": 0.8985,
+    "radius_m": 134.34544648319093,
+    "ineff_median": 322.5
+  },
+  "wilcoxon_p": 1.117875445391786e-62,
+  "frac_M1_sharper": 0.649
+}

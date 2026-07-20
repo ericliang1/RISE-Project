@@ -37,6 +37,60 @@
     "weak_frac": 0.058,
     "wilcoxon_p_all": 1.117875445391786e-62
   },
+  "CH4T_campaign": {
+    "frac_M1_sharper": 0.649,
+    "oracle_radius_m": 6.9692348287217625,
+    "raw_teacher": {
+      "coverage": 0.8985,
+      "ineff_median": 322.5,
+      "radius_m": 134.34544648319093
+    },
+    "seeds": [
+      {
+        "coverage": 0.89,
+        "ineff_median": 158.5,
+        "mode": "M0",
+        "radius_m": 93.76146528139473,
+        "seed": 1
+      },
+      {
+        "coverage": 0.898,
+        "ineff_median": 100.0,
+        "mode": "M1",
+        "radius_m": 73.82127244758681,
+        "seed": 1
+      },
+      {
+        "coverage": 0.9045,
+        "ineff_median": 168.5,
+        "mode": "M0",
+        "radius_m": 97.51949464780179,
+        "seed": 2
+      },
+      {
+        "coverage": 0.905,
+        "ineff_median": 104.75,
+        "mode": "M1",
+        "radius_m": 74.4110656230443,
+        "seed": 2
+      },
+      {
+        "coverage": 0.886,
+        "ineff_median": 158.2,
+        "mode": "M0",
+        "radius_m": 95.45562276136552,
+        "seed": 3
+      },
+      {
+        "coverage": 0.896,
+        "ineff_median": 94.5,
+        "mode": "M1",
+        "radius_m": 73.09395153338976,
+        "seed": 3
+      }
+    ],
+    "wilcoxon_p": 1.117875445391786e-62
+  },
   "CH4T_probe": {
     "ident_frac": 0.73,
     "n": 400,
