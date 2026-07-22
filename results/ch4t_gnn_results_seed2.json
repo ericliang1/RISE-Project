@@ -1,0 +1,16 @@
+{
+  "exact_coverage": 0.9515,
+  "weak_frac": 0.058,
+  "M2": {
+    "coverage": 0.892,
+    "median_radius_m": 50.25586705141161,
+    "ineff_median_all": 49.0,
+    "ineff_median_identifiable": 68.0
+  },
+  "M2base": {
+    "coverage": 0.893,
+    "median_radius_m": 55.40432108586194,
+    "ineff_median_all": 64.5,
+    "ineff_median_identifiable": 95.0
+  }
+}

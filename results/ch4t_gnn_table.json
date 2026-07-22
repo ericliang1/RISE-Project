@@ -1,0 +1,27 @@
+{
+  "bayes_median_radius_m": 6.933943689877754,
+  "M0_DeepSets_onehot_m": 93.76145097146814,
+  "M1_DeepSets_distill_m": 73.82124312743272,
+  "M2base_GNN_onehot_m": {
+    "per_seed": [
+      56.9,
+      55.4,
+      57.6
+    ],
+    "range": [
+      55.4,
+      57.6
+    ]
+  },
+  "M2_GNN_distill_m": {
+    "per_seed": [
+      51.5,
+      50.3,
+      49.1
+    ],
+    "range": [
+      49.1,
+      51.5
+    ]
+  }
+}

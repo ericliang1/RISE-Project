@@ -265,13 +265,14 @@ def d4_augment_t(batch, xs, u_seq, rng, device):
 
 
 def train(cfg, d_train, d_val, device, distill, P_teacher=None,
-          P_val_teacher=None, seed=1):
+          P_val_teacher=None, seed=1, model_cls=DeepSetsT):
     tr = cfg["training"]
     torch.manual_seed(6000 + seed + (100 if distill else 0))
     rng = np.random.default_rng(seed)
-    model = DeepSetsT(cfg).to(device)
+    model = model_cls(cfg).to(device)
     if seed == 1 and not distill:
-        print(f"  DeepSetsT params: {count_params(model)/1e6:.2f}M", flush=True)
+        print(f"  {model_cls.__name__} params: "
+              f"{count_params(model)/1e6:.2f}M", flush=True)
     opt = torch.optim.AdamW(model.parameters(), lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=200,
