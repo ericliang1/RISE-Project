@@ -13,13 +13,17 @@ family.  Reads only saved audit .npz files -- no training, no data regen.
 import json
 
 import numpy as np
+import torch
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.colors import PowerNorm
+from matplotlib.patches import Circle
+from matplotlib.lines import Line2D
 
 from common import load_config, resolve
-from methane_model import L_SITE as L
-from methane_t import N_GRID
+from methane_model import L_SITE as L, plume_ppm_per_kgh
+from methane_t import N_GRID, T, stab_of
 
 # paper palette + two new purples for the GNN (relational) models
 C_M0, C_M1, C_EXACT, C_MUT, C_GRID = "#2a78d6", "#e87ba4", "#008300", "#52514e", "#e3e2df"
@@ -122,7 +126,67 @@ def main():
     fig.tight_layout()
     for ext in ("pdf", "png"):
         fig.savefig(fig_dir / f"figT1_gnn_audit.{ext}")
+    plt.close(fig)
     print(f"saved {fig_dir}/figT1_gnn_audit.pdf (+.png)")
+
+    # ================= figT2: one scenario, to scale =================
+    # median 90% region radii (drawn to scale on one example, as in the paper)
+    r_bayes = float(np.median(radius_m(exact)))
+    r_m0 = float(np.median(radius_m(m0["sizes"])))
+    r_m1 = float(np.median(radius_m(m1["sizes"])))
+    r_m2 = float(np.median(radius_m(m2[1]["sizes"])))
+
+    d = dict(np.load(data_dir / "ch4t_test.npz", allow_pickle=True))
+    # pick an identifiable, well-sensed scenario (same rule as the paper fig)
+    i = int(np.argsort(exact)[len(exact) // 20])
+    ns = int(d["n_sensors"][i])
+    stab = stab_of(d, i)
+
+    # time-integrated plume envelope (mean over the wind sequence)
+    ng = 160
+    cc = (np.arange(ng) + 0.5) / ng
+    X, Y = np.meshgrid(cc, cc)
+    pts = torch.tensor(np.stack([X.ravel(), Y.ravel()], -1))
+    field = np.zeros(ng * ng)
+    for k in range(T):
+        u = torch.tensor(d["u_seq"][i, k])[None]
+        field += plume_ppm_per_kgh(pts, torch.tensor(d["xs"][i])[None],
+                                   u.expand(ng * ng, 2),
+                                   torch.tensor([stab]).expand(ng * ng)).numpy()
+    field *= d["q"][i] / T
+
+    fig, ax = plt.subplots(figsize=(4.2, 3.9))
+    ax.imshow(field.reshape(ng, ng), origin="lower", extent=[0, L, 0, L],
+              cmap="Purples", norm=PowerNorm(0.4))
+    ax.scatter(d["sensors"][i, :ns, 0] * L, d["sensors"][i, :ns, 1] * L,
+               marker="^", s=26, c="#0b0b0b", edgecolors="white", lw=0.4, zorder=5)
+    sx, sy = d["xs"][i, 0] * L, d["xs"][i, 1] * L
+    for k in range(0, T, 5):
+        u = d["u_seq"][i, k] * 8.0
+        ax.annotate("", xy=(sx + u[0] * 11, sy + u[1] * 11), xytext=(sx, sy),
+                    arrowprops=dict(arrowstyle="-|>", color="#d55181", lw=1,
+                                    alpha=0.6))
+    # to-scale equivalent-radius circles (largest first so all stay visible)
+    for radius, col in [(r_m0, C_M0), (r_m1, C_M1), (r_m2, C_M2), (r_bayes, C_EXACT)]:
+        ax.add_patch(Circle((sx, sy), radius, fill=False, ec=col, lw=1.7,
+                            zorder=4))
+    ax.scatter(sx, sy, marker="*", s=120, c="white", edgecolors="#0b0b0b",
+               lw=0.9, zorder=6)
+    ax.set(xlim=(0, L), ylim=(0, L), xlabel="m", ylabel="m")
+    ax.set_title(f"Median 90% search region, drawn to scale\n"
+                 f"({d['q'][i]:.0f} kg/h, class {'ABCDEF'[stab]}, {ns} masts)",
+                 fontsize=7.5)
+    leg = [Line2D([], [], color=C_EXACT, lw=1.7, label=f"Bayes limit {r_bayes:.0f} m"),
+           Line2D([], [], color=C_M2, lw=1.7, label=f"M2 GNN+distill {r_m2:.0f} m"),
+           Line2D([], [], color=C_M1, lw=1.7, label=f"M1 DeepSets+distill {r_m1:.0f} m"),
+           Line2D([], [], color=C_M0, lw=1.7, label=f"M0 DeepSets {r_m0:.0f} m")]
+    ax.legend(handles=leg, frameon=True, framealpha=0.9, loc="lower left",
+              fontsize=6.5)
+    fig.tight_layout()
+    for ext in ("pdf", "png"):
+        fig.savefig(fig_dir / f"figT2_gnn_example.{ext}")
+    plt.close(fig)
+    print(f"saved {fig_dir}/figT2_gnn_example.pdf (+.png)")
 
 
 if __name__ == "__main__":
