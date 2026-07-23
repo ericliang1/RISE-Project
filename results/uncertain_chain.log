@@ -18,3 +18,59 @@
   calib oracle 1000/2000
   calib oracle 2000/2000
   calib: oracles done
+  test: maps done
+  test oracle 1000/2000
+  test oracle 2000/2000
+  test: oracles done
+=== oracles Thu Jul 23 16:34:21 EDT 2026
+{"tag": "oracle_det", "coverage": 0.698, "median_radius_m": 232.3798318916901}
+{"tag": "oracle_marg", "coverage": 0.7145, "median_radius_m": 252.70564653738435, "wilcoxon_p_vs_ref": 1.0, "frac_sharper_than_ref": 0.133}
+=== train det/det Thu Jul 23 16:34:30 EDT 2026
+  ep 0 crit 6.7317
+  ep 20 crit 5.7324
+  ep 40 crit 5.6961
+  ep 60 crit 5.7068
+  ep 80 crit 5.7545
+  ep 100 crit 5.8200
+  ep 120 crit 5.8467
+  ep 140 crit 5.8794
+  ep 160 crit 5.9001
+  ep 180 crit 5.9166
+{"tag": "s_det_det", "coverage": 0.913, "median_radius_m": 94.7405893019781}
+=== train det/marg Thu Jul 23 16:37:06 EDT 2026
+  ep 0 crit 7.0292
+  ep 20 crit 6.3729
+  ep 40 crit 6.3728
+  ep 60 crit 6.4148
+  ep 80 crit 6.4697
+  ep 100 crit 6.5382
+  ep 120 crit 6.5782
+  ep 140 crit 6.6129
+  ep 160 crit 6.6414
+  ep 180 crit 6.6679
+{"tag": "s_det_marg", "coverage": 0.9065, "median_radius_m": 95.40472666456598, "wilcoxon_p_vs_ref": 0.0012442369011074555, "frac_sharper_than_ref": 0.5965}
+=== train ens/det Thu Jul 23 16:39:41 EDT 2026
+  ep 0 crit 7.0207
+  ep 20 crit 6.0068
+  ep 40 crit 6.0223
+  ep 60 crit 6.0975
+  ep 80 crit 6.1903
+  ep 100 crit 6.2443
+  ep 120 crit 6.3042
+  ep 140 crit 6.3453
+  ep 160 crit 6.3716
+  ep 180 crit 6.3995
+{"tag": "s_ens_det", "coverage": 0.8845, "median_radius_m": 82.34321271399627, "wilcoxon_p_vs_ref": 4.736152247841553e-122, "frac_sharper_than_ref": 0.7655}
+=== train ens/marg Thu Jul 23 16:42:27 EDT 2026
+  ep 0 crit 7.0530
+  ep 20 crit 6.1687
+  ep 40 crit 6.1950
+  ep 60 crit 6.2663
+  ep 80 crit 6.3073
+  ep 100 crit 6.3842
+  ep 120 crit 6.3994
+  ep 140 crit 6.4450
+  ep 160 crit 6.4750
+  ep 180 crit 6.4912
+{"tag": "s_ens_marg", "coverage": 0.895, "median_radius_m": 85.18446439475655, "wilcoxon_p_vs_ref": 1.1136787214739551e-83, "frac_sharper_than_ref": 0.725}
+=== UNCERTAIN CHAIN DONE Thu Jul 23 16:45:10 EDT 2026

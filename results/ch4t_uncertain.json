@@ -1,0 +1,40 @@
+{
+  "oracle_det": {
+    "tag": "oracle_det",
+    "coverage": 0.698,
+    "median_radius_m": 232.3798318916901
+  },
+  "oracle_marg": {
+    "tag": "oracle_marg",
+    "coverage": 0.7145,
+    "median_radius_m": 252.70564653738435,
+    "wilcoxon_p_vs_ref": 1.0,
+    "frac_sharper_than_ref": 0.133
+  },
+  "s_det_det": {
+    "tag": "s_det_det",
+    "coverage": 0.913,
+    "median_radius_m": 94.7405893019781
+  },
+  "s_det_marg": {
+    "tag": "s_det_marg",
+    "coverage": 0.9065,
+    "median_radius_m": 95.40472666456598,
+    "wilcoxon_p_vs_ref": 0.0012442369011074555,
+    "frac_sharper_than_ref": 0.5965
+  },
+  "s_ens_det": {
+    "tag": "s_ens_det",
+    "coverage": 0.8845,
+    "median_radius_m": 82.34321271399627,
+    "wilcoxon_p_vs_ref": 4.736152247841553e-122,
+    "frac_sharper_than_ref": 0.7655
+  },
+  "s_ens_marg": {
+    "tag": "s_ens_marg",
+    "coverage": 0.895,
+    "median_radius_m": 85.18446439475655,
+    "wilcoxon_p_vs_ref": 1.1136787214739551e-83,
+    "frac_sharper_than_ref": 0.725
+  }
+}
