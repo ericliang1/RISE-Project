@@ -341,6 +341,7 @@ def main():
     ap.add_argument("--stage", required=True,
                     choices=["anneal", "sinkhorn", "gen_suffstats",
                              "suffstats"])
+    ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args()
     cfg = load_config()
     device = get_device()
@@ -366,12 +367,14 @@ def main():
         stats = {s: stats_maps(dd, s, data[s])
                  for s in ("train", "val", "calib", "test")}
     model = train_lever(cfg, data, Pt_raw, Pv_raw, device, args.stage,
-                        stats=stats)
+                        stats=stats, seed=args.seed)
     Pc = probs_of(model, data["calib"], device,
                   stats["calib"] if stats else None)
     Pt = probs_of(model, data["test"], device,
                   stats["test"] if stats else None)
-    audit(Pc, Pt, data, cfg, e_sizes, m1_sizes, f"lever_{args.stage}", dd, rr)
+    tag = f"lever_{args.stage}" + ("" if args.seed == 1
+                                   else f"_seed{args.seed}")
+    audit(Pc, Pt, data, cfg, e_sizes, m1_sizes, tag, dd, rr)
 
 
 if __name__ == "__main__":

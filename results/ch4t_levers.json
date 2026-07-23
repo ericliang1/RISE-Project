@@ -1,0 +1,23 @@
+{
+  "lever_anneal": {
+    "tag": "lever_anneal",
+    "coverage": 0.8875,
+    "median_radius_m": 87.15724073711046,
+    "wilcoxon_p_vs_M1": 1.0,
+    "frac_sharper_than_M1": 0.196
+  },
+  "lever_sinkhorn": {
+    "tag": "lever_sinkhorn",
+    "coverage": 0.914,
+    "median_radius_m": 243.42490751646494,
+    "wilcoxon_p_vs_M1": 1.0,
+    "frac_sharper_than_M1": 0.031
+  },
+  "lever_suffstats": {
+    "tag": "lever_suffstats",
+    "coverage": 0.893,
+    "median_radius_m": 49.27993207070625,
+    "wilcoxon_p_vs_M1": 3.0291354688143275e-279,
+    "frac_sharper_than_M1": 0.908
+  }
+}
