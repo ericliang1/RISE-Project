@@ -195,37 +195,48 @@ def stats_maps(dd, split, d):
     return torch.tensor(np.stack([zmap, logb], 1), dtype=torch.float32)
 
 
-class DeepSetsTPhys(DeepSetsT):
-    """DeepSetsT + residual conv head over per-cell likelihood statistics.
-    Final conv zero-initialized: training starts exactly at the M1 baseline
-    and opens the physics channel as it helps."""
+def with_phys_head(base_cls):
+    """Architecture-agnostic physics head: any localizer whose forward takes
+    the batch dict gets a zero-init residual conv head over the per-cell
+    likelihood-statistic maps.  Zero-init => training starts exactly at the
+    base model; the physics channel opens only where it helps."""
 
-    def __init__(self, cfg):
-        super().__init__(cfg)
-        self.phys = nn.Sequential(
-            nn.Conv2d(2, 32, 3, padding=1), nn.GELU(),
-            nn.Conv2d(32, 32, 3, padding=1), nn.GELU(),
-            nn.Conv2d(32, 1, 3, padding=1))
-        nn.init.zeros_(self.phys[-1].weight)
-        nn.init.zeros_(self.phys[-1].bias)
+    class WithPhys(base_cls):
+        def __init__(self, cfg):
+            super().__init__(cfg)
+            self.phys = nn.Sequential(
+                nn.Conv2d(2, 32, 3, padding=1), nn.GELU(),
+                nn.Conv2d(32, 32, 3, padding=1), nn.GELU(),
+                nn.Conv2d(32, 1, 3, padding=1))
+            nn.init.zeros_(self.phys[-1].weight)
+            nn.init.zeros_(self.phys[-1].bias)
 
-    def forward(self, b):
-        base = super().forward(b)
-        s = b["stats"].view(-1, 2, N_GRID, N_GRID)
-        return base + self.phys(s).flatten(1)
+        def forward(self, b):
+            base = super().forward(b)
+            s = b["stats"].view(-1, 2, N_GRID, N_GRID)
+            return base + self.phys(s).flatten(1)
+
+    WithPhys.__name__ = f"{base_cls.__name__}Phys"
+    return WithPhys
+
+
+DeepSetsTPhys = with_phys_head(DeepSetsT)
 
 
 # ------------------------------------------------------------------ trainer
 def train_lever(cfg, data, P_raw_train, P_raw_val, device, mode, stats=None,
-                seed=1):
+                seed=1, base_cls=None):
     """mode: 'anneal' (CE, blur 0.75->0.15), 'sinkhorn' (raw target),
-    'suffstats' (CE, fixed 0.75 blur, stats input)."""
+    'suffstats' (CE, fixed 0.75 blur, stats input).  base_cls: any localizer
+    class taking the batch dict (DeepSetsT, GNNT, SetTransformerT)."""
     tr = cfg["training"]
     torch.manual_seed(6000 + seed + 300)
     rng = np.random.default_rng(seed)
     n_epochs = int(os.environ.get("LEVER_EPOCHS", "200"))   # smoke-test hook
-    model = (DeepSetsTPhys(cfg) if mode == "suffstats"
-             else DeepSetsT(cfg)).to(device)
+    if base_cls is None:
+        base_cls = DeepSetsT
+    model = (with_phys_head(base_cls)(cfg) if mode == "suffstats"
+             else base_cls(cfg)).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(
@@ -342,6 +353,8 @@ def main():
                     choices=["anneal", "sinkhorn", "gen_suffstats",
                              "suffstats"])
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--arch", choices=["deepsets", "gnn", "st"],
+                    default="deepsets")
     args = ap.parse_args()
     cfg = load_config()
     device = get_device()
@@ -366,14 +379,21 @@ def main():
     if args.stage == "suffstats":
         stats = {s: stats_maps(dd, s, data[s])
                  for s in ("train", "val", "calib", "test")}
+    if args.arch == "gnn":
+        from methane_t_gnn import GNNT as base_cls
+    elif args.arch == "st":
+        from methane_t_settransformer import SetTransformerT as base_cls
+    else:
+        base_cls = DeepSetsT
     model = train_lever(cfg, data, Pt_raw, Pv_raw, device, args.stage,
-                        stats=stats, seed=args.seed)
+                        stats=stats, seed=args.seed, base_cls=base_cls)
     Pc = probs_of(model, data["calib"], device,
                   stats["calib"] if stats else None)
     Pt = probs_of(model, data["test"], device,
                   stats["test"] if stats else None)
-    tag = f"lever_{args.stage}" + ("" if args.seed == 1
-                                   else f"_seed{args.seed}")
+    tag = (f"lever_{args.stage}"
+           + ("" if args.arch == "deepsets" else f"_{args.arch}")
+           + ("" if args.seed == 1 else f"_seed{args.seed}"))
     audit(Pc, Pt, data, cfg, e_sizes, m1_sizes, tag, dd, rr)
 
 

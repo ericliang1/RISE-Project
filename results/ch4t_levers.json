@@ -19,5 +19,19 @@
     "median_radius_m": 49.27993207070625,
     "wilcoxon_p_vs_M1": 3.0291354688143275e-279,
     "frac_sharper_than_M1": 0.908
+  },
+  "lever_suffstats_seed2": {
+    "tag": "lever_suffstats_seed2",
+    "coverage": 0.886,
+    "median_radius_m": 49.27993207070625,
+    "wilcoxon_p_vs_M1": 3.2845522284922894e-286,
+    "frac_sharper_than_M1": 0.916
+  },
+  "lever_suffstats_seed3": {
+    "tag": "lever_suffstats_seed3",
+    "coverage": 0.8875,
+    "median_radius_m": 48.08266988280225,
+    "wilcoxon_p_vs_M1": 2.9768617235090276e-287,
+    "frac_sharper_than_M1": 0.9145
   }
 }
