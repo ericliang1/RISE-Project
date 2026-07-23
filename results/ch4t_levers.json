@@ -33,5 +33,33 @@
     "median_radius_m": 48.08266988280225,
     "wilcoxon_p_vs_M1": 2.9768617235090276e-287,
     "frac_sharper_than_M1": 0.9145
+  },
+  "lever_suffstats_gnn": {
+    "tag": "lever_suffstats_gnn",
+    "coverage": 0.9075,
+    "median_radius_m": 44.187367094389224,
+    "wilcoxon_p_vs_M1": 2.741514701994367e-309,
+    "frac_sharper_than_M1": 0.951
+  },
+  "lever_suffstats_gnn_seed2": {
+    "tag": "lever_suffstats_gnn_seed2",
+    "coverage": 0.9015,
+    "median_radius_m": 44.29714954208549,
+    "wilcoxon_p_vs_M1": 0.0,
+    "frac_sharper_than_M1": 0.9575
+  },
+  "lever_suffstats_gnn_seed3": {
+    "tag": "lever_suffstats_gnn_seed3",
+    "coverage": 0.895,
+    "median_radius_m": 43.6343119189067,
+    "wilcoxon_p_vs_M1": 0.0,
+    "frac_sharper_than_M1": 0.9585
+  },
+  "lever_suffstats_st": {
+    "tag": "lever_suffstats_st",
+    "coverage": 0.898,
+    "median_radius_m": 48.88410291306498,
+    "wilcoxon_p_vs_M1": 7.971233155870739e-276,
+    "frac_sharper_than_M1": 0.906
   }
 }

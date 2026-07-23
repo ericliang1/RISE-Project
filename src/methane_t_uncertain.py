@@ -26,7 +26,9 @@ Usage:
   python src/methane_t_uncertain.py --stage train --maps ens --teacher marg [--seed 1]
 """
 import argparse
+import hashlib
 import json
+import os
 
 import numpy as np
 import torch
@@ -184,7 +186,21 @@ def stage_gen(cfg, cfg_q, device):
 
 
 # ------------------------------------------------------------------ audits
-def audit(probs_calib, probs_test, data, cfg, tag, rr, ref_sizes=None):
+def fp_inputs(dd, maps_kind, teacher_kind):
+    """Provenance fingerprint of the artifacts that determine an audit, so a
+    partial rerun can never silently pair against stale references."""
+    out = {}
+    for f in (f"ch4tu_test_maps_{maps_kind}.npz",
+              f"ch4tu_calib_maps_{maps_kind}.npz",
+              f"ch4tu_test_oracle_{teacher_kind}.npz",
+              f"ch4tu_calib_oracle_{teacher_kind}.npz",
+              "ch4tu_test_uobs.npy"):
+        out[f] = hashlib.sha256((dd / f).read_bytes()).hexdigest()[:16]
+    return out
+
+
+def audit(probs_calib, probs_test, data, cfg, tag, rr, ref_sizes=None,
+          npz_path=None, fp=None):
     rng = np.random.default_rng(cfg["conformal"]["score_seed"])
     th = tail_threshold(tail_scores(probs_calib,
                                     data["calib"]["true_cell"], rng),
@@ -199,11 +215,16 @@ def audit(probs_calib, probs_test, data, cfg, tag, rr, ref_sizes=None):
         out["wilcoxon_p_vs_ref"] = float(w.pvalue)
         out["frac_sharper_than_ref"] = float((reg["sizes"]
                                               < ref_sizes).mean())
+    if npz_path is not None:                 # npz BEFORE json: no state where
+        np.savez_compressed(npz_path,        # json claims an absent audit
+                            sizes=reg["sizes"], fp=json.dumps(fp or {}))
     res_path = rr / "ch4t_uncertain.json"
     all_res = json.load(open(res_path)) if res_path.exists() else {}
     all_res[tag] = out
-    with open(res_path, "w") as f:
+    tmp = res_path.with_suffix(".json.tmp")
+    with open(tmp, "w") as f:
         json.dump(all_res, f, indent=2)
+    os.replace(tmp, res_path)
     print(json.dumps(out), flush=True)
     return reg["sizes"]
 
@@ -352,14 +373,23 @@ def main():
                     args.seed)
     Pc = probs_of(model, data["calib"], device, stats["calib"])
     Pt = probs_of(model, data["test"], device, stats["test"])
-    # reference for the paired test: the det/det student if present
+    # paired reference: the det/det student, with loud staleness checks
     tag = f"s_{args.maps}_{args.teacher}" + (
         "" if args.seed == 1 else f"_seed{args.seed}")
-    ref_path = dd / "ch4tu_audit_s_det_det.npz"
-    ref = np.load(ref_path)["sizes"] if (ref_path.exists()
-                                         and tag != "s_det_det") else None
-    sizes = audit(Pc, Pt, data, cfg, tag, rr, ref_sizes=ref)
-    np.savez_compressed(dd / f"ch4tu_audit_{tag}.npz", sizes=sizes)
+    ref = None
+    if tag != "s_det_det":
+        ref_path = dd / "ch4tu_audit_s_det_det.npz"
+        if not ref_path.exists():
+            raise RuntimeError("paired reference s_det_det missing -- "
+                               "run --maps det --teacher det first")
+        z = np.load(ref_path)
+        if json.loads(str(z["fp"])) != fp_inputs(dd, "det", "det"):
+            raise RuntimeError("stale s_det_det reference -- artifacts were "
+                               "regenerated; rerun det/det first")
+        ref = z["sizes"]
+    audit(Pc, Pt, data, cfg, tag, rr, ref_sizes=ref,
+          npz_path=dd / f"ch4tu_audit_{tag}.npz",
+          fp=fp_inputs(dd, args.maps, args.teacher))
 
 
 if __name__ == "__main__":
