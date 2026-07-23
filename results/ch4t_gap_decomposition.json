@@ -1,0 +1,45 @@
+{
+  "teacher_sweep": [
+    {
+      "blur_sigma_cells": 0.0,
+      "coverage": 0.9515,
+      "median_radius_m": 6.9692348287217625
+    },
+    {
+      "blur_sigma_cells": 0.25,
+      "coverage": 0.9525,
+      "median_radius_m": 6.9692348287217625
+    },
+    {
+      "blur_sigma_cells": 0.5,
+      "coverage": 0.898,
+      "median_radius_m": 8.815462242933691
+    },
+    {
+      "blur_sigma_cells": 0.75,
+      "coverage": 0.895,
+      "median_radius_m": 11.661760393441106
+    },
+    {
+      "blur_sigma_cells": 1.0,
+      "coverage": 0.9015,
+      "median_radius_m": 13.938469657443525
+    },
+    {
+      "blur_sigma_cells": 1.5,
+      "coverage": 0.8995,
+      "median_radius_m": 18.173540983129993
+    },
+    {
+      "blur_sigma_cells": 3.0,
+      "coverage": 0.8955,
+      "median_radius_m": 30.537656993932494
+    }
+  ],
+  "students_for_reference_m": {
+    "M1_deepsets": 73.8,
+    "M2_gnn": 50.3,
+    "M3_settransformer": 56.1
+  },
+  "note": "sigma=0.75 row = ceiling a perfect student of the paper's teacher could reach; student minus that row = approximation/optimization gap, not tempering."
+}
