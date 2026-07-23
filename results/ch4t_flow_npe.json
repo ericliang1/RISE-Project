@@ -1,0 +1,10 @@
+{
+  "flow_npe_seed1": {
+    "tag": "flow_npe_seed1",
+    "coverage": 0.897,
+    "median_radius_m": 81.63232275408774,
+    "wilcoxon_p_vs_M1": 9.511414373488454e-33,
+    "frac_sharper_than_M1": 0.637,
+    "norm_drift": 2.1732027675192e-06
+  }
+}

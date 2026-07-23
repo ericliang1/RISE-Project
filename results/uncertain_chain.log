@@ -7,3 +7,14 @@
   train oracle 5000/10000
   train oracle 6000/10000
   train oracle 7000/10000
+  train oracle 8000/10000
+  train oracle 9000/10000
+  train oracle 10000/10000
+  train: oracles done
+  val: maps done
+  val oracle 1000/1000
+  val: oracles done
+  calib: maps done
+  calib oracle 1000/2000
+  calib oracle 2000/2000
+  calib: oracles done
