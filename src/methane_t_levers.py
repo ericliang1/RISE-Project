@@ -76,24 +76,26 @@ def audit(probs_calib, probs_test, data, cfg, e_sizes, m1_sizes, tag, dd, rr):
     return out
 
 
-# ---------------------------------------------------- val criterion (area)
+# ------------------------------------------- val criterion (conformal area)
 @torch.no_grad()
-def val_area_crit(model, d, device, stats=None, floor=0.85):
-    """Median raw-HPD-0.90 area on val with a coverage floor: matches the
-    audited quantity when the training objective is moving (anneal) or is not
-    a CE (sinkhorn).  Lesson from the ADV-2D curriculum: teacher-CE selects
-    blurry mid-anneal students."""
-    P = probs_of(model, d, device, stats)
-    order = np.argsort(-P, axis=1)
-    ps = np.take_along_axis(P, order, 1)
-    k = 1 + (np.cumsum(ps, 1) < 0.90).sum(1)
-    areas = k / N_CELLS
-    ranks = np.empty_like(order)
-    np.put_along_axis(ranks, order, np.arange(N_CELLS)[None, :], 1)
-    covered = ranks[np.arange(len(k)), d["true_cell"]] < k
-    if covered.mean() < floor:
+def val_conformal_crit(model, d, device, alpha, stats=None):
+    """Median CONFORMAL region size on val: calibrate on the first half,
+    measure on the second.  This is exactly the audited quantity, so no
+    coverage floor is needed -- miscalibration is automatically paid as
+    larger regions rather than tripping a hard threshold (a 0.85 raw-HPD
+    floor spuriously rejects sharp-but-uncalibrated intermediate states,
+    which killed the sinkhorn smoke run).  Fixed rng: epochs comparable."""
+    try:
+        P = probs_of(model, d, device, stats)
+        if not np.isfinite(P).all():
+            return np.inf
+        h = len(d["ids"]) // 2
+        rng = np.random.default_rng(1234567)
+        th = tail_threshold(tail_scores(P[:h], d["true_cell"][:h], rng), alpha)
+        reg = regions(P[h:], th, d["true_cell"][h:])
+        return float(np.median(reg["sizes"]))
+    except (ValueError, FloatingPointError):
         return np.inf
-    return float(np.median(areas))
 
 
 @torch.no_grad()
@@ -295,8 +297,9 @@ def train_lever(cfg, data, P_raw_train, P_raw_val, device, mode, stats=None,
             crit = teacher_ce_val(model, d_val, val_teacher, device,
                                   stats["val"])
         else:                                       # objective moves / not CE
-            crit = val_area_crit(model, d_val, device,
-                                 stats["val"] if stats else None)
+            crit = val_conformal_crit(model, d_val, device,
+                                      cfg["conformal"]["alpha"],
+                                      stats["val"] if stats else None)
         if np.isfinite(crit):
             bad_crits = 0
         else:

@@ -1,0 +1,15 @@
+=== smoke: 2-epoch end-to-end of anneal+sinkhorn Thu Jul 23 15:15:56 EDT 2026
+  anneal ep 0 crit 0.71411
+  anneal ep 1 crit 0.73169
+{"tag": "lever_anneal", "coverage": 0.9115, "median_radius_m": 218.17155959453353, "wilcoxon_p_vs_M1": 1.0, "frac_sharper_than_M1": 0.1405}
+  sinkhorn ep 0 crit inf
+  sinkhorn ep 1 crit inf
+Traceback (most recent call last):
+  File "/usr4/spclpgm/eric1/conformal-source-regions/src/methane_t_levers.py", line 375, in <module>
+    main()
+  File "/usr4/spclpgm/eric1/conformal-source-regions/src/methane_t_levers.py", line 365, in main
+    model = train_lever(cfg, data, Pt_raw, Pv_raw, device, args.stage,
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr4/spclpgm/eric1/conformal-source-regions/src/methane_t_levers.py", line 315, in train_lever
+    raise RuntimeError(f"{mode}: no epoch passed the selection criterion "
+RuntimeError: sinkhorn: no epoch passed the selection criterion (best=inf)
