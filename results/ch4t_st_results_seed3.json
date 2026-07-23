@@ -1,0 +1,18 @@
+{
+  "exact_coverage": 0.9515,
+  "weak_frac": 0.058,
+  "M3": {
+    "coverage": 0.885,
+    "median_radius_m": 58.30880196720553,
+    "ineff_median_all": 53.16666666666667,
+    "ineff_median_identifiable": 77.5
+  },
+  "M3base": {
+    "coverage": 0.893,
+    "median_radius_m": 69.20274673781043,
+    "ineff_median_all": 71.41666666666666,
+    "ineff_median_identifiable": 100.0
+  },
+  "M2_median_radius_m": 51.496853166640264,
+  "wilcoxon_p_M3_sharper_than_M2": 0.9999999999999951
+}

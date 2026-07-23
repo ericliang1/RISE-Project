@@ -85,6 +85,60 @@
     "exact_coverage": 0.9515,
     "weak_frac": 0.058
   },
+  "CH4T_ST_seed1": {
+    "M2_median_radius_m": 51.496853166640264,
+    "M3": {
+      "coverage": 0.8905,
+      "ineff_median_all": 49.243589743589745,
+      "ineff_median_identifiable": 71.0,
+      "median_radius_m": 56.10125818145147
+    },
+    "M3base": {
+      "coverage": 0.902,
+      "ineff_median_all": 77.75,
+      "ineff_median_identifiable": 107.0,
+      "median_radius_m": 70.24767458317346
+    },
+    "exact_coverage": 0.9515,
+    "weak_frac": 0.058,
+    "wilcoxon_p_M3_sharper_than_M2": 0.967321218442402
+  },
+  "CH4T_ST_seed2": {
+    "M2_median_radius_m": 51.496853166640264,
+    "M3": {
+      "coverage": 0.904,
+      "ineff_median_all": 51.0,
+      "ineff_median_identifiable": 73.0,
+      "median_radius_m": 59.87049937221231
+    },
+    "M3base": {
+      "coverage": 0.8895,
+      "ineff_median_all": 84.25,
+      "ineff_median_identifiable": 124.0,
+      "median_radius_m": 75.060956264577
+    },
+    "exact_coverage": 0.9515,
+    "weak_frac": 0.058,
+    "wilcoxon_p_M3_sharper_than_M2": 0.9999999999999781
+  },
+  "CH4T_ST_seed3": {
+    "M2_median_radius_m": 51.496853166640264,
+    "M3": {
+      "coverage": 0.885,
+      "ineff_median_all": 53.16666666666667,
+      "ineff_median_identifiable": 77.5,
+      "median_radius_m": 58.30880196720553
+    },
+    "M3base": {
+      "coverage": 0.893,
+      "ineff_median_all": 71.41666666666666,
+      "ineff_median_identifiable": 100.0,
+      "median_radius_m": 69.20274673781043
+    },
+    "exact_coverage": 0.9515,
+    "weak_frac": 0.058,
+    "wilcoxon_p_M3_sharper_than_M2": 0.9999999999999951
+  },
   "CH4T_campaign": {
     "frac_M1_sharper": 0.649,
     "oracle_radius_m": 6.9692348287217625,
