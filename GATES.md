@@ -381,3 +381,17 @@ documented finite-source-size modification, not Briggs.
 Remaining UNVERIFIED (assumptions, not errors): quasi-static stepping (no
 transient reference), AR(1) wind + iid ppm noise models vs real spectra,
 Briggs validity below ~100 m fetch, and all field transfer.
+
+## 2026-07-24 — Design pivot: wind-centric 2x2 factorial (user directive)
+User redirected the experiment: noisy wind is part of the simulator (models
+only ever see u_obs, the 10-deg/10% perturbed wind); test the factorial
+{original model, +physics maps, +physics-aware loss, +maps+loss}, all trained
+AND evaluated under measured wind. Implemented as --maps on|off axis in
+src/paired_wind.py (maps off = plain DeepSetsT; maps-on path unchanged,
+verified by identical noisy lam0 tags), lam swept {0.01,0.05,0.1} per arm at
+seed 1, selected on val NLL (recorded in results rows), seeds 2-3 at lam*.
+Chain: scripts/pw_factorial.sh (idempotent, waits for GPU). The earlier
+paired-view spec runs (pw_clean_*, pw_paired_*) remain in
+results/paired_wind.json as reference rows; paired lam sweep was cancelled.
+Interim: baseline nomaps 107.9-110.5 m noisy (frac<50m = 0.000 all seeds);
++maps 82.2-84.2 m.

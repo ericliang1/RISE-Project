@@ -1,0 +1,88 @@
+  train noisy-ss 2000/10000
+  train noisy-ss 4000/10000
+  train noisy-ss 6000/10000
+  train noisy-ss 8000/10000
+  train noisy-ss 10000/10000
+  train: noisy suffstats saved
+  train: residual maps saved
+  val: noisy suffstats saved
+  val: residual maps saved
+  calib noisy-ss 2000/2000
+  calib: noisy suffstats saved
+  calib: residual maps saved
+  test noisy-ss 2000/2000
+  test: noisy suffstats saved
+  test: residual maps saved
+residual closed-form vs direct: worst rel err 2.26e-07
+  ep 0 val_nll 5.9843
+  ep 25 val_nll 4.9888
+  ep 50 val_nll 5.0523
+  ep 75 val_nll 5.2156
+  ep 100 val_nll 5.3425
+  ep 125 val_nll 5.4347
+  ep 150 val_nll 5.5140
+  ep 175 val_nll 5.5607
+{"tag": "pw_clean_lam0.0_seed1", "clean": {"coverage": 0.8905, "median_radius_m": 48.284275252898695, "frac_below_50m": 0.5205}, "noisy": {"coverage": 0.9125, "median_radius_m": 85.07035253590054, "frac_below_50m": 0.209}}
+  ep 0 val_nll 6.1509
+  ep 25 val_nll 4.9924
+  ep 50 val_nll 5.0613
+  ep 75 val_nll 5.2083
+  ep 100 val_nll 5.3397
+  ep 125 val_nll 5.4624
+  ep 150 val_nll 5.5490
+  ep 175 val_nll 5.6014
+{"tag": "pw_clean_lam0.0_seed2", "clean": {"coverage": 0.8935, "median_radius_m": 48.38476292715775, "frac_below_50m": 0.5165}, "noisy": {"coverage": 0.912, "median_radius_m": 84.78440096199613, "frac_below_50m": 0.209}}
+  ep 0 val_nll 6.1322
+  ep 25 val_nll 4.9664
+  ep 50 val_nll 5.1030
+  ep 75 val_nll 5.2973
+  ep 100 val_nll 5.4368
+  ep 125 val_nll 5.5666
+  ep 150 val_nll 5.6487
+  ep 175 val_nll 5.6910
+{"tag": "pw_clean_lam0.0_seed3", "clean": {"coverage": 0.894, "median_radius_m": 47.061690097815244, "frac_below_50m": 0.5335}, "noisy": {"coverage": 0.908, "median_radius_m": 84.09415012145404, "frac_below_50m": 0.2185}}
+  ep 0 val_nll 6.5611
+  ep 25 val_nll 6.0816
+  ep 50 val_nll 6.2154
+  ep 75 val_nll 6.3534
+  ep 100 val_nll 6.5359
+  ep 125 val_nll 6.6685
+  ep 150 val_nll 6.7673
+  ep 175 val_nll 6.8233
+{"tag": "pw_noisy_lam0.0_seed1", "clean": {"coverage": 0.9085, "median_radius_m": 58.80646790760549, "frac_below_50m": 0.379}, "noisy": {"coverage": 0.911, "median_radius_m": 82.22515786803507, "frac_below_50m": 0.1695}}
+  ep 0 val_nll 6.6504
+  ep 25 val_nll 6.0758
+  ep 50 val_nll 6.1831
+  ep 75 val_nll 6.3400
+  ep 100 val_nll 6.5085
+  ep 125 val_nll 6.6660
+  ep 150 val_nll 6.7649
+  ep 175 val_nll 6.8225
+{"tag": "pw_noisy_lam0.0_seed2", "clean": {"coverage": 0.9045, "median_radius_m": 57.63856358631955, "frac_below_50m": 0.3905}, "noisy": {"coverage": 0.92, "median_radius_m": 84.1518872721772, "frac_below_50m": 0.1495}}
+  ep 0 val_nll 6.6250
+  ep 25 val_nll 6.0675
+  ep 50 val_nll 6.2049
+  ep 75 val_nll 6.3588
+  ep 100 val_nll 6.5241
+  ep 125 val_nll 6.6596
+  ep 150 val_nll 6.7673
+  ep 175 val_nll 6.8212
+{"tag": "pw_noisy_lam0.0_seed3", "clean": {"coverage": 0.904, "median_radius_m": 57.55423499165486, "frac_below_50m": 0.3965}, "noisy": {"coverage": 0.913, "median_radius_m": 83.68887474994888, "frac_below_50m": 0.1585}}
+  ep 0 val_nll 6.2480
+  ep 25 val_nll 5.7662
+  ep 50 val_nll 6.0577
+  ep 75 val_nll 6.3043
+  ep 100 val_nll 6.5429
+  ep 125 val_nll 6.6936
+  ep 150 val_nll 6.8205
+  ep 175 val_nll 6.8986
+{"tag": "pw_paired_lam0.0_seed1", "clean": {"coverage": 0.906, "median_radius_m": 54.163106811844294, "frac_below_50m": 0.4475}, "noisy": {"coverage": 0.917, "median_radius_m": 84.03637330245799, "frac_below_50m": 0.176}}
+  ep 0 val_nll 6.4062
+  ep 25 val_nll 5.7590
+  ep 50 val_nll 6.0666
+  ep 75 val_nll 6.2955
+  ep 100 val_nll 6.5742
+  ep 125 val_nll 6.7861
+  ep 150 val_nll 6.9409
+  ep 175 val_nll 7.0431
+{"tag": "pw_paired_lam0.0_seed2", "maps": true, "lam": 0.0, "val_nll": 5.69851171875, "clean": {"coverage": 0.8975, "median_radius_m": 53.80321507338534, "frac_below_50m": 0.4615}, "noisy": {"coverage": 0.9075, "median_radius_m": 83.16490447019385, "frac_below_50m": 0.1815}}

@@ -12,13 +12,18 @@ Dual-condition audit: each model is evaluated under BOTH conditions with
 condition-matched conformal calibration (clean calib for clean eval, noisy
 calib for noisy eval).
 
+Also the 2x2 factorial under measured wind (--views noisy):
+{--maps on|off} x {--lam 0|>0} = original model / +maps / +physics loss /
++maps+loss, all trained AND evaluated with the observed wind (noisy wind is
+part of the simulator's output; models never see the true wind).
+
 Stages:
   gen      noisy-view raw suffstats (a,b) at u_obs + residual maps (both views)
   verify   closed-form residual vs direct reconstruction on sampled cells
-  train    --views clean|noisy|paired  --lam <float>  [--seed 1]
+  train    --views clean|noisy|paired  --maps on|off  --lam <float>  [--seed 1]
 Usage examples:
   python src/paired_wind.py --stage gen
-  python src/paired_wind.py --stage train --views paired --lam 0.05 --seed 1
+  python src/paired_wind.py --stage train --views noisy --maps off --lam 0.05
 """
 import argparse
 import json
@@ -28,8 +33,8 @@ import torch
 
 from common import cell_centers, get_device, load_config, pos_to_cell, resolve
 from conformal import regions, tail_scores, tail_threshold
-from methane_t import N_GRID, SPLITS, cell_responses_t, d4_augment_t, \
-    stab_of, to_batch_t
+from methane_t import DeepSetsT, N_GRID, SPLITS, cell_responses_t, \
+    d4_augment_t, stab_of, to_batch_t
 from methane_t_levers import stats_maps
 from methane_t_uncertain import PhysHeadNet, with_obs_wind
 from model import smoothed_targets
@@ -132,23 +137,24 @@ def stage_verify(cfg, device):
 
 
 # ---------------------------------------------------------------- stage train
-def make_view(cfg, dd, name_data, view):
-    """(data dict, input maps tensor, residual tensor) for one view/split."""
+def make_view(cfg, dd, name_data, view, maps=True):
+    """(data dict, input maps tensor or None, residual tensor)."""
     split, d_clean = name_data
     if view == "clean":
         d = d_clean
-        stats = stats_maps(dd, split, d_clean)
+        stats = stats_maps(dd, split, d_clean) if maps else None
     else:
         d = with_obs_wind(d_clean,
                           np.load(dd / f"ch4tu_{split}_uobs.npy"))
         stats = torch.tensor(
-            np.load(dd / f"ch4tu_{split}_maps_det.npz")["maps"])
+            np.load(dd / f"ch4tu_{split}_maps_det.npz")["maps"]) \
+            if maps else None
     resid = torch.tensor(
         np.load(dd / f"pw_{split}_resid.npz")[view].astype(np.float32))
     return d, stats, resid
 
 
-def stage_train(cfg, device, views, lam, seed):
+def stage_train(cfg, device, views, lam, seed, maps=True):
     dd = resolve(cfg, "data_dir")
     rr = resolve(cfg, "results_dir")
     tr = cfg["training"]
@@ -157,14 +163,14 @@ def stage_train(cfg, device, views, lam, seed):
     clean = {s: dict(np.load(dd / f"ch4t_{s}.npz", allow_pickle=True))
              for s in SPLITS}
     view_list = (["clean", "noisy"] if views == "paired" else [views])
-    V = {s: {v: make_view(cfg, dd, (s, clean[s]), v) for v in view_list}
-         for s in SPLITS}
+    V = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps)
+             for v in view_list} for s in SPLITS}
     # audit always needs both conditions
-    A = {s: {v: make_view(cfg, dd, (s, clean[s]), v)
+    A = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps)
              for v in ("clean", "noisy")} for s in ("calib", "test")}
     torch.manual_seed(6000 + seed + 1300)
     rng = np.random.default_rng(seed)
-    model = PhysHeadNet(cfg, 2).to(device)
+    model = (PhysHeadNet(cfg, 2) if maps else DeepSetsT(cfg)).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(
@@ -179,10 +185,11 @@ def stage_train(cfg, device, views, lam, seed):
         batch, xs, codes = d4_augment_t(batch, d["xs"][idx],
                                         batch["u_seq"], rng, device)
         gi = inv[codes]
-        st = stats[idx].to(device)
-        batch["stats"] = st.reshape(len(idx), 2, N_CELLS).gather(
-            2, gi[:, None, :].expand(-1, 2, -1)).reshape(
-            len(idx), 2, N_GRID, N_GRID)
+        if maps:
+            st = stats[idx].to(device)
+            batch["stats"] = st.reshape(len(idx), 2, N_CELLS).gather(
+                2, gi[:, None, :].expand(-1, 2, -1)).reshape(
+                len(idx), 2, N_GRID, N_GRID)
         tc = torch.tensor(pos_to_cell(xs, N_GRID))
         tgt = smoothed_targets(tc, N_GRID, m["target_smooth_std_cells"],
                                m["target_trunc_sigmas"], device)
@@ -203,8 +210,9 @@ def stage_train(cfg, device, views, lam, seed):
         for lo in range(0, len(d["ids"]), 512):
             idx = np.arange(lo, min(lo + 512, len(d["ids"])))
             b = to_batch_t(d, idx, device)
-            b["stats"] = stats[idx].to(device).view(len(idx), 2, N_GRID,
-                                                    N_GRID)
+            if stats is not None:
+                b["stats"] = stats[idx].to(device).view(len(idx), 2, N_GRID,
+                                                        N_GRID)
             out.append(torch.softmax(model(b).float(), -1).cpu().numpy())
         return np.concatenate(out).astype(np.float64)
 
@@ -230,8 +238,9 @@ def stage_train(cfg, device, views, lam, seed):
                 for lo in range(0, len(d["ids"]), 512):
                     idx = np.arange(lo, min(lo + 512, len(d["ids"])))
                     b = to_batch_t(d, idx, device)
-                    b["stats"] = stats[idx].to(device).view(
-                        len(idx), 2, N_GRID, N_GRID)
+                    if stats is not None:
+                        b["stats"] = stats[idx].to(device).view(
+                            len(idx), 2, N_GRID, N_GRID)
                     logp = torch.log_softmax(model(b).float(), -1)
                     tc = torch.tensor(d["true_cell"][idx], device=device)
                     tot += float(-logp.gather(1, tc[:, None]).sum())
@@ -248,8 +257,8 @@ def stage_train(cfg, device, views, lam, seed):
     model.eval()
 
     # dual-condition audit, condition-matched calibration
-    tag = f"pw_{views}_lam{lam}_seed{seed}"
-    out = {"tag": tag}
+    tag = f"pw_{views}{'' if maps else '_nomaps'}_lam{lam}_seed{seed}"
+    out = {"tag": tag, "maps": maps, "lam": lam, "val_nll": float(best)}
     for cond in ("clean", "noisy"):
         Pc = probs(A, "calib", cond)
         Pt = probs(A, "test", cond)
@@ -278,6 +287,8 @@ def main():
                     choices=["gen", "verify", "train"])
     ap.add_argument("--views", choices=["clean", "noisy", "paired"],
                     default="paired")
+    ap.add_argument("--maps", choices=["on", "off"], default="on",
+                    help="off = plain DeepSetsT, no physics-map channels")
     ap.add_argument("--lam", type=float, default=0.0)
     ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args()
@@ -288,7 +299,8 @@ def main():
     elif args.stage == "verify":
         stage_verify(cfg, device)
     else:
-        stage_train(cfg, device, args.views, args.lam, args.seed)
+        stage_train(cfg, device, args.views, args.lam, args.seed,
+                    maps=(args.maps == "on"))
 
 
 if __name__ == "__main__":

@@ -1,0 +1,67 @@
+skip pw_noisy_lam0.0_seed1 (already done)
+skip pw_noisy_lam0.0_seed2 (already done)
+skip pw_noisy_lam0.0_seed3 (already done)
+=== pw_noisy_nomaps_lam0.0_seed1 ===
+  ep 0 val_nll 8.0018
+  ep 25 val_nll 7.2361
+  ep 50 val_nll 6.8757
+  ep 75 val_nll 6.8125
+  ep 100 val_nll 6.8438
+  ep 125 val_nll 6.8328
+  ep 150 val_nll 6.8591
+  ep 175 val_nll 6.8821
+{"tag": "pw_noisy_nomaps_lam0.0_seed1", "maps": false, "lam": 0.0, "val_nll": 6.792281494140625, "clean": {"coverage": 0.8985, "median_radius_m": 106.28939952396101, "frac_below_50m": 0.0}, "noisy": {"coverage": 0.9075, "median_radius_m": 110.10508812415512, "frac_below_50m": 0.0}}
+=== pw_noisy_nomaps_lam0.0_seed2 ===
+  ep 0 val_nll 7.9791
+  ep 25 val_nll 7.2522
+  ep 50 val_nll 6.9024
+  ep 75 val_nll 6.8590
+  ep 100 val_nll 6.8763
+  ep 125 val_nll 6.8559
+  ep 150 val_nll 6.8973
+  ep 175 val_nll 6.9069
+{"tag": "pw_noisy_nomaps_lam0.0_seed2", "maps": false, "lam": 0.0, "val_nll": 6.79732421875, "clean": {"coverage": 0.906, "median_radius_m": 110.1491919064663, "frac_below_50m": 0.0}, "noisy": {"coverage": 0.9065, "median_radius_m": 110.5453341350222, "frac_below_50m": 0.0}}
+=== pw_noisy_nomaps_lam0.0_seed3 ===
+  ep 0 val_nll 7.9863
+  ep 25 val_nll 7.2263
+  ep 50 val_nll 6.8268
+  ep 75 val_nll 6.7596
+  ep 100 val_nll 6.7592
+  ep 125 val_nll 6.7746
+  ep 150 val_nll 6.8198
+  ep 175 val_nll 6.8315
+{"tag": "pw_noisy_nomaps_lam0.0_seed3", "maps": false, "lam": 0.0, "val_nll": 6.7245615234375, "clean": {"coverage": 0.8935, "median_radius_m": 105.2792829626683, "frac_below_50m": 0.0}, "noisy": {"coverage": 0.8985, "median_radius_m": 107.8769117552467, "frac_below_50m": 0.0}}
+=== pw_noisy_nomaps_lam0.01_seed1 ===
+  ep 0 val_nll 8.0018
+  ep 25 val_nll 7.2317
+  ep 50 val_nll 6.9055
+  ep 75 val_nll 6.8024
+  ep 100 val_nll 6.7973
+  ep 125 val_nll 6.8103
+  ep 150 val_nll 6.8154
+  ep 175 val_nll 6.8335
+{"tag": "pw_noisy_nomaps_lam0.01_seed1", "maps": false, "lam": 0.01, "val_nll": 6.767114501953125, "clean": {"coverage": 0.896, "median_radius_m": 104.72420378928022, "frac_below_50m": 0.0}, "noisy": {"coverage": 0.9, "median_radius_m": 106.88179947876374, "frac_below_50m": 0.0}}
+=== pw_noisy_nomaps_lam0.05_seed1 ===
+  ep 0 val_nll 8.0018
+  ep 25 val_nll 7.2291
+  ep 50 val_nll 6.8830
+  ep 75 val_nll 6.7951
+  ep 100 val_nll 6.8063
+  ep 125 val_nll 6.8097
+  ep 150 val_nll 6.8279
+  ep 175 val_nll 6.8585
+{"tag": "pw_noisy_nomaps_lam0.05_seed1", "maps": false, "lam": 0.05, "val_nll": 6.765517578125, "clean": {"coverage": 0.9015, "median_radius_m": 105.55572794524711, "frac_below_50m": 0.0}, "noisy": {"coverage": 0.8985, "median_radius_m": 107.78682663577277, "frac_below_50m": 0.0}}
+=== pw_noisy_nomaps_lam0.1_seed1 ===
+  ep 0 val_nll 8.0020
+  ep 25 val_nll 7.2306
+  ep 50 val_nll 6.8945
+  ep 75 val_nll 6.7924
+  ep 100 val_nll 6.8047
+  ep 125 val_nll 6.7742
+  ep 150 val_nll 6.7953
+  ep 175 val_nll 6.8146
+{"tag": "pw_noisy_nomaps_lam0.1_seed1", "maps": false, "lam": 0.1, "val_nll": 6.75533251953125, "clean": {"coverage": 0.8815, "median_radius_m": 102.14150128239815, "frac_below_50m": 0.0}, "noisy": {"coverage": 0.9, "median_radius_m": 105.18697318344336, "frac_below_50m": 0.0}}
+=== pw_noisy_lam0.01_seed1 ===
+  ep 0 val_nll 6.5611
+  ep 25 val_nll 6.0795
+  ep 50 val_nll 6.2267
