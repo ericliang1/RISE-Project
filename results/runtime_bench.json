@@ -1,0 +1,11 @@
+{
+  "n": 500,
+  "hardware": "NVIDIA L40S",
+  "map_ms_median": 29.622401983942837,
+  "map_ms_p95": 30.854029417969286,
+  "net_ms_median": 0.7987890858203173,
+  "net_ms_p95": 0.8906078059226273,
+  "total_ms_median": 30.421465984545648,
+  "total_ms_p95": 31.714142963755876,
+  "note": "batch 1, K=8 ensr preprocessing, transfers included"
+}

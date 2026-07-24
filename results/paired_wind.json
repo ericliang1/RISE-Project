@@ -237,5 +237,70 @@
       "median_radius_m": 85.01323916757215,
       "frac_below_50m": 0.176
     }
+  },
+  "pw_clean_nomaps_seed1": {
+    "tag": "pw_clean_nomaps_seed1",
+    "maps": "off",
+    "val_nll": 6.600296142578125,
+    "clean": {
+      "coverage": 0.899,
+      "median_radius_m": 97.96672015403398,
+      "frac_below_50m": 0.0
+    },
+    "noisy": {
+      "coverage": 0.9055,
+      "median_radius_m": 103.88602416372652,
+      "frac_below_50m": 0.0
+    }
+  },
+  "pw_clean_seed1": {
+    "tag": "pw_clean_seed1",
+    "maps": "det",
+    "val_nll": 4.978483154296875,
+    "clean": {
+      "coverage": 0.8905,
+      "median_radius_m": 48.284275252898695,
+      "frac_below_50m": 0.5205
+    },
+    "noisy": {
+      "coverage": 0.9125,
+      "median_radius_m": 85.07035253590054,
+      "frac_below_50m": 0.209
+    }
+  },
+  "pw_noisy_nomaps_seed1": {
+    "tag": "pw_noisy_nomaps_seed1",
+    "maps": "off",
+    "val_nll": 6.792281494140625,
+    "clean": {
+      "coverage": 0.8985,
+      "median_radius_m": 106.28939952396101,
+      "frac_below_50m": 0.0
+    },
+    "noisy": {
+      "coverage": 0.9075,
+      "median_radius_m": 110.10508812415512,
+      "frac_below_50m": 0.0
+    }
+  },
+  "pw_noisy_ensr_seed1": {
+    "tag": "pw_noisy_ensr_seed1",
+    "maps": "ensr",
+    "val_nll": 5.65950146484375,
+    "noisy": {
+      "coverage": 0.9,
+      "median_radius_m": 70.6613052898181,
+      "frac_below_50m": 0.266
+    }
+  },
+  "pw_noisy_rand_seed1": {
+    "tag": "pw_noisy_rand_seed1",
+    "maps": "rand",
+    "val_nll": 6.805477783203125,
+    "noisy": {
+      "coverage": 0.889,
+      "median_radius_m": 107.51611839762768,
+      "frac_below_50m": 0.0
+    }
   }
 }

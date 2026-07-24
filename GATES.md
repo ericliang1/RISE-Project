@@ -409,3 +409,23 @@ input map, not loss.  smear/ensp/full upgrade arms were killed mid-chain by
 user order (smear seed1 85.0 m recorded, incomplete); gen artifacts
 (maps_smear, resid_marg, oracle_marg channels) remain on disk, chains
 idempotent if resumed.
+
+## 2026-07-24 — Reviewer rigor package (text + cheap diagnostics, no new method)
+Executed the 9-priority review using existing outputs plus identical-config
+seed-1 reruns (bit-identical results verified: 48.284/110.105/70.661 m) with
+audits now saving covered flags + packed region masks. Added: exact-model
+reference region definition (uniform cell prior, log-uniform rate prior
+10-500, GL quadrature, strict-tie rule, 6.2 m @ matched 0.89 vs 7.0 m @
+nominal 90); marginal-guarantee scope paragraph; paired bootstrap (exact:
+-46.1 m [43.6,48.1], 96.4% improved, 52.4% <50 m [50.2,54.6]; measured:
+-39.4 m [37.3,41.9], 96.2%, 26.6% [24.7,28.6]); subgroup diagnostics
+(sparse-mast under-coverage 0.865-0.867 at 4-6 masts is the one finding);
+reproducibility table (4.88M params, head 10,721); measured runtime (L40S
+batch-1: maps 29.6 ms, net 0.8 ms, total 30.4 med / 31.7 p95); RANDOM-MAP
+NEGATIVE CONTROL (4 noise channels, same head, 1 seed: 107.5 m ~= no-maps
+baseline -> physics content is causal); two evidentiary figures (typical
+scenario by joint-median rule with real conformal masks + exact ref 4 m;
+ECDF). Claim narrowings applied. Consistency fix: recipe percentiles/frac<50
+now sourced from ch4t_audit_lever_suffstats_labels.npz (48/86/131 m, 52.4%)
+— revision_analyses recipe_operational was a different run; do not mix.
+Paper compiles at exactly 5 pages.

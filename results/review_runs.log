@@ -1,0 +1,47 @@
+  ep 0 val_nll 8.0022
+  ep 25 val_nll 7.1942
+  ep 50 val_nll 6.8184
+  ep 75 val_nll 6.6713
+  ep 100 val_nll 6.6569
+  ep 125 val_nll 6.6249
+  ep 150 val_nll 6.6358
+  ep 175 val_nll 6.6443
+{"tag": "pw_clean_nomaps_seed1", "maps": "off", "val_nll": 6.600296142578125, "clean": {"coverage": 0.899, "median_radius_m": 97.96672015403398, "frac_below_50m": 0.0}, "noisy": {"coverage": 0.9055, "median_radius_m": 103.88602416372652, "frac_below_50m": 0.0}}
+  ep 0 val_nll 5.9843
+  ep 25 val_nll 4.9888
+  ep 50 val_nll 5.0523
+  ep 75 val_nll 5.2156
+  ep 100 val_nll 5.3425
+  ep 125 val_nll 5.4347
+  ep 150 val_nll 5.5140
+  ep 175 val_nll 5.5607
+{"tag": "pw_clean_seed1", "maps": "det", "val_nll": 4.978483154296875, "clean": {"coverage": 0.8905, "median_radius_m": 48.284275252898695, "frac_below_50m": 0.5205}, "noisy": {"coverage": 0.9125, "median_radius_m": 85.07035253590054, "frac_below_50m": 0.209}}
+  ep 0 val_nll 8.0018
+  ep 25 val_nll 7.2361
+  ep 50 val_nll 6.8757
+  ep 75 val_nll 6.8125
+  ep 100 val_nll 6.8438
+  ep 125 val_nll 6.8328
+  ep 150 val_nll 6.8591
+  ep 175 val_nll 6.8821
+{"tag": "pw_noisy_nomaps_seed1", "maps": "off", "val_nll": 6.792281494140625, "clean": {"coverage": 0.8985, "median_radius_m": 106.28939952396101, "frac_below_50m": 0.0}, "noisy": {"coverage": 0.9075, "median_radius_m": 110.10508812415512, "frac_below_50m": 0.0}}
+  ep 0 val_nll 6.6143
+  ep 25 val_nll 5.6638
+  ep 50 val_nll 5.7821
+  ep 75 val_nll 5.9664
+  ep 100 val_nll 6.1716
+  ep 125 val_nll 6.3066
+  ep 150 val_nll 6.4195
+  ep 175 val_nll 6.4648
+{"tag": "pw_noisy_ensr_seed1", "maps": "ensr", "val_nll": 5.65950146484375, "noisy": {"coverage": 0.9, "median_radius_m": 70.6613052898181, "frac_below_50m": 0.266}}
+  ep 0 val_nll 8.0016
+  ep 25 val_nll 7.2267
+  ep 50 val_nll 6.8999
+  ep 75 val_nll 6.8133
+  ep 100 val_nll 6.8617
+  ep 125 val_nll 6.8475
+  ep 150 val_nll 6.8437
+  ep 175 val_nll 6.8721
+{"tag": "pw_noisy_rand_seed1", "maps": "rand", "val_nll": 6.805477783203125, "noisy": {"coverage": 0.889, "median_radius_m": 107.51611839762768, "frac_below_50m": 0.0}}
+{"n": 500, "hardware": "NVIDIA L40S", "map_ms_median": 29.622401983942837, "map_ms_p95": 30.854029417969286, "net_ms_median": 0.7987890858203173, "net_ms_p95": 0.8906078059226273, "total_ms_median": 30.421465984545648, "total_ms_p95": 31.714142963755876, "note": "batch 1, K=8 ensr preprocessing, transfers included"}
+REVIEW RUNS DONE

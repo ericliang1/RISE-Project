@@ -1,0 +1,30 @@
+{
+  "exact_wind_M0_vs_recipe": {
+    "n": 2000,
+    "median_reduction_m": 46.1,
+    "ci95": [
+      43.6,
+      48.1
+    ],
+    "frac_improved": 0.964,
+    "frac_below_50m": 0.524,
+    "frac_below_50m_ci95": [
+      0.502,
+      0.546
+    ]
+  },
+  "measured_wind_nomaps_vs_ensr": {
+    "n": 2000,
+    "median_reduction_m": 39.4,
+    "ci95": [
+      37.3,
+      41.9
+    ],
+    "frac_improved": 0.962,
+    "frac_below_50m": 0.266,
+    "frac_below_50m_ci95": [
+      0.247,
+      0.286
+    ]
+  }
+}

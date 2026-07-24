@@ -31,7 +31,7 @@ import numpy as np
 import torch
 
 from common import cell_centers, get_device, load_config, pos_to_cell, resolve
-from conformal import regions, tail_scores, tail_threshold
+from conformal import region_mask, regions, tail_scores, tail_threshold
 from methane_t import DeepSetsT, N_GRID, SPLITS, cell_responses_t, \
     d4_augment_t, stab_of, to_batch_t
 from methane_model import plume_ppm_per_kgh_smeared
@@ -46,7 +46,7 @@ N_CELLS = N_GRID * N_GRID
 R_MAX = 10.0
 K_MARG = 8       # wind draws for the marginalized residual (stream 93)
 # map kinds that only exist under the measured-wind condition
-NOISY_ONLY_MAPS = ("ens", "ensr", "smear", "ensp", "full")
+NOISY_ONLY_MAPS = ("ens", "ensr", "smear", "ensp", "full", "rand")
 
 
 def rad_m(sizes):
@@ -339,6 +339,13 @@ def make_view(cfg, dd, name_data, view, maps="det"):
         if maps == "det":
             stats = torch.tensor(
                 np.load(dd / f"ch4tu_{split}_maps_det.npz")["maps"])
+        elif maps == "rand":
+            # negative control: 4 random channels, same shape/scale class
+            # as the physics images, deterministic per split+scenario
+            n = len(d_clean["ids"])
+            rng_r = np.random.default_rng([4242, split_tag(split)])
+            stats = torch.tensor(rng_r.normal(0.5, 0.3, (n, 4, N_CELLS))
+                                 .astype(np.float32))
         elif maps == "smear":
             stats = torch.tensor(
                 np.load(dd / f"ch4tu_{split}_maps_smear.npz")["maps"])
@@ -472,7 +479,8 @@ def stage_train(cfg, device, views, seed, maps="det"):
 
     # dual-condition audit, condition-matched calibration
     mt = {"det": "", "ens": "_ens", "ensr": "_ensr", "smear": "_smear",
-          "ensp": "_ensp", "full": "_full", None: "_nomaps"}[maps]
+          "ensp": "_ensp", "full": "_full", "rand": "_rand",
+          None: "_nomaps"}[maps]
     tag = f"pw_{views}{mt}_seed{seed}"
     out = {"tag": tag, "maps": maps or "off", "val_nll": float(best)}
     for cond in conds:
@@ -487,8 +495,10 @@ def stage_train(cfg, device, views, seed, maps="det"):
         out[cond] = {"coverage": float(reg["covered"].mean()),
                      "median_radius_m": rad_m(reg["sizes"]),
                      "frac_below_50m": float((radii < 50).mean())}
+        masks = np.stack([region_mask(Pt[i], th) for i in range(len(Pt))])
         np.savez_compressed(dd / f"pw_audit_{tag}_{cond}.npz",
-                            sizes=reg["sizes"])
+                            sizes=reg["sizes"], covered=reg["covered"],
+                            masks=np.packbits(masks, axis=1))
     res_path = rr / "paired_wind.json"
     all_res = json.load(open(res_path)) if res_path.exists() else {}
     all_res[tag] = out
@@ -505,7 +515,7 @@ def main():
     ap.add_argument("--views", choices=["clean", "noisy", "paired"],
                     default="paired")
     ap.add_argument("--maps", choices=["on", "det", "smear", "ens", "ensr",
-                                       "ensp", "full", "off"],
+                                       "ensp", "full", "rand", "off"],
                     default="on",
                     help="det (=on): 2ch at u_obs; smear: 2ch analytically "
                          "wind-smeared; ens: 3ch over wind draws; ensr: ens "

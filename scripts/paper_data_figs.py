@@ -18,6 +18,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import LinearSegmentedColormap
 
 from common import load_config, resolve
 
@@ -62,10 +63,76 @@ def sizes(f, key="sizes"):
     return rad(np.load(dd / f)[key].astype(np.float64))
 
 
+# ------------------------------- Fig 0: representative example (masks)
+def fig_example():
+    """Exact-wind example chosen by a stated rule: the scenario jointly
+    closest (log scale) to the median baseline radius AND the median
+    method radius -- typical difficulty with typical improvement, not a
+    best case.  Regions from the saved conformal masks; exact-model
+    reference drawn as its equal-area circle."""
+    d = dict(np.load(dd / "ch4t_test.npz", allow_pickle=True))
+    zb = np.load(dd / "pw_audit_pw_clean_nomaps_seed1_clean.npz")
+    zo = np.load(dd / "pw_audit_pw_clean_seed1_clean.npz")
+    rb, ro = rad(zb["sizes"].astype(float)), rad(zo["sizes"].astype(float))
+    ex = rad(np.load(dd / "ch4t_audit_M0.npz")["exact_sizes"]
+             .astype(float))
+    dist = (np.log(rb / np.median(rb)) ** 2
+            + np.log(ro / np.median(ro)) ** 2)
+    i = int(np.argmin(dist))
+    mb = np.unpackbits(zb["masks"][i])[:N_CELLS].reshape(64, 64)
+    mo = np.unpackbits(zo["masks"][i])[:N_CELLS].reshape(64, 64)
+    ns = int(d["n_sensors"][i])
+    sx = d["sensors"][i, :ns] * 500
+    tc = int(d["true_cell"][i])
+    tx = ((tc % 64 + 0.5) / 64 * 500, (tc // 64 + 0.5) / 64 * 500)
+
+    fig, ax = plt.subplots(figsize=(6.8, 6.4))
+    ext = [0, 500, 0, 500]
+    ax.imshow(np.where(mb, 1.0, np.nan), origin="lower", extent=ext,
+              cmap=LinearSegmentedColormap.from_list("ob", ["#fbe0d5",
+                                                            "#fbe0d5"]),
+              interpolation="nearest", zorder=1)
+    ax.imshow(np.where(mo, 1.0, np.nan), origin="lower", extent=ext,
+              cmap=LinearSegmentedColormap.from_list("bb", ["#9ec5f4",
+                                                            "#9ec5f4"]),
+              interpolation="nearest", alpha=0.9, zorder=2)
+    ax.contour(mb.astype(float), levels=[0.5], colors=[ORANGE],
+               linewidths=2.2, extent=ext, zorder=3)
+    ax.contour(mo.astype(float), levels=[0.5], colors=[BLUE],
+               linewidths=2.2, extent=ext, zorder=4)
+    from matplotlib.patches import Circle
+    ax.add_patch(Circle(tx, 50, ec=MUTED, fc="none", lw=1.6,
+                        ls=(0, (4, 3)), zorder=5))
+    ax.add_patch(Circle(tx, ex[i], ec=INK, fc=INK, lw=1.5, zorder=6))
+    ax.scatter(sx[:, 0], sx[:, 1], s=52, c=INK, edgecolors=SURF,
+               linewidths=1.6, zorder=7)
+    ax.plot(*tx, marker="+", color=SURF, ms=7, mew=1.5, zorder=8)
+    h = [plt.Line2D([], [], color=ORANGE, lw=2.2,
+                    label=f"baseline region ({rb[i]:.0f} m)"),
+         plt.Line2D([], [], color=BLUE, lw=2.2,
+                    label=f"our region ({ro[i]:.0f} m)"),
+         plt.Line2D([], [], color=MUTED, lw=1.6, ls=(0, (4, 3)),
+                    label="50 m facility scale"),
+         plt.Line2D([], [], color=INK, marker="o", lw=0, ms=8,
+                    label=f"exact-model reference ({ex[i]:.0f} m)"),
+         plt.Line2D([], [], color=INK, marker="o", lw=0, ms=7,
+                    mec=SURF, label="sensor masts")]
+    ax.legend(handles=h, loc="upper left", frameon=True, fontsize=10.5,
+              facecolor=SURF, edgecolor=BASE)
+    ax.set_xlim(0, 500); ax.set_ylim(0, 500); ax.set_aspect("equal")
+    ax.set_xticks([0, 250, 500]); ax.set_yticks([0, 250, 500])
+    ax.set_xlabel("site coordinate (m)")
+    despine(ax)
+    ax.set_title("Typical scenario (joint-median selection): "
+                 "90% regions, exact wind", fontsize=13,
+                 fontweight="bold", loc="left", pad=12)
+    save(fig, "fig_data_example")
+
+
 # --------------------------------------------- Fig 1: radius distributions
 def fig_ecdf():
     curves = [  # label, radii, color, linestyle
-        ("smallest supported (exact wind)",
+        ("exact-model reference (exact wind)",
          sizes("ch4t_audit_M0.npz", "exact_sizes"), INK, (0, (4, 3))),
         ("ours, exact wind",
          sizes("ch4t_audit_lever_suffstats_labels.npz"), BLUE_D, (0, (4, 3))),
@@ -229,6 +296,7 @@ def fig_rates():
 
 
 if __name__ == "__main__":
+    fig_example()
     fig_ecdf()
     fig_scatter()
     fig_coverage()
