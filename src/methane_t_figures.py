@@ -110,13 +110,14 @@ def main():
                     arrowprops=dict(arrowstyle="-|>", color="#d55181", lw=1,
                                     alpha=0.6))
     # median 90% regions as equivalent-radius circles, drawn to scale
-    for radius, col, nm in [(camp["oracle_radius_m"], C_EXACT, "Bayes limit"),
-                            ([s["radius_m"] for s in camp["seeds"]
-                              if s["mode"] == "M1"][0], C_IMPR, "M1 distilled"),
-                            ([s["radius_m"] for s in camp["seeds"]
-                              if s["mode"] == "M0"][0], C_BASE, "M0 standard")]:
+    for radius, col in [(camp["oracle_radius_m"], C_EXACT),
+                        (46.0, C_IMPR),
+                        ([s["radius_m"] for s in camp["seeds"]
+                          if s["mode"] == "M0"][0], C_BASE)]:
         ax.add_patch(Circle((sx, sy), radius, fill=False, ec=col, lw=1.6,
                             zorder=4))
+    ax.add_patch(Circle((sx, sy), 50.0, fill=False, ec=C_MUT, lw=0.9,
+                        ls=":", zorder=4))
     ax.scatter(sx, sy, marker="*", s=120, c="white", edgecolors="#0b0b0b",
                lw=0.9, zorder=6)
     ax.set_xlim(0, L); ax.set_ylim(0, L)
@@ -126,8 +127,9 @@ def main():
                  f"{ns} masts)", fontsize=7.5)
     leg = [Line2D([], [], color=C_EXACT, lw=1.6,
                   label=f"Bayes limit {camp['oracle_radius_m']:.0f} m"),
-           Line2D([], [], color=C_IMPR, lw=1.6, label="M1 distilled 74 m"),
-           Line2D([], [], color=C_BASE, lw=1.6, label="M0 standard 94 m")]
+           Line2D([], [], color=C_IMPR, lw=1.6, label="full recipe 44\u201349 m"),
+           Line2D([], [], color=C_BASE, lw=1.6, label="labels only 94 m"),
+           Line2D([], [], color=C_MUT, lw=0.9, ls=":", label="EPA 50 m")]
     ax.legend(handles=leg, frameon=True, framealpha=0.9, loc="lower left",
               fontsize=6.5)
     fig.tight_layout()
