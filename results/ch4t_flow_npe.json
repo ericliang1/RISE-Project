@@ -38,5 +38,13 @@
     "wilcoxon_p_vs_M1": 9.486343452389364e-230,
     "frac_sharper_than_M1": 0.8585,
     "norm_drift": 2.0661185576864582e-06
+  },
+  "flow_npe_fair_seed3": {
+    "tag": "flow_npe_fair_seed3",
+    "coverage": 0.912,
+    "median_radius_m": 63.72182962362116,
+    "wilcoxon_p_vs_M1": 7.573184071881827e-221,
+    "frac_sharper_than_M1": 0.85,
+    "norm_drift": 2.272972975947418e-06
   }
 }

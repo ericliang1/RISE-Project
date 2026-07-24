@@ -1,0 +1,29 @@
+NPEFlow params: 0.73M
+  ep 0 val_nll -0.1577
+  ep 20 val_nll -0.9159
+  ep 40 val_nll -1.4038
+  ep 60 val_nll -1.6119
+  ep 80 val_nll -1.7809
+  ep 100 val_nll -1.9476
+  ep 120 val_nll -2.0315
+  ep 140 val_nll -2.0865
+  ep 160 val_nll -2.0741
+  ep 180 val_nll -2.2220
+  ep 200 val_nll -2.2912
+  ep 220 val_nll -2.3285
+  ep 240 val_nll -2.3165
+  ep 260 val_nll -2.4063
+  ep 280 val_nll -2.4919
+  ep 300 val_nll -2.3397
+  ep 320 val_nll -2.4278
+  ep 340 val_nll -2.4452
+  ep 360 val_nll -2.4938
+  ep 380 val_nll -2.5052
+  ep 400 val_nll -2.4425
+  ep 420 val_nll -2.4459
+  ep 440 val_nll -2.4663
+  ep 460 val_nll -2.4499
+  ep 480 val_nll -2.4353
+cell-mass normalization drift: 2.27e-06
+{"tag": "flow_npe_fair_seed3", "coverage": 0.912, "median_radius_m": 63.72182962362116, "wilcoxon_p_vs_M1": 7.573184071881827e-221, "frac_sharper_than_M1": 0.85, "norm_drift": 2.272972975947418e-06}
+FAIR3 DONE
