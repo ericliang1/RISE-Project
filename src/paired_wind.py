@@ -227,18 +227,30 @@ def stage_verify(cfg, device):
 
 
 # ---------------------------------------------------------------- stage train
-def make_view(cfg, dd, name_data, view, maps=True, resid_kind="plain"):
-    """(data dict, input maps tensor or None, residual tensor)."""
+def make_view(cfg, dd, name_data, view, maps="det", resid_kind="plain"):
+    """(data dict, input maps tensor or None, residual tensor).
+    maps: "det" (2ch at u_obs), "ens" (3ch over wind draws), "ensr" (ens +
+    marginalized-residual channel), or None (no physics-map channels)."""
     split, d_clean = name_data
     if view == "clean":
         d = d_clean
+        assert maps in ("det", None), "ens/ensr maps are noisy-view only"
         stats = stats_maps(dd, split, d_clean) if maps else None
     else:
         d = with_obs_wind(d_clean,
                           np.load(dd / f"ch4tu_{split}_uobs.npy"))
-        stats = torch.tensor(
-            np.load(dd / f"ch4tu_{split}_maps_det.npz")["maps"]) \
-            if maps else None
+        if maps == "det":
+            stats = torch.tensor(
+                np.load(dd / f"ch4tu_{split}_maps_det.npz")["maps"])
+        elif maps in ("ens", "ensr"):
+            stats = torch.tensor(
+                np.load(dd / f"ch4tu_{split}_maps_ens.npz")["maps"])
+            if maps == "ensr":
+                r = np.load(dd / f"pw_{split}_resid_marg.npz")["noisy"]
+                r = torch.tensor(r.astype(np.float32) / R_MAX)[:, None, :]
+                stats = torch.cat([stats, r], 1)
+        else:
+            stats = None
     if resid_kind == "marg":
         assert view == "noisy", "marginalized residual is noisy-view only"
         resid = torch.tensor(np.load(dd / f"pw_{split}_resid_marg.npz")
@@ -249,7 +261,8 @@ def make_view(cfg, dd, name_data, view, maps=True, resid_kind="plain"):
     return d, stats, resid
 
 
-def stage_train(cfg, device, views, lam, seed, maps=True, resid_kind="plain"):
+def stage_train(cfg, device, views, lam, seed, maps="det",
+                resid_kind="plain"):
     dd = resolve(cfg, "data_dir")
     rr = resolve(cfg, "results_dir")
     tr = cfg["training"]
@@ -258,14 +271,18 @@ def stage_train(cfg, device, views, lam, seed, maps=True, resid_kind="plain"):
     clean = {s: dict(np.load(dd / f"ch4t_{s}.npz", allow_pickle=True))
              for s in SPLITS}
     view_list = (["clean", "noisy"] if views == "paired" else [views])
+    if maps in ("ens", "ensr"):
+        assert views == "noisy", "ens/ensr configs are noisy-view only"
     V = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps, resid_kind)
              for v in view_list} for s in SPLITS}
-    # audit always needs both conditions; it never touches residuals
+    # audit conditions; ens/ensr maps only exist for the noisy condition
+    conds = ("noisy",) if maps in ("ens", "ensr") else ("clean", "noisy")
     A = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps)
-             for v in ("clean", "noisy")} for s in ("calib", "test")}
+             for v in conds} for s in ("calib", "test")}
     torch.manual_seed(6000 + seed + 1300)
     rng = np.random.default_rng(seed)
-    model = (PhysHeadNet(cfg, 2) if maps else DeepSetsT(cfg)).to(device)
+    n_ch = V["train"][view_list[0]][1].shape[1] if maps else 0
+    model = (PhysHeadNet(cfg, n_ch) if maps else DeepSetsT(cfg)).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(
@@ -282,9 +299,9 @@ def stage_train(cfg, device, views, lam, seed, maps=True, resid_kind="plain"):
         gi = inv[codes]
         if maps:
             st = stats[idx].to(device)
-            batch["stats"] = st.reshape(len(idx), 2, N_CELLS).gather(
-                2, gi[:, None, :].expand(-1, 2, -1)).reshape(
-                len(idx), 2, N_GRID, N_GRID)
+            batch["stats"] = st.reshape(len(idx), n_ch, N_CELLS).gather(
+                2, gi[:, None, :].expand(-1, n_ch, -1)).reshape(
+                len(idx), n_ch, N_GRID, N_GRID)
         tc = torch.tensor(pos_to_cell(xs, N_GRID))
         tgt = smoothed_targets(tc, N_GRID, m["target_smooth_std_cells"],
                                m["target_trunc_sigmas"], device)
@@ -306,7 +323,7 @@ def stage_train(cfg, device, views, lam, seed, maps=True, resid_kind="plain"):
             idx = np.arange(lo, min(lo + 512, len(d["ids"])))
             b = to_batch_t(d, idx, device)
             if stats is not None:
-                b["stats"] = stats[idx].to(device).view(len(idx), 2, N_GRID,
+                b["stats"] = stats[idx].to(device).view(len(idx), -1, N_GRID,
                                                         N_GRID)
             out.append(torch.softmax(model(b).float(), -1).cpu().numpy())
         return np.concatenate(out).astype(np.float64)
@@ -335,7 +352,7 @@ def stage_train(cfg, device, views, lam, seed, maps=True, resid_kind="plain"):
                     b = to_batch_t(d, idx, device)
                     if stats is not None:
                         b["stats"] = stats[idx].to(device).view(
-                            len(idx), 2, N_GRID, N_GRID)
+                            len(idx), -1, N_GRID, N_GRID)
                     logp = torch.log_softmax(model(b).float(), -1)
                     tc = torch.tensor(d["true_cell"][idx], device=device)
                     tot += float(-logp.gather(1, tc[:, None]).sum())
@@ -352,11 +369,12 @@ def stage_train(cfg, device, views, lam, seed, maps=True, resid_kind="plain"):
     model.eval()
 
     # dual-condition audit, condition-matched calibration
-    tag = (f"pw_{views}{'' if maps else '_nomaps'}"
-           f"{'_marg' if resid_kind == 'marg' else ''}_lam{lam}_seed{seed}")
-    out = {"tag": tag, "maps": maps, "lam": lam, "resid": resid_kind,
-           "val_nll": float(best)}
-    for cond in ("clean", "noisy"):
+    mt = {"det": "", "ens": "_ens", "ensr": "_ensr", None: "_nomaps"}[maps]
+    tag = (f"pw_{views}{mt}{'_marg' if resid_kind == 'marg' else ''}"
+           f"_lam{lam}_seed{seed}")
+    out = {"tag": tag, "maps": maps or "off", "lam": lam,
+           "resid": resid_kind, "val_nll": float(best)}
+    for cond in conds:
         Pc = probs(A, "calib", cond)
         Pt = probs(A, "test", cond)
         rngc = np.random.default_rng(cfg["conformal"]["score_seed"])
@@ -385,8 +403,11 @@ def main():
                              "train"])
     ap.add_argument("--views", choices=["clean", "noisy", "paired"],
                     default="paired")
-    ap.add_argument("--maps", choices=["on", "off"], default="on",
-                    help="off = plain DeepSetsT, no physics-map channels")
+    ap.add_argument("--maps", choices=["on", "det", "ens", "ensr", "off"],
+                    default="on",
+                    help="det (=on): 2ch at u_obs; ens: 3ch over wind "
+                         "draws; ensr: ens + marg-residual channel; "
+                         "off: plain DeepSetsT")
     ap.add_argument("--resid", choices=["plain", "marg"], default="plain",
                     help="marg = wind-marginalized residual in the loss")
     ap.add_argument("--lam", type=float, default=0.0)
@@ -404,7 +425,9 @@ def main():
         stage_verify_marg(cfg, device)
     else:
         stage_train(cfg, device, args.views, args.lam, args.seed,
-                    maps=(args.maps == "on"), resid_kind=args.resid)
+                    maps={"on": "det", "off": None}.get(args.maps,
+                                                        args.maps),
+                    resid_kind=args.resid)
 
 
 if __name__ == "__main__":

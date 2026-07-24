@@ -282,5 +282,39 @@
       "median_radius_m": 106.33508592173975,
       "frac_below_50m": 0.0
     }
+  },
+  "pw_noisy_lam0.05_seed2": {
+    "tag": "pw_noisy_lam0.05_seed2",
+    "maps": true,
+    "lam": 0.05,
+    "resid": "plain",
+    "val_nll": 6.06114794921875,
+    "clean": {
+      "coverage": 0.903,
+      "median_radius_m": 57.806851721343115,
+      "frac_below_50m": 0.3875
+    },
+    "noisy": {
+      "coverage": 0.918,
+      "median_radius_m": 84.09415012145404,
+      "frac_below_50m": 0.149
+    }
+  },
+  "pw_noisy_lam0.05_seed3": {
+    "tag": "pw_noisy_lam0.05_seed3",
+    "maps": true,
+    "lam": 0.05,
+    "resid": "plain",
+    "val_nll": 6.055310302734375,
+    "clean": {
+      "coverage": 0.906,
+      "median_radius_m": 57.38520603635994,
+      "frac_below_50m": 0.3975
+    },
+    "noisy": {
+      "coverage": 0.9155,
+      "median_radius_m": 84.20958483622155,
+      "frac_below_50m": 0.1565
+    }
   }
 }
