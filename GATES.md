@@ -367,3 +367,17 @@ uncertainty-native reference is documented future work with the factorization
 identity and quadrature study as the roadmap. The naive K=16 joint-MC
 "marginalized" oracle (cov 0.71) must NOT be cited as the Bayes limit under
 wind uncertainty — no valid such limit is currently computed.
+
+## Dispersion-coefficient verification (2026-07-23, prompted by "is the simulator completely verified")
+
+The mass-flux gate verifies plume normalization+reflection but is INSENSITIVE to
+the sigma coefficients (any Gaussian profile conserves mass). Checked separately:
+_BR_Y and _BR_Z in methane_model.py match the published Briggs open-country
+table (Hanna, Briggs & Hosker 1982) entry-for-entry, all six classes, both
+axes, including per-class functional forms. PPM_KGM3 = 6.55e-7 kg/m^3/ppm is
+the correct CH4 value at 25 C / 1 atm. SIGMA_Y0/Z0 floors (2 m / 1 m) are a
+documented finite-source-size modification, not Briggs.
+
+Remaining UNVERIFIED (assumptions, not errors): quasi-static stepping (no
+transient reference), AR(1) wind + iid ppm noise models vs real spectra,
+Briggs validity below ~100 m fetch, and all field transfer.
