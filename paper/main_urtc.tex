@@ -148,7 +148,18 @@ task structure with exact ground truth, complementing rather than
 replacing field validation.
 
 \section{Methodology}
-\subsection{Forward model and measured wind}
+Our methodology has three layers, and each exists for a reason. A
+simulation system makes the truth knowable, so that every claim in this
+paper can be measured rather than assumed. Machine-learning localizers
+make inference fast and generalizable, answering in milliseconds on
+whatever sensor layout a site has. Between the two we insert a physics
+input processor, which computes the physical relationships the network
+would otherwise have to rediscover from data and presents them as
+inputs. Physics contributes exact understanding; learning contributes
+calibration and generalization; the sections below construct each layer
+in turn and state why it is built the way it is.
+
+\subsection{The simulation system: making the truth knowable (C2)}
 \label{sec:forward}
 \textbf{CH4-T} places one source of unknown grid cell
 $c^\ast \in \{1,\dots,64^2\}$ and rate $q$
@@ -191,7 +202,7 @@ with $\sigma_\theta = 10^\circ$ and $\sigma_s = 0.10$, the accuracy class
 of inexpensive monitoring anemometers. No model, at any stage, observes
 the true wind.
 
-\subsection{The exact reference posterior (C2)}
+The simulator is deliberately built so that the truth is computable.
 Because the model \eqref{eq:readings} is linear in $q$, the per-cell
 likelihood depends on the data only through three summary quantities,
 \begin{equation}
@@ -217,10 +228,42 @@ the exact map itself, to reproduce its own guarantee before any
 experiment proceeds; this check caught two real implementation bugs,
 including a tie-handling correction that we report for reuse.
 
-\subsection{Physics input images with a wind-error budget (C1)}
+\subsection{Base learners: why machine learning, and which networks}
+A monitoring system must answer in seconds, on whatever sensor layout a
+site has, for any leak rate, under the wind it actually measured, while
+physics inversion takes minutes to hours per event and requires the wind
+to be known. We therefore use supervised machine learning: a network is
+trained once on simulated scenarios and afterwards answers in
+milliseconds, and, because it learns from examples, it can absorb
+regularities that have no closed form, such as the way anemometer error
+distorts the evidence. The readings form a \emph{set} of tokens (mast
+position, time, concentration, wind step) whose size varies from site to
+site, so the natural base learners are permutation-invariant set
+networks. We evaluate three families with different inductive biases,
+DeepSets (pooling), a graph neural network (relational structure between
+masts), and a Set Transformer (attention), plus a flow-based generative
+estimator, precisely so that the method's value is demonstrated
+independently of any one architecture choice.
+
+\subsection{The physics input processor (C1)}
 \label{sec:maps}
-The classical matched-filter score of cell $c$ normalizes the alignment
-$a_c$ by the fingerprint's energy,
+The plume model \eqref{eq:plume}--\eqref{eq:readings} fixes an exact
+relationship between any hypothesized leak and the readings it should
+produce, so testing a hypothesis is a correlation computation. The
+controlled comparisons of \S\ref{sec:est} show that networks trained
+end-to-end do not efficiently reconstruct this computation across
+4{,}096 candidate cells (a correctly calibrated baseline delivers
+94--98\,m), while the computation by itself cannot judge how much to
+trust its own answer (calibrated alone, it returns the whole site). We
+therefore insert an \emph{input processor} between the raw data and the
+network: it evaluates the physics relationships explicitly, cell by
+cell, and presents the results as images aligned with the output grid,
+where a small convolutional head can read them spatially. This is the
+division of labor the paper centers on: physics supplies exact
+understanding of how a leak maps to readings, and the network supplies
+what physics lacks, calibration and generalization learned from
+examples. The classical matched-filter score of cell $c$ normalizes the
+alignment $a_c$ by the fingerprint's energy,
 \begin{equation}
 \label{eq:zmap}
 z_c \;=\; \frac{a_c}{\sigma \sqrt{b_c}},
@@ -269,13 +312,12 @@ carry exactly the information of the classical pair $(z_c, \log b_c)$:
 one recipe covers both settings, and the exact-wind results below are its
 zero-budget instantiation.
 
-\subsection{Network, training, and guarantee}
+\subsection{Training, the guarantee, and the division of labor}
 \label{sec:conf}
-Any base localizer $f_\theta$ (we test DeepSets, GNN, and Set
-Transformer encoders over sensor/reading/wind tokens $x$) is combined
-with a three-layer convolutional head $h_\phi$ ($\sim$10k parameters,
-0.2\% of the model) that reads the map stack $M(x)$, joined at the
-output logits:
+The input processor attaches to any base learner $f_\theta$ over the
+token set $x$ through a three-layer convolutional head $h_\phi$
+($\sim$10k parameters, 0.2\% of the model) that reads the map stack
+$M(x)$, joined at the output logits:
 \begin{equation}
 \label{eq:model}
 \ell(x) \;=\; f_\theta(x) \;+\; h_\phi\big(M(x)\big), \qquad
@@ -318,22 +360,19 @@ setting. Region sizes are reported as the radius of the circle of equal
 area; all models share identical data (10k/1k/2k/2k splits, a standard
 budget for this field \cite{sbibm}) and identical symmetry augmentation.
 
-\subsection{Diagnosis: why the images are the right ingredient (C2)}
-A set-based network trained with \eqref{eq:loss} alone is correctly
-calibrated (coverage 0.89) at 94--98\,m, so the information required for
-6--7\,m is present in the readings and waits to be extracted. Three
-controlled probes narrow down where it goes missing. A modern generative
-head (a flow-based neural posterior estimator, strengthened with more
-training and a wider architecture after review of our own implementation)
-reaches 62.8--71.2\,m; since we verified that its output layer can
-express 4.4\,m regions, expressiveness is not the limiting factor. The
-classical score \eqref{eq:zmap} by itself, calibrated with no network at
-all, returns essentially the whole site: it identifies where the evidence
-lies but not how much to trust it. What closes the gap on every network
-we tested is supplying the computation itself as input through
-\eqref{eq:model}. Networks calibrate excellently and compute
-\eqref{eq:suffstats} poorly; classical physics computes it exactly and
-calibrates poorly. The method is the combination.
+\textbf{Division of labor.} Each layer does what it is best at. The
+physics computes exact per-cell evidence through
+\eqref{eq:zmap}--\eqref{eq:resid}, knowledge a network would otherwise
+have to rediscover from data. The network, trained on thousands of
+simulated scenarios through \eqref{eq:loss}, generalizes across sensor
+layouts, leak rates, and wind histories, and learns how measured-wind
+error distorts the evidence and how much to trust each cell, knowledge
+that has no closed form. Conformal calibration \eqref{eq:region}
+converts the combination into a region with a stated guarantee. The
+results quantify each layer's share: the physics images halve the
+regions, the network is what allows the physics to be trusted at all
+under measured wind, and the calibration certifies every number
+reported.
 
 \textbf{Why not invert the physics directly?} On this testbed one can;
 that is our measuring stick \eqref{eq:posterior}. In deployment,
@@ -388,6 +427,7 @@ p50/p75/p90 of 49/112/170\,m). The median case reaches the scale, and the
 upper tail marks the clearest room for future work.
 
 \subsection{The same fix works on every estimator we tested}
+\label{sec:est}
 \begin{table}[t]
 \centering
 \caption{Exact wind; 3 seeds per cell; coverage 0.88--0.92 throughout.}
@@ -409,9 +449,14 @@ Without the maps, the choice of network changes results by 40\,m; with
 them, all nine runs of three network families land inside a 1.5\,m band
 (Table~\ref{tab:est}). The gain is available to whatever architecture a
 practitioner already has, with ordinary training and near-zero added
-cost. The maps also transfer onto the generative estimator and improve it
-as well; the recipe therefore composes with other estimators rather than
-competing with them.
+cost. The flow-based estimator is informative in both directions: it
+improves on the baseline with no physics at all, and since we verified
+that its output layer can express 4.4\,m regions, its remaining gap is
+not a matter of expressiveness; the images improve it as well, so the
+recipe composes with other estimators rather than competing with them.
+At the other extreme, the classical score alone identifies where the
+evidence lies but not how much to trust it, and pays for that
+overconfidence with full-site regions.
 
 \subsection{Measured wind: the main result}
 \label{sec:robust}
