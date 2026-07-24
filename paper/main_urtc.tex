@@ -27,23 +27,23 @@ and machine learning can turn their readings into a leak search region in
 milliseconds, with a statistical guarantee that the region contains the
 source 90\% of the time. We show that the guarantee alone is not enough,
 and we provide a simple, verified way to make the regions small enough to
-act on --- even when the wind measurement is imperfect. On a simulation
-testbed whose physics is exactly solvable, we can compute the smallest
-region the sensor data truly support, and use it as a measuring stick: a
+act on, even when the wind measurement is imperfect. On a simulation
+testbed whose physics is exactly solvable, we compute the smallest region
+the sensor data truly support and use it as a measuring stick: a
 guaranteed deep-learning localizer produced 94--98\,m regions where the
-data supported 6--7\,m. We close half that gap with one change: computing,
-for every map cell, how well a leak there would explain the readings ---
-classical signal processing --- and giving those maps to the network as
-extra input images. With ordinary training and 0.2\% more parameters, three
-different network families all reach 46--48\,m, the scale U.S. EPA
-super-emitter notifications use to associate a leak with a facility
-(50\,m). We then make the test realistic: the network only ever sees a
-wind \emph{measurement} with typical instrument error (10$^\circ$
-direction, 10\% speed). The same recipe, extended so the input maps also
-carry the wind sensor's stated error range, stays guaranteed and reaches
-\textbf{70--73\,m}, with a quarter of cases below 50\,m. All results are
-verified against exact references and reported over multiple training
-seeds.
+data supported 6--7\,m. We close half of that gap with one change. For
+every map cell, we compute how well a leak at that cell would explain the
+readings, a classical signal-processing operation, and we provide these
+maps to the network as additional input images. With ordinary training and
+0.2\% added parameters, three different network families all reach
+46--48\,m, the scale that U.S. EPA super-emitter notifications use to
+associate a leak with a facility (50\,m). We then make the test realistic:
+the network only ever sees a wind \emph{measurement} with typical
+instrument error (10$^\circ$ direction, 10\% speed). The same recipe,
+extended so that the input maps also carry the wind sensor's stated error
+range, retains its guarantee and reaches \textbf{70--73\,m}, with a
+quarter of cases below 50\,m. All results are verified against exact
+references and reported over multiple training seeds.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -56,63 +56,63 @@ Methane traps roughly $80\times$ more heat than CO$_2$ over its first 20
 years and fades from the atmosphere within about a decade, so stopping
 large leaks quickly is one of the highest-leverage climate actions
 available today. A large share of oil-and-gas methane comes from a small
-number of big point sources --- ``super-emitters,'' defined by the U.S.
-EPA as events of 100\,kg\,h$^{-1}$ or more \cite{epa}. Detection
-technology has surged ahead: UNEP's satellite alert system issued over a
-thousand notifications in its first two years \cite{unep}. The bottleneck
-is what happens next: connecting an alert to a specific place a crew can
-inspect. EPA's Super-Emitter Program (implementation extended to January
-2027) asks notifications to identify any facility within \textbf{50\,m} of
-the estimated leak location \cite{epa}, and the EU imposes analogous
-source-level duties \cite{eu}. We therefore adopt 50\,m as an
-operationally motivated target: a region small enough to trigger a focused
-inspection.
+number of large point sources, known as super-emitters and defined by the
+U.S. EPA as events of 100\,kg\,h$^{-1}$ or more \cite{epa}. Detection
+technology has advanced rapidly; UNEP's satellite alert system issued over
+a thousand notifications in its first two years \cite{unep}. The
+bottleneck is what happens next: connecting an alert to a specific place
+that a crew can inspect. EPA's Super-Emitter Program (implementation
+extended to January 2027) asks notifications to identify any facility
+within \textbf{50\,m} of the estimated leak location \cite{epa}, and the
+EU imposes analogous source-level duties \cite{eu}. We therefore adopt
+50\,m as an operationally motivated target: a region small enough to
+trigger a focused inspection.
 
-Continuous monitoring networks --- a handful of inexpensive sensor masts
-that catch the plume as wind sweeps it across the site --- are where this
-localization can happen. Machine learning provides instant estimates, and
-a standard statistical wrapper called split conformal prediction
-\cite{conformal} adds a guarantee: a region that provably contains the
-true source 90\% of the time. \textbf{The gap we address is twofold.}
+Continuous monitoring networks, in which a small number of inexpensive
+sensor masts capture the plume as the wind sweeps it across the site, are
+where this localization can happen. Machine learning provides instant
+estimates, and a standard statistical wrapper called split conformal
+prediction \cite{conformal} adds a guarantee: a region that provably
+contains the true source 90\% of the time. The gap we address is twofold.
 First, the guarantee speaks only to how \emph{often} the region contains
-the source, not to how \emph{small} the region is --- and there was no
-practical way to measure how much smaller a guaranteed region could have
-been. Second, the classical alternative --- inverting the plume physics
-directly --- needs the wind to be known exactly, while every real site has
-only a wind \emph{measurement}; how each approach behaves under that
-everyday mismatch had not been carefully quantified.
+the source, not to how \emph{small} the region is, and there was
+previously no practical way to measure how much smaller a guaranteed
+region could have been. Second, the classical alternative of inverting the
+plume physics directly requires the wind to be known exactly, while every
+real site has only a wind \emph{measurement}; how each approach behaves
+under that everyday mismatch had not been carefully quantified.
 
 \textbf{Contributions.}
 \begin{itemize}
-\item \textbf{C1 --- A measuring stick for guaranteed regions.} A methane
+\item \textbf{C1: A measuring stick for guaranteed regions.} A methane
 testbed (CH4-T) whose physics is exactly solvable, so the smallest region
-the data support is computable for every scenario. This lets us audit any
-guaranteed localizer in meters. Finding: a verified-90\% deep localizer
-delivered 94--98\,m where the data supported 6--7\,m.
-\item \textbf{C2 --- A diagnosis, and a simple fix through the inputs.}
+the data support is computable for every scenario. This allows any
+guaranteed localizer to be audited in meters. A verified-90\% deep
+localizer delivered 94--98\,m where the data supported 6--7\,m.
+\item \textbf{C2: A diagnosis, and a simple fix through the inputs.}
 Controlled comparisons across three network families and a modern
 generative estimator point to one missing ingredient: the classical
 computation that scores, for every map cell, how well a leak there would
-explain the readings. Supplied as two extra input images (closed-form,
-milliseconds) with a near-zero-cost add-on head and ordinary training, it
-brings all three families to 46--48\,m.
-\item \textbf{C3 --- One recipe that carries its wind-error budget.} The
+explain the readings. Supplied as two additional input images (closed
+form, milliseconds) with a near-zero-cost add-on head and ordinary
+training, it brings all three families to 46--48\,m.
+\item \textbf{C3: One recipe that carries its wind-error budget.} The
 same input maps, extended with the wind sensor's stated error range (the
 average evidence, its variability, and a fit-quality map across plausible
-winds), keep the guarantee under realistic wind error and reach
-70--73\,m --- and when the error budget is set to zero, the extended maps
-reduce exactly to the classical ones, so it is a single recipe throughout.
+winds), retain the guarantee under realistic wind error and reach
+70--73\,m. When the error budget is set to zero, the extended maps reduce
+exactly to the classical ones, so a single recipe covers both settings.
 \end{itemize}
-Every component is standard and auditable --- classical detection theory,
-ordinary supervised training, textbook conformal calibration --- and every
+Every component is standard and auditable: classical detection theory,
+ordinary supervised training, and textbook conformal calibration. Every
 number below comes from one shared, verified simulator, identical data
-splits, and an identical calibration harness, reported over three training
-seeds.
+splits, and an identical calibration harness, reported over three
+training seeds.
 
 \begin{figure}[t]
 \centering
 \figplaceholder{4.2cm}{Figure 1 placeholder: wind-swept plume, masts, and
-true source on the 500\,m site, with median 90\% regions drawn to scale ---
+true source on the 500\,m site, with median 90\% regions drawn to scale:
 smallest supported region ($\sim$7\,m), our recipe with exact wind
 (46--48\,m), baseline network (94\,m), our recipe with measured wind
 (70--73\,m), and the 50\,m facility-association radius.}
@@ -122,25 +122,25 @@ smallest supported region ($\sim$7\,m), our recipe with exact wind
 
 \section{Related Work}
 \textbf{Conformal prediction} gives distribution-free coverage guarantees
-\cite{conformal}; how \emph{small} the guaranteed sets are is the open
-half of the problem, and our audit scores it directly against the exact
+\cite{conformal}; how small the guaranteed sets are is the open half of
+the problem, and our audit scores it directly against the exact
 probability map at matched, verified coverage. \textbf{Simulation-based
 inference} trains neural networks to approximate probability maps from
 simulated data \cite{npe,nsf,sbibm}; its standard diagnostics check
 calibration \cite{sbc}, and recent work examines what happens when the
 simulator's settings differ from reality at deployment \cite{robsbi}. Our
-measured-wind design addresses exactly that setting, by building the wind
+measured-wind design addresses exactly that setting by building the wind
 sensor's declared error range into the network's inputs. Our maps are
-classical statistics chosen by hand --- transparent and checkable line by
-line --- which complements approaches that learn their summaries from
-data. \textbf{Source-term estimation} inverts dispersion physics with
-optimization or sampling, at minutes to hours per event \cite{newman};
+classical statistics chosen by hand, transparent and checkable line by
+line, which complements approaches that learn their summaries from data.
+\textbf{Source-term estimation} inverts dispersion physics with
+optimization or sampling at minutes to hours per event \cite{newman};
 learned localizers answer in milliseconds, and our audit adds the missing
 instrument for judging how much information they extract.
 \textbf{Controlled-release testing} (METEC) evaluates continuous
 monitoring systems in the field \cite{metec}; our testbed mirrors that
-task structure with exact ground truth, complementing --- not replacing ---
-field validation.
+task structure with exact ground truth, complementing rather than
+replacing field validation.
 
 \section{Methodology}
 \subsection{Testbed, measured wind, and the audit (C1)}
@@ -151,82 +151,83 @@ readings with realistic noise and dropout). Gas transport follows the
 standard Gaussian plume model with published Pasquill--Gifford/Briggs
 dispersion coefficients (verified against the original tables; mass
 conservation checked to $4{\times}10^{-6}$), driven by a naturally
-meandering wind record (1--8\,m\,s$^{-1}$; 1-minute steps over a 30-minute
-window). \textbf{Wind uncertainty is built into the data}: readings are
-generated under the true wind, but the dataset records only the
-\emph{measured} wind --- the truth plus 10$^\circ$ direction and 10\% speed
-error per step, the accuracy class of inexpensive monitoring anemometers
---- and no model, at any stage, sees the truth. Because the plume model is
-closed-form and linear in the leak rate, the \emph{exact} probability map
-over a $64{\times}64$ grid is computable for every scenario under known
-wind (high-precision quadrature; normalization checked to
-$\sim$$10^{-12}$). That gives the measuring stick: the smallest 90\%
-region the data support is 7.0\,m at nominal settings and 6.2\,m when
-coverage is matched to the learned models' 0.89. A blocking check
-requires the calibration wrapper, applied to the exact map itself, to
-reproduce its own guarantee before any experiment proceeds --- a check
-that caught two real implementation bugs, including a tie-handling
-correction we report for reuse. All models share identical data
-(10k/1k/2k/2k splits, a standard budget for this field \cite{sbibm}),
-identical symmetry augmentation, and an identical conformal wrapper,
-always calibrated under the same wind condition in which it is evaluated.
-Region sizes are reported as the radius of the circle of equal area.
+meandering wind record (1--8\,m\,s$^{-1}$; 1-minute steps over a
+30-minute window). \textbf{Wind uncertainty is built into the data.}
+Readings are generated under the true wind, but the dataset records only
+the \emph{measured} wind: the true wind corrupted by 10$^\circ$ of
+direction error and 10\% of speed error per step, the accuracy class of
+inexpensive monitoring anemometers. No model, at any stage, observes the
+true wind. Because the plume model is closed-form and linear in the leak
+rate, the exact probability map over a $64{\times}64$ grid is computable
+for every scenario under known wind (high-precision quadrature;
+normalization checked to $\sim$$10^{-12}$). This provides the measuring
+stick: the smallest 90\% region the data support is 7.0\,m at nominal
+settings and 6.2\,m when coverage is matched to the learned models' 0.89.
+A blocking check requires the calibration wrapper, applied to the exact
+map itself, to reproduce its own guarantee before any experiment
+proceeds; this check caught two real implementation bugs, including a
+tie-handling correction that we report for reuse. All models share
+identical data (10k/1k/2k/2k splits, a standard budget for this field
+\cite{sbibm}), identical symmetry augmentation, and an identical conformal
+wrapper, always calibrated under the same wind condition in which it is
+evaluated. Region sizes are reported as the radius of the circle of equal
+area.
 
 \subsection{Diagnosis: what was missing (C2)}
 A standard set-based network trained on ordinary labels is correctly
-calibrated (coverage 0.89) at 94--98\,m --- so the information for 6--7\,m
-is present in the readings, waiting to be extracted. Three controlled
-probes narrow down where it goes missing. A modern generative head (a
-flow-based neural posterior estimator, strengthened with more training and
-a wider architecture after review of our own implementation) reaches
-62.8--71.2\,m --- better, and we verified its output layer can express
-4.4\,m regions, so expressiveness is not the limit. The classical physics
-score by itself, calibrated with no network at all, returns essentially
-the whole site --- it knows where the evidence is but not how much to
-trust it. What closes the gap on every network we tested is supplying the
-computation itself as input: for each of the 4{,}096 candidate cells,
-correlate the readings against the pattern a leak at that cell would
-produce. Networks calibrate excellently and compute this poorly; classical
-physics computes it exactly and calibrates poorly. The method is the
-combination.
+calibrated (coverage 0.89) at 94--98\,m, so the information required for
+6--7\,m is present in the readings and waits to be extracted. Three
+controlled probes narrow down where it goes missing. A modern generative
+head (a flow-based neural posterior estimator, strengthened with more
+training and a wider architecture after review of our own implementation)
+reaches 62.8--71.2\,m; since we verified that its output layer can
+express 4.4\,m regions, expressiveness is not the limiting factor. The
+classical physics score by itself, calibrated with no network at all,
+returns essentially the whole site: it identifies where the evidence lies
+but not how much to trust it. What closes the gap on every network we
+tested is supplying the computation itself as input: for each of the
+4{,}096 candidate cells, correlate the readings against the pattern that
+a leak at that cell would produce. Networks calibrate excellently and
+compute this poorly; classical physics computes it exactly and calibrates
+poorly. The method is the combination.
 
 \subsection{One recipe, carrying its wind-error budget (C3)}
 \label{sec:rec}
-For any base localizer (Fig.~\ref{fig:pipeline}), let $g_c$ be the pattern
-of readings a unit-rate leak at cell $c$ would produce under the
-\emph{measured} wind, and let $a_c{=}\sum g_c y$ and $b_c{=}\sum g_c^2$
-summarize how the actual readings $y$ line up with that pattern.
-\textbf{(1)}~State the wind sensor's error range $\varepsilon$ (from its
-specification sheet), draw eight plausible true winds within that range,
-and compute four $64{\times}64$ input images: the \emph{average evidence}
-$\bar z_c$ (how strongly the readings point to cell $c$, averaged over
-plausible winds), its \emph{variability} across those winds (how fragile
-that evidence is to wind error), the average \emph{sensitivity}
-$\overline{\log b_c}$ (how visible a leak at $c$ would be to this sensor
-layout), and the average \emph{fit quality}
-$\bar R_c$ --- the leftover error after the best leak rate at $c$ tries to
-explain the readings, averaged over plausible winds. Every image is
+For any base localizer (Fig.~\ref{fig:pipeline}), let $g_c$ be the
+pattern of readings that a unit-rate leak at cell $c$ would produce under
+the \emph{measured} wind, and let $a_c{=}\sum g_c y$ and
+$b_c{=}\sum g_c^2$ summarize how the actual readings $y$ align with that
+pattern. \textbf{(1)}~State the wind sensor's error range $\varepsilon$
+(from its specification sheet), draw eight plausible true winds within
+that range, and compute four $64{\times}64$ input images: the
+\emph{average evidence} $\bar z_c$ (how strongly the readings point to
+cell $c$, averaged over plausible winds), its \emph{variability} across
+those winds (how fragile that evidence is to wind error), the average
+\emph{sensitivity} $\overline{\log b_c}$ (how visible a leak at $c$ would
+be to this sensor layout), and the average \emph{fit quality} $\bar R_c$,
+the residual error that remains after the best leak rate at $c$ attempts
+to explain the readings, averaged over plausible winds. Every image is
 closed-form linear algebra, computed in milliseconds from the network's
 own inputs. \textbf{(2)}~Add a small convolutional head ($\sim$10k
-parameters, 0.2\% of the model) initialized at exactly zero, so at the
-first training step the model \emph{is} the unmodified baseline and every
+parameters, 0.2\% of the model) initialized at exactly zero, so that at
+the first training step the model is the unmodified baseline and every
 comparison is controlled by construction. \textbf{(3)}~Train with
 ordinary supervised labels. \textbf{(4)}~Calibrate with the standard
 conformal wrapper under the deployment wind condition. \textbf{When the
 error budget is zero, the recipe reduces exactly to the classical
-two-channel form}: with only one wind, the variability image is
-identically zero, and the fit-quality image becomes a fixed transformation
-of the evidence image ($R_c = yy - \sigma^2\max(z_c,0)^2$), so the four
-images carry the same information as the classical pair $(z_c,\log b_c)$.
-One recipe covers both worlds; the exact-wind results below are its
-zero-budget setting.
+two-channel form.} With only one wind, the variability image is
+identically zero, and the fit-quality image becomes a fixed
+transformation of the evidence image ($R_c = yy -
+\sigma^2\max(z_c,0)^2$), so the four images carry the same information as
+the classical pair $(z_c,\log b_c)$. One recipe covers both settings; the
+exact-wind results below are its zero-budget instantiation.
 
-\textbf{Why not just invert the physics?} On this testbed one can --- that
-is our measuring stick. In deployment, realistic dispersion has no exact
-solution and physics inversion takes minutes to hours per event
-\cite{newman} where monitoring needs seconds; and as
-\S\ref{sec:robust} shows, the learned recipe holds up under measured wind
-in a setting where direct inversion returns regions too large to act on.
+\textbf{Why not invert the physics directly?} On this testbed one can;
+that is our measuring stick. In deployment, realistic dispersion has no
+exact solution and physics inversion takes minutes to hours per event
+\cite{newman} where monitoring needs seconds, and as \S\ref{sec:robust}
+shows, the learned recipe holds up under measured wind in a setting where
+direct inversion returns regions too large to act on.
 
 \begin{figure*}[t]
 \centering
@@ -234,10 +235,11 @@ in a setting where direct inversion returns regions too large to act on.
 pipeline. Readings + measured wind + stated error range $\varepsilon$
 $\rightarrow$ four physics input images (average evidence, variability,
 sensitivity, fit quality; closed form, ms; at $\varepsilon{=}0$ these
-reduce to the classical pair) $\rightarrow$ any localizer + zero-initialized
-convolutional head, joined at the output $\rightarrow$ guaranteed 90\%
-region calibrated under the deployment condition (46--48\,m with exact
-wind; 70--73\,m at 10$^\circ$/10\%; 50\,m facility scale for reference).}
+reduce to the classical pair) $\rightarrow$ any localizer +
+zero-initialized convolutional head, joined at the output $\rightarrow$
+guaranteed 90\% region calibrated under the deployment condition
+(46--48\,m with exact wind; 70--73\,m at 10$^\circ$/10\%; 50\,m facility
+scale for reference).}
 \caption{One budget-aware, physics-guided, guaranteed localizer
 (placeholder).}
 \label{fig:pipeline}
@@ -263,12 +265,12 @@ Deep localizer, labels only & 0.89 & 94--98 \\
 
 Both learned rows pass every standard calibration check; only the audit
 reveals that one of them delivers regions more than ten times larger than
-the data support (Table~\ref{tab:audit}). Two input images and a tiny head
-close half the distance: the median radius falls by 50.3\% (bootstrap 95\%
-CI [48.9, 52.0]), 96.4\% of individual scenarios improve, and 51\% of
-regions land below the 50\,m facility scale (percentiles p50/p75/p90:
-49/112/170\,m --- the median case reaches the scale, and the upper tail
-marks the clearest room for future work).
+the data support (Table~\ref{tab:audit}). Two input images and a small
+head close half of the distance: the median radius falls by 50.3\%
+(bootstrap 95\% CI [48.9, 52.0]), 96.4\% of individual scenarios improve,
+and 51\% of regions fall below the 50\,m facility scale (percentiles
+p50/p75/p90 of 49/112/170\,m). The median case reaches the scale, and the
+upper tail marks the clearest room for future work.
 
 \subsection{The same fix works on every estimator we tested}
 \begin{table}[t]
@@ -291,18 +293,19 @@ Classical score alone (no network) & --- & 282 (full site) \\
 Without the maps, the choice of network changes results by 40\,m; with
 them, all nine runs of three network families land inside a 1.5\,m band
 (Table~\ref{tab:est}). The gain is available to whatever architecture a
-practitioner already has, with ordinary training and near-zero added cost.
-The maps also transfer onto the generative estimator, improving it as
-well --- the recipe composes with other estimators rather than competing
-with them.
+practitioner already has, with ordinary training and near-zero added
+cost. The maps also transfer onto the generative estimator and improve it
+as well; the recipe therefore composes with other estimators rather than
+competing with them.
 
 \subsection{Measured wind: the main result}
 \label{sec:robust}
 \begin{table}[t]
 \centering
-\caption{Measured wind (10$^\circ$/10\% per-step error; no method sees the
-true wind; calibration under the deployment condition; 3 seeds for learned
-rows). Middle rows use progressively less of the error-range information.}
+\caption{Measured wind (10$^\circ$/10\% per-step error; no method sees
+the true wind; calibration under the deployment condition; 3 seeds for
+learned rows). Middle rows use progressively less of the error-range
+information.}
 \label{tab:wind}
 \begin{tabular}{lccc}
 \toprule
@@ -319,30 +322,31 @@ Ours, + average and variability & 0.89--0.91 & 74.7--76.3 & 20--21\% \\
 \end{tabular}
 \end{table}
 
-Real anemometers have error, and the effect on direct physics inversion is
-dramatic: trusting the measured wind exactly, it concentrates its
+Real anemometers have error, and the effect on direct physics inversion
+is dramatic. Trusting the measured wind exactly, it concentrates its
 probability so far from the true source that, to keep its guarantee, the
 calibration wrapper must return essentially the entire site
-(Table~\ref{tab:wind}); allowing extra measurement noise, tuned on held-out
-data, does not change this. The learned recipe behaves differently, and
-the pattern is clean: the more of the wind sensor's error-range
-information the input images carry, the smaller the guaranteed regions
-get --- 82--84\,m using the measured wind alone, 74--76\,m adding the
-average and variability of the evidence across plausible winds, and
-\textbf{70--73\,m} adding the fit-quality image, with a quarter of cases
-below 50\,m. Same network, same training, same guarantee, one forward
-pass. The mechanism is constructive: because the physics --- and the
-sensor's own error range --- live in the inputs, ordinary supervised
-training gives the network thousands of examples from which to learn how
-the error behaves and how much to trust each cell's evidence. A useful
-summary of the whole study: $94{\to}47$\,m came from supplying a missing
-computation; $47{\to}71$\,m is the measured cost of imperfect wind at
-this error range; and $108{\to}71$\,m is the total value of physics in
-the inputs when the wind is realistic.
+(Table~\ref{tab:wind}); allowing extra measurement noise, tuned on
+held-out data, does not change this. The learned recipe behaves
+differently, and the pattern is clean: the more of the wind sensor's
+error-range information the input images carry, the smaller the
+guaranteed regions become, from 82--84\,m using the measured wind alone,
+to 74--76\,m after adding the average and variability of the evidence
+across plausible winds, to \textbf{70--73\,m} after adding the
+fit-quality image, with a quarter of cases below 50\,m. This is the same
+network, the same training, the same guarantee, and one forward pass. The
+mechanism is constructive: because the physics and the sensor's own error
+range live in the inputs, ordinary supervised training gives the network
+thousands of examples from which to learn how the error behaves and how
+much to trust each cell's evidence. A useful summary of the whole study:
+$94{\to}47$\,m came from supplying a missing computation;
+$47{\to}71$\,m is the measured cost of imperfect wind at this error
+range; and $108{\to}71$\,m is the total value of physics in the inputs
+when the wind is realistic.
 
 \begin{figure}[t]
 \centering
-\figplaceholder{3.4cm}{Figure 3 placeholder: measured-wind results ---
+\figplaceholder{3.4cm}{Figure 3 placeholder: measured-wind results as a
 dot-range plot of Table~\ref{tab:wind} (radius vs.\ configuration, 3-seed
 ranges), with the full-site inversion bar and the 50\,m line for scale.}
 \caption{Guaranteed region size vs.\ wind-error information in the inputs
@@ -362,31 +366,31 @@ the 50\,m operational scale rather than an information bound. The wind
 error range is taken as known from the instrument specification;
 quantifying sensitivity when the specification is wrong is a natural next
 step. With exact wind, half of individual cases still exceed 50\,m
-(p90\,$=$\,170\,m), and the largest leaks localize somewhat worse ---
-clear, well-defined targets for follow-up work. Field validation on
-controlled releases is the natural next stage; comparisons reported here
-are exact regardless, because every method shares one verified simulator,
-one dataset, and one calibration harness.
+(p90\,$=$\,170\,m), and the largest leaks localize somewhat worse; these
+are clear, well-defined targets for follow-up work. Field validation on
+controlled releases is the natural next stage, and the comparisons
+reported here are exact regardless, because every method shares one
+verified simulator, one dataset, and one calibration harness.
 
 \section{Conclusions}
 On a testbed with exact ground truth, we measured what a coverage
-guarantee is worth and what it still leaves on the table: a calibrated
-deep localizer delivered a tenth of the sharpness its data supported.
+guarantee is worth and what it still leaves unrealized: a calibrated deep
+localizer delivered a tenth of the sharpness its data supported.
 Supplying one classical computation as input images brought three network
 families to 46--48\,m at the 50\,m facility-association scale, and the
 same recipe, carrying the wind sensor's stated error range in its inputs,
-kept its guarantee at 70--73\,m under realistic wind error --- millisecond
-inference, ordinary training, 0.2\% added parameters.
+retained its guarantee at 70--73\,m under realistic wind error, with
+millisecond inference, ordinary training, and 0.2\% added parameters.
 
-The research impact is a transferable evidence standard: exact solvable
-testbeds as \emph{measuring instruments} for learned inference,
-self-checking calibration gates, and one-change-at-a-time controls ---
-applicable wherever guaranteed regions are produced, from gas leaks to
-acoustic or radiological source search. The social impact is practical:
-regions small enough to act on, produced in milliseconds from inexpensive
-hardware, with stated guarantees and with the wind sensor's imperfection
-budgeted honestly --- the missing analytical step between a satellite
-alert and a crew knowing where to look.
+The research impact is a transferable evidence standard: exactly solvable
+testbeds as measuring instruments for learned inference, self-checking
+calibration gates, and one-change-at-a-time controls, applicable wherever
+guaranteed regions are produced, from gas leaks to acoustic or
+radiological source search. The social impact is practical: regions small
+enough to act on, produced in milliseconds from inexpensive hardware,
+with stated guarantees, and with the wind sensor's imperfection budgeted
+honestly. This is the missing analytical step between a satellite alert
+and a crew knowing where to look.
 
 \appendix
 \section*{Appendix: Ablation and Control Record}
@@ -414,13 +418,13 @@ Smallest supported region & 6.2--7.0 & 0.89--0.95 \\
 
 \textbf{Reading.} Both images contribute, and the evidence image (the
 correlation computation) carries most of the gain; the sensitivity image
-alone, which never touches the readings, adds little --- confirming the
-correlation computation is the operative ingredient. The classical score
-without a network pays for its overconfidence with full-site regions, so
-the learned calibration is load-bearing. By leak rate, the recipe's
-median radius / fraction below 50\,m: 10--30\,kg\,h$^{-1}$: 44.8\,m /
-54\%; 30--100: 44.5\,m / 55\%; 100--250: 50.3\,m / 49\%; 250--500:
-55.2\,m / 41\%.
+alone, which never touches the readings, adds little, which confirms that
+the correlation computation is the operative ingredient. The classical
+score without a network pays for its overconfidence with full-site
+regions, so the learned calibration is load-bearing. By leak rate, the
+recipe's median radius and fraction below 50\,m are:
+10--30\,kg\,h$^{-1}$: 44.8\,m, 54\%; 30--100: 44.5\,m, 55\%; 100--250:
+50.3\,m, 49\%; 250--500: 55.2\,m, 41\%.
 
 \begin{thebibliography}{12}
 \bibitem{unep} UN Environment Programme (IMEO), ``An eye on methane:
@@ -442,15 +446,15 @@ estimation,'' \emph{NeurIPS}, 2016.
 ``Neural spline flows,'' \emph{NeurIPS}, 2019.
 \bibitem{sbibm} J.-M. Lueckmann \emph{et al.}, ``Benchmarking
 simulation-based inference,'' \emph{AISTATS}, 2021.
-\bibitem{robsbi} P.~Cannon, D.~Ward, and S.~M. Schmon, ``Investigating the
-impact of model misspecification in neural simulation-based inference,''
-arXiv:2209.01845, 2022.
+\bibitem{robsbi} P.~Cannon, D.~Ward, and S.~M. Schmon, ``Investigating
+the impact of model misspecification in neural simulation-based
+inference,'' arXiv:2209.01845, 2022.
 \bibitem{newman} T.~Newman \emph{et al.}, ``Probabilistic inversion
-modeling of gas emissions: MCMC estimation of Gaussian plume parameters,''
-arXiv:2408.01298, 2024.
+modeling of gas emissions: MCMC estimation of Gaussian plume
+parameters,'' arXiv:2408.01298, 2024.
 \bibitem{metec} C.~Ilonze \emph{et al.}, ``Assessing the performance of
-emerging and existing continuous monitoring solutions under a single-blind
-controlled testing protocol,'' \emph{Elementa}, 2025.
+emerging and existing continuous monitoring solutions under a
+single-blind controlled testing protocol,'' \emph{Elementa}, 2025.
 \end{thebibliography}
 
 \end{document}
