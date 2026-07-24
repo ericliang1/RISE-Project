@@ -14,7 +14,8 @@
 \begin{document}
 
 \title{Reaching the Actionable Radius:\\
-Physics-Guided Calibrated Localization of Methane Sources}
+Physics-Guided Calibrated Localization of Methane Sources\\
+under Wind Uncertainty}
 
 \author{\IEEEauthorblockN{Eric Liang}
 \IEEEauthorblockA{Department of Computer Science, Boston University\\
@@ -23,36 +24,33 @@ eric.jinchen.liang@gmail.com}}
 \maketitle
 
 \begin{abstract}
-We present a simple recipe that brings calibrated machine-learning
-localization of high-rate methane sources to the 50\,m scale used for
-facility association in EPA super-emitter notifications. On a
-methane-configured testbed whose closed-form physics makes the \emph{exact}
-Bayesian posterior computable for every scenario, we first contribute an
-audit that measures, in meters, how much of the available information a
-calibrated localizer delivers: a conformal-wrapped deep localizer with a
-verified 90\% coverage guarantee attains a 94\,m median search radius where
-the exact posterior supports 6--7\,m. Controlled elimination locates the
-cause: not the information, not the estimator head (a strengthened
-flow-based neural posterior estimator reaches only 63--71\,m), and not the
-classical physics statistic alone (conformalized, it returns essentially the
-entire site) --- but the absence of a classical computation, per-cell matched
-filtering, that pooled set encoders did not recover under the tested
-architectures and budgets. Supplying it directly --- two closed-form
-matched-filter maps as input channels and a zero-initialized residual head,
-0.2\% extra parameters, ordinary label training --- brings three
-architecture families into a 1.5\,m band at 46--48\,m median radius
-(a 50\% median radius reduction; 96\% of scenarios improved) at unchanged
-coverage and millisecond latency. Under realistic wind-measurement error,
-exact plug-in inversion retains its guarantee only by returning essentially
-the entire site, while the same recipe remains calibrated at 75--85\,m, with
-uncertainty-aware input maps recovering a further $\sim$8\,m. Calibrated,
-physics-guided learning is both sharper and more robust than inversion built
-on the same physics.
+Calibrated machine-learning localizers promise guaranteed search regions for
+methane super-emitters, but a coverage guarantee says nothing about
+usefulness. On a methane testbed whose closed-form physics makes the
+\emph{exact} Bayesian posterior computable, we audit what calibration is
+worth: a conformal-wrapped deep localizer with a verified 90\% guarantee
+delivers a 94--98\,m median search radius where the data support 6--7\,m.
+Controlled elimination traces the gap to a single missing classical
+computation --- per-cell matched filtering --- and supplying it as
+\emph{input channels} to a 0.2\%-parameter zero-initialized head brings
+three architecture families into a 1.5\,m band at 46--48\,m, at the 50\,m
+scale used for facility association in EPA super-emitter notifications. We
+then make the setting honest: the wind is a \emph{measurement}
+(10$^\circ$/10\% per-step error), never the truth. Exact plug-in inversion
+retains its guarantee only by returning essentially the entire site, while
+one unified recipe --- physics maps parameterized by the declared wind-error
+budget, provably reducing to the classical matched filter at zero error ---
+degrades gracefully: 82--84\,m ignoring the budget, 74--76\,m with
+evidence moments, and \textbf{70--73\,m} with a wind-marginalized
+goodness-of-fit channel, at unchanged coverage and millisecond inference.
+Accuracy under wind uncertainty is set by how much of the marginalization
+the inputs carry: show the network what the physics computes ---
+and what the physics is unsure of.
 \end{abstract}
 
 \begin{IEEEkeywords}
 methane monitoring, conformal prediction, simulation-based inference,
-sensor networks, physics-guided machine learning
+wind uncertainty, physics-guided machine learning
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -61,61 +59,60 @@ and decays within about a decade, so rapid repair of oil-and-gas
 \emph{super-emitters} is among the highest-leverage near-term climate
 actions. Detection has advanced rapidly --- UNEP's satellite alert system
 issued over a thousand notifications in its first two years \cite{unep} ---
-and attribution is a critical downstream bottleneck between detection and
-operator investigation. Regulation suggests a concrete scale: EPA
-super-emitter notifications associate alerts with facilities at a 50\,m
-radius \cite{epa} (program implementation currently extended to 2027), with
-analogous source-level duties in the EU \cite{eu}. We adopt 50\,m as an
-operationally motivated, facility-scale localization target --- a region that
-triggers a focused investigation, not yet a repair.
+and attribution is the downstream bottleneck between detection and operator
+investigation. Regulation supplies a concrete scale: EPA super-emitter
+notifications associate alerts with facilities at a 50\,m radius \cite{epa}
+(program implementation currently extended to 2027), with analogous duties
+in the EU \cite{eu}. We adopt 50\,m as an operationally motivated,
+facility-scale localization target --- a region that triggers a focused
+investigation, not yet a repair.
 
-Continuous monitoring with sparse fixed point-sensor networks is where such
-localization can happen: a handful of cheap masts around a facility, always
-on, catching the plume as it sweeps across them under naturally meandering
-wind. Machine learning supplies millisecond inference, and split conformal
-prediction \cite{conformal} supplies a guarantee: a region provably
-containing the source 90\% of the time. \textbf{The gap:} coverage
-guarantees frequency, not usefulness. Two questions had no quantitative
-answer: (i)~how close is a calibrated region to the smallest region the
-sensor data support under the modeling assumptions, and (ii)~what mechanism
-limits it, and what closes it? Standard diagnostics for amortized inference
-test whether a posterior is calibrated \cite{sbc}; they cannot measure its
-distance from the exact posterior at matched calibration.
+Continuous monitoring with sparse fixed sensor networks is where such
+localization can happen: a handful of cheap masts, always on, catching the
+plume under naturally meandering wind. Machine learning supplies millisecond
+inference, and split conformal prediction \cite{conformal} supplies a
+guarantee: a region provably containing the source 90\% of the time.
+\textbf{The gap is twofold.} First, coverage guarantees frequency, not
+usefulness: no standard diagnostic \cite{sbc} can measure how far a
+calibrated region sits from the smallest region the data support. Second,
+the classical alternative --- exact inversion of the dispersion physics ---
+assumes the wind is \emph{known}, while every real deployment has only a
+wind \emph{measurement}, and behavior under that mismatch was largely
+uncharacterized.
 
 \textbf{Contributions.}
 \begin{itemize}
 \item \textbf{C1 --- An exact-posterior audit.} A methane testbed (CH4-T)
-whose closed-form physics makes the true Bayesian posterior of every
-scenario computable, so conformal efficiency can be measured in meters
-against a model-based information reference (6.2\,m at matched empirical
-coverage) and the 50\,m facility scale.
-\item \textbf{C2 --- A diagnosis by elimination.} Controlled comparisons ---
-a labels-only baseline, a strengthened flow-based neural posterior
-estimator, and the conformalized classical statistic without any network ---
-isolate the dominant bottleneck in our experiments: a classical computation
-(per-cell matched filtering) that pooled encoders did not recover, and that
-neither a modern estimator head nor the raw physics statistic supplies
-alone.
-\item \textbf{C3 --- A minimal recipe that reaches the scale.} Two
-closed-form matched-filter maps plus a zero-initialized residual head
-(0.2\% extra parameters, ordinary label training) bring three architecture
-families to 46--48\,m median radius at unchanged coverage and latency, and
-remain calibrated under wind-measurement error that reduces exact plug-in
-inversion to site-sized regions.
+whose closed-form physics makes the true posterior of every scenario
+computable, so conformal \emph{efficiency} can be measured in meters against
+the information floor (6.2\,m at matched coverage). Finding: a verified-90\%
+deep localizer delivers 94--98\,m --- calibrated is not actionable.
+\item \textbf{C2 --- A diagnosis by elimination.} Controlled probes --- three
+encoder families, a strengthened flow-based neural posterior estimator, and
+the conformalized classical statistic alone --- convict a single missing
+computation, per-cell matched filtering, best supplied as \emph{input
+channels}: two closed-form maps and a zero-initialized 0.2\%-parameter head
+bring all encoders to 46--48\,m with ordinary label training.
+\item \textbf{C3 --- One budget-aware recipe that survives measured wind.}
+The same maps, widened to carry a declared wind-error budget $\varepsilon$
+(evidence moments and a wind-marginalized misfit channel over the error
+model), provably reduce to the classical matched filter at
+$\varepsilon{=}0$ and remain calibrated at 70--73\,m under a realistic
+10$^\circ$/10\% budget --- where exact inversion built on the same physics
+returns essentially the entire site.
 \end{itemize}
 The components are deliberately classical --- matched filters are 1940s
 detection theory; conformal prediction and label training are standard ---
-and the composition is minimal: the ablation record (Appendix) shows both
-map channels contribute and neither the network nor the statistic suffices
-alone. The exact posterior's role throughout is measurement, not
-supervision.
+and the composition is minimal and fully ablated (Appendix). The exact
+posterior's role throughout is measurement, not supervision.
 
 \begin{figure}[t]
 \centering
 \figplaceholder{4.2cm}{Figure 1 placeholder: wind-swept plume, masts, and
 true source on the 500\,m site, with median 90\% regions drawn to scale ---
-exact-posterior reference ($\sim$7\,m), our recipe (46--48\,m), labels-only
-baseline (94\,m), and the 50\,m facility-association radius.}
+exact-posterior reference ($\sim$7\,m), our recipe at $\varepsilon{=}0$
+(46--48\,m), labels-only baseline (94\,m), our recipe under measured wind
+(70--73\,m), and the 50\,m facility-association radius.}
 \caption{The opportunity, to scale (placeholder).}
 \label{fig:circles}
 \end{figure}
@@ -125,192 +122,231 @@ baseline (94\,m), and the 50\,m facility-association radius.}
 \cite{conformal}; efficiency is the open half of the problem, and we
 contribute an audit that scores it against the exact Bayesian reference at
 matched, verified coverage. \textbf{Simulation-based inference} amortizes
-posteriors with neural density estimators \cite{npe,nsf} at simulation
-budgets matching ours \cite{sbibm}; its diagnostics test calibration
-\cite{sbc}, and our audit adds the efficiency question while placing a
-representative flow-based estimator inside the comparison.
-\textbf{Source-term estimation} inverts dispersion models via optimization
-or MCMC at minutes-to-hours per event \cite{newman}; deep localizers give
-millisecond inference but lacked instruments certifying how much information
-they extract. \textbf{Physics-guided ML} injects domain structure through
-features or architectures; our input maps are the forward model's
-sufficient statistics under CH4-T assumptions --- classical matched-filter
-detection theory supplied as spatial channels aligned with the output grid.
+posteriors with neural density estimators \cite{npe,nsf} at budgets matching
+ours \cite{sbibm}; its diagnostics test calibration \cite{sbc}, and a
+growing literature studies robustness when the simulator's nuisance
+parameters are misspecified at deployment \cite{robsbi} --- our
+measured-wind design is exactly that setting, addressed by building the
+declared error model into the inputs. Our maps are \emph{hand-derived
+sufficient statistics} supplied as spatial channels, a deliberate,
+auditable counterpoint to learned summaries. \textbf{Source-term
+estimation} inverts dispersion models via optimization or MCMC at
+minutes-to-hours per event \cite{newman}; deep localizers give millisecond
+inference but lacked instruments certifying how much information they
+extract --- or how they fail when the wind is mismeasured.
 \textbf{Controlled-release evaluation} (METEC) scores continuous-monitoring
 systems on detection, quantification, and equipment-scale localization
 \cite{metec}; CH4-T mirrors that task structure at super-emitter rates with
 exact ground truth, complementing --- not replacing --- field validation.
 
 \section{Methodology}
-\subsection{Testbed and exact-posterior audit (C1)}
+\subsection{Testbed, measured wind, and the audit (C1)}
 \textbf{CH4-T} places a source of unknown location and rate
-(10--500\,kg\,h$^{-1}$, log-uniform, bracketing the 100\,kg\,h$^{-1}$
-super-emitter threshold) on a $500{\times}500$\,m site sensed by 4--12 masts
-(ppm readings, 0.2--3\,ppm noise, dropout). The plume is a steady Gaussian
-under known Pasquill--Gifford stability with Briggs open-country dispersion
-(coefficients verified against published tables; mass flux conserved to
-$4{\times}10^{-6}$), driven quasi-statically by a known fluctuating wind
-record (1--8\,m\,s$^{-1}$, AR(1) meander; steps read as 1-min averages, a
-30-min window). Because the response is closed-form and linear in rate, the
-exact posterior over a $64{\times}64$ grid is computable per scenario
-(adaptive rate quadrature, float64, normalization error $\sim$$10^{-12}$).
-A blocking gate requires conformal prediction applied to the exact posterior
-itself to self-calibrate --- a gate that caught two implementation bugs,
-including a tie-handling error at degenerate scores whose fix we report for
-reuse. All models share identical data (10k/1k/2k/2k splits, the modal SBI
-budget \cite{sbibm}), D4 symmetry augmentation, and an identical
-randomized-HPD split-conformal wrapper at verified 90\% coverage. Regions
-are reported as equal-area circle radii; the exact-posterior reference is
-7.0\,m at nominal 90\% (empirical 0.95) and 6.2\,m at matched empirical
-0.89.
+(10--500\,kg\,h$^{-1}$, log-uniform) on a $500{\times}500$\,m site sensed by
+4--12 masts (ppm readings, 0.2--3\,ppm noise, dropout). The plume is a
+steady Gaussian under Pasquill--Gifford stability with Briggs open-country
+dispersion (coefficients verified against published tables; mass flux
+conserved to $4{\times}10^{-6}$), driven quasi-statically by a fluctuating
+wind record (1--8\,m\,s$^{-1}$, AR(1) meander; 1-min steps, a 30-min
+window). \textbf{Wind uncertainty is part of the simulator}: readings are
+generated under the true wind, but the dataset records only the
+\emph{measured} wind --- truth corrupted by 10$^\circ$ direction and 10\%
+speed error per step, the accuracy class of inexpensive continuous-monitoring
+anemometry --- and no model, at any stage, sees the truth. Because the
+response is closed-form and linear in rate, the exact posterior over a
+$64{\times}64$ grid is computable per scenario under known wind (adaptive
+rate quadrature, float64, normalization error $\sim$$10^{-12}$), giving the
+information floor: 7.0\,m at nominal 90\% (empirical 0.95), 6.2\,m at
+matched empirical 0.89. A blocking gate requires conformal prediction
+applied to the exact posterior itself to self-calibrate --- a gate that
+caught two implementation bugs, including a tie-handling error at
+degenerate scores whose fix we report for reuse. All models share identical
+data (10k/1k/2k/2k splits, the modal SBI budget \cite{sbibm}), D4
+augmentation, and an identical randomized-HPD split-conformal wrapper,
+calibrated under the same wind condition it is evaluated in. Regions are
+reported as equal-area circle radii.
 
 \subsection{Diagnosis by elimination (C2)}
 A DeepSets localizer trained on smoothed one-hot labels is calibrated
-(coverage 0.89) at a 94\,m median radius --- the information for 6--7\,m is
-in the readings, waiting to be extracted. Three controlled probes isolate
-why. \emph{Is it the estimator head?} A representative flow-based neural
-posterior estimator on the same encoder --- strengthened after adversarial
-review of our own implementation ($2.5\times$ budget, widened head,
-full-band conditioning) --- reaches 62.8--71.2\,m, and we verify its spline
-head can express 4.4\,m regions, so its remaining blur is not
-head-structural. \emph{Is the classical physics statistic enough by
-itself?} Conformalizing the normalized matched-filter map with no network
-returns essentially the entire site: the statistic is overconfident-wrong,
-and calibration must be learned. \emph{Is the computation the missing
-piece?} Localization requires correlating each candidate cell's space--time
-signature against all readings --- per-cell matched filtering --- which
-pooled set representations did not recover under the tested architectures
-and budgets; supplying exactly this computation as input (\S\ref{sec:rec})
-collapses the gap on every encoder. Together: the network cannot compute
-what the statistic knows; the statistic cannot calibrate what the network
-learns; the combination is the method.
+(coverage 0.89) at 94--98\,m --- the information for 6--7\,m is in the
+readings, waiting to be extracted. \emph{Is it the estimator head?} A
+representative flow-based neural posterior estimator on the same encoder ---
+strengthened after adversarial review of our own implementation
+($2.5\times$ budget, widened head, full-band conditioning) --- reaches
+62.8--71.2\,m, and we verify its spline head can express 4.4\,m regions, so
+the remaining blur is not head-structural. \emph{Is the classical statistic
+enough alone?} Conformalizing the matched-filter map with no network
+returns essentially the entire site: overconfident-wrong, so calibration
+must be learned. \emph{Is the computation the missing piece?} Localization
+requires correlating each candidate cell's space--time signature against
+all readings --- per-cell matched filtering --- which pooled set encoders
+did not recover under the tested architectures and budgets; supplying
+exactly this computation as input (\S\ref{sec:rec}) collapses the gap on
+every encoder. The network cannot compute what the statistic knows; the
+statistic cannot calibrate what the network learns; the combination is the
+method.
 
-\subsection{The recipe (C3)}
+\subsection{One budget-aware recipe (C3)}
 \label{sec:rec}
-For any base localizer (Fig.~\ref{fig:pipeline}): \textbf{(1)}~compute per
-cell $c$ the sufficient statistics $a_c{=}\sum g_c y$, $b_c{=}\sum g_c^2$ of
-the linear-Gaussian model ($g_c$ the unit-rate response) and feed two
-$64{\times}64$ channels: the matched-filter statistic
-$z_c{=}a_c/(\sigma\sqrt{b_c})$ and $\log b_c$ --- milliseconds, closed form,
-computed from the network's own inputs (no new information, only a
-computation); \textbf{(2)}~add a 3-layer zero-initialized convolutional head
-($\sim$10k parameters, 0.2\% of the base) summed with the localizer's
-logits, so at step~0 the model \emph{is} the unmodified baseline and every
-comparison is controlled by construction; \textbf{(3)}~train with ordinary
-smoothed-label cross-entropy; \textbf{(4)}~wrap with unchanged split
-conformal. Physics computes the evidence; the network weighs it honestly;
-conformal certifies the result.
+For any base localizer (Fig.~\ref{fig:pipeline}), with $g_c$ the unit-rate
+response of cell $c$ \emph{at the measured wind} and
+$a_c{=}\sum g_c y$, $b_c{=}\sum g_c^2$ the linear-Gaussian sufficient
+statistics: \textbf{(1)}~declare the wind-error budget $\varepsilon$ (from
+the anemometer specification), draw $K{=}8$ plausible true winds from the
+error model centered on the measurement, and feed four $64{\times}64$
+channels --- the \emph{mean} matched-filter statistic
+$\bar z_c$, its \emph{spread} across draws (per-cell wind-fragility of the
+evidence), mean sensitivity $\overline{\log b_c}$, and the
+\emph{wind-marginalized misfit}
+$\bar R_c = \overline{yy - 2\hat q_c a_c + \hat q_c^2 b_c}$,
+$\hat q_c{=}\max(0, a_c/b_c)$ (median-normalized): the residual of the best
+nonnegative rate fit, averaged over the winds the error model deems
+plausible. All channels are closed-form linear algebra, milliseconds per
+scenario, computed from the network's own inputs.
+\textbf{(2)}~add a 3-layer zero-initialized convolutional head ($\sim$10k
+parameters, 0.2\% of the base) summed with the localizer's logits, so at
+step~0 the model \emph{is} the unmodified baseline and every comparison is
+controlled by construction; \textbf{(3)}~train with ordinary smoothed-label
+cross-entropy --- physics enters \emph{only} through the inputs;
+\textbf{(4)}~wrap with split conformal calibrated under the deployment
+condition. \textbf{At $\varepsilon{=}0$ the recipe provably reduces to the
+classical matched filter}: the spread channel is identically zero, and at a
+single wind the misfit obeys $R_c = yy - \sigma^2\max(z_c,0)^2$ --- a
+per-scenario monotone transform of $z_c$ carrying no extra information ---
+leaving exactly the two classical channels $(z_c, \log b_c)$. One recipe,
+continuous in the distance from perfect wind; clean-wind results below are
+its $\varepsilon{=}0$ instantiation.
 
 \textbf{Why not invert the physics directly?} On this testbed one can ---
-the exact posterior is our measuring instrument, tractable by construction.
-In deployment, realistic dispersion has no closed form and simulator
-inversion costs minutes-to-hours per event \cite{newman} where monitoring
-needs seconds --- and, as \S\ref{sec:robust} shows, plug-in inversion is
-brittle under wind-model misspecification in a way the learned recipe is
-not.
+the exact posterior is our measuring instrument. In deployment, realistic
+dispersion has no closed form and simulator inversion costs
+minutes-to-hours per event \cite{newman} where monitoring needs seconds ---
+and, as \S\ref{sec:robust} shows, plug-in inversion is brittle under
+wind-measurement error in a way the learned recipe is not.
 
 \begin{figure*}[t]
 \centering
-\figplaceholder{3.0cm}{Figure 2 placeholder (full width): method pipeline.
-Observed readings + wind record $\rightarrow$ matched-filter maps
-$z,\log b$ (closed form, ms) $\rightarrow$ any localizer + zero-initialized
-conv head, joined at the logits $\rightarrow$ split-conformal 90\% region
-(median 94\,m $\rightarrow$ 46--48\,m against the 50\,m facility scale).}
-\caption{Physics-guided calibrated localization (placeholder).}
+\figplaceholder{3.0cm}{Figure 2 placeholder (full width): unified pipeline.
+Readings + measured wind + declared error budget $\varepsilon$
+$\rightarrow$ budget-aware physics maps (mean evidence, spread, sensitivity,
+marginalized misfit; closed form, ms; at $\varepsilon{=}0$ reduces to
+classical $z,\log b$) $\rightarrow$ any localizer + zero-initialized conv
+head, joined at the logits $\rightarrow$ split-conformal 90\% region
+calibrated under the deployment condition (46--48\,m at $\varepsilon{=}0$;
+70--73\,m at 10$^\circ$/10\%; 50\,m facility scale for reference).}
+\caption{Budget-aware physics-guided calibrated localization (placeholder).}
 \label{fig:pipeline}
 \end{figure*}
 
 \section{Results}
-\subsection{One recipe, three architectures}
+\subsection{The audit: calibrated is not actionable}
 \begin{table}[t]
 \centering
-\caption{Median 90\% conformal region radius (m); range over 3 seeds;
-coverage 0.89--0.92 in every cell. References: exact-posterior 6.2--7.0\,m,
-facility-association scale 50\,m.}
-\label{tab:main}
+\caption{The audit at $\varepsilon{=}0$: median 90\% region radius vs.\ the
+information floor; 2{,}000 test scenarios.}
+\label{tab:audit}
 \begin{tabular}{lcc}
 \toprule
-Encoder & Labels only & + Physics maps \\
+Method & Coverage & Radius (m) \\
+\midrule
+Exact posterior (information floor) & 0.89--0.95 & \textbf{6.2--7.0} \\
+Deep localizer, labels only & 0.89 & 94--98 \\
+\textbf{Ours} ($\varepsilon{=}0$) & 0.89 & \textbf{47.1--47.7} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both learned rows pass every calibration check; only the audit exposes that
+one of them discards an order of magnitude of sharpness
+(Table~\ref{tab:audit}). Two input channels and a 0.2\%-parameter head
+close half the gap: a 50.3\% median-radius reduction (bootstrap 95\% CI
+[48.9, 52.0]; 96.4\% of scenarios improved), with 51\% of individual
+regions below the 50\,m facility scale (percentiles p50/p75/p90:
+49/112/170\,m --- the median case reaches the scale; the upper tail defines
+the remaining challenge).
+
+\subsection{The missing computation, on every estimator}
+\begin{table}[t]
+\centering
+\caption{The gap is the computation, not the estimator ($\varepsilon{=}0$;
+3 seeds per cell; coverage 0.88--0.92 throughout).}
+\label{tab:est}
+\begin{tabular}{lcc}
+\toprule
+Estimator & Without maps & With maps \\
 \midrule
 DeepSets        & 94--98 & \textbf{47.1--47.7} \\
 GNN             & 55--58 & \textbf{46.2--47.5} \\
 Set Transformer & 69--75 & \textbf{46.2--47.3} \\
+Flow-NPE (strengthened) & 62.8--71.2 & 57.6--61.2 \\
+Classical statistic alone & --- & 282 (full site) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The maps improve every architecture, and the improvement is uniform to a
-striking degree: without them, encoder choice spans 40\,m (94 vs.\ 55);
-with them, all nine seed-runs land inside a 1.5\,m band
-(Table~\ref{tab:main}) --- the gains are available to whatever architecture
-a practitioner already has, and encoder design ceases to be the binding
-constraint. Against the labels-only baseline the median radius reduction is
-50.3\% (bootstrap 95\% CI [48.9, 52.0]; 96.4\% of scenarios improved).
-Point accuracy is essentially unchanged: the maps improve the \emph{shape of
-uncertainty}, which region size measures. Operationally: 52\% of individual
-test cases fall below 50\,m (median 47\,m); the 75th/90th/95th percentiles
-are 86/131/146\,m; performance is mildly worse at the highest rates
-(56.9\,m median at 250--500\,kg\,h$^{-1}$, vs.\ 42--43\,m below
-100\,kg\,h$^{-1}$) --- the median case reaches the facility scale, and the
-upper tail defines the remaining challenge.
+Without the maps, encoder choice spans 40\,m; with them, all nine seed-runs
+of three architecture families land inside a 1.5\,m band
+(Table~\ref{tab:est}) --- the gains are available to whatever architecture a
+practitioner already has, and encoder design ceases to be the binding
+constraint. The flow head is a genuine lever without physics yet does not
+close the gap, and the maps transfer onto it; the classical statistic
+without a network is overconfident-wrong and pays with full-site regions.
+Every rival explanation fails; the computation was missing, and inputs are
+where it belongs.
 
-\subsection{Comparison with a modern flow-based estimator}
-\begin{table}[t]
-\centering
-\caption{A representative flow-based NPE head on the same encoder, data, and
-audit; 3 seeds per row; all label-trained.}
-\label{tab:flow}
-\begin{tabular}{lcc}
-\toprule
-Model (DeepSets encoder) & Radius (m) & Coverage \\
-\midrule
-Flow-NPE (strengthened) & 62.8--71.2 & 0.90--0.91 \\
-Flow-NPE + physics maps & 57.6--61.2 & 0.89--0.91 \\
-\textbf{Ours} (grid head + maps) & \textbf{47.1--47.7} & 0.89 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The flow head is a genuine lever --- it improves markedly on the categorical
-labels-only baseline with no physics at all --- and the maps transfer onto
-it (Table~\ref{tab:flow}). The convolutional head reading the maps
-\emph{spatially} extracts more than the flow's parametric conditioning at
-identical information. Our approach is compared against, and complements, a
-modern estimator rather than being superseded by it.
-
-\subsection{Robust where plug-in inversion is not}
+\subsection{Measured wind: the main result}
 \label{sec:robust}
 \begin{table}[t]
 \centering
-\caption{Wind measured with realistic error (10$^\circ$ direction, 10\%
-speed); training, calibration and test all under the same error
-distribution; 3 seeds for learned rows.}
+\caption{Measured wind (10$^\circ$/10\% per-step error; no method sees the
+truth; calibration under the deployment condition; 3 seeds for learned
+rows). Middle rows ablate the budget-aware maps.}
 \label{tab:wind}
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
-Pipeline & Coverage & Radius \\
+Pipeline & Cov. & Radius (m) & $<$50\,m \\
 \midrule
-Plug-in inversion (measured wind) & 1.00 & 282\,m (full site) \\
-Plug-in, inflated-noise robust variant & 1.00 & 282\,m \\
-Ours, deterministic maps & 0.91--0.92 & 81.7--84.9\,m \\
-\textbf{Ours, ensemble maps} & 0.89--0.90 & \textbf{74.7--75.4\,m} \\
+Exact plug-in inversion & 1.00 & 282 (full site) & 0\% \\
+~~inflated-noise robust variant & 1.00 & 282 (full site) & 0\% \\
+Network, no physics channels & 0.90--0.91 & 107.9--110.5 & 0\% \\
+Ours, budget ignored & 0.91--0.92 & 82.2--84.2 & 15--17\% \\
+Ours, moment channels only & 0.89--0.91 & 74.7--76.3 & 20--21\% \\
+\textbf{Ours, full budget-aware} & 0.90--0.92 & \textbf{70.1--72.9} &
+\textbf{24--27\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Real anemometers err. Under a 10$^\circ$/10\% observation error, plug-in
-inversion at the measured wind assigns numerically negligible (below
-float64) posterior mass to the true source in 30\% of scenarios; split
-conformal preserves its guarantee exactly as theory requires --- by
-returning essentially the entire site (Table~\ref{tab:wind}). A global
-noise-inflation robust variant, tuned on calibration data, does not help:
-per-step wind error is not absorbable by a scalar noise scale. The recipe,
-trained through the same error, remains calibrated at useful sizes, and
-\emph{ensemble maps} --- the mean and spread of the matched-filter maps over
-eight draws from the wind-error model --- recover a further $\sim$8\,m.
-Under the modeled wind-measurement error, learned physics-guided
-localization is more robust than plug-in inversion built on the same
-physics; a wind-marginalized exact reference is future work.
+Real anemometers err. Under the 10$^\circ$/10\% budget, plug-in inversion
+at the measured wind assigns numerically negligible posterior mass to the
+true source in 30\% of scenarios; split conformal preserves its guarantee
+exactly as theory requires --- by returning essentially the entire site
+(Table~\ref{tab:wind}). A tuned global noise-inflation variant does not
+help: per-step wind error is not absorbable by a scalar noise scale. The
+learned recipe, by contrast, degrades gracefully, and its accuracy climbs
+monotonically with how much of the wind-error structure the maps carry:
+evidence at the reported wind alone, 82--84\,m; adding the error-model's
+evidence moments (mean and fragility), 74--76\,m; adding the marginalized
+misfit channel, \textbf{70--73\,m} with a quarter of scenarios below
+50\,m --- same network, same training, same guarantee, one forward pass.
+The decomposition to remember: $94{\to}47$\,m is the price of a missing
+computation, fixed by inputs; $47{\to}71$\,m is the price of wind
+uncertainty at this budget, paid at the information level;
+$108{\to}71$\,m is what physics inputs are worth when the wind is real.
+The mechanism is constructive: because the physics --- and its declared
+error model --- live in the input representation, clean labels give the
+network thousands of supervised opportunities to learn the error's
+systematic structure and weigh each cell's evidence accordingly.
+
+\begin{figure}[t]
+\centering
+\figplaceholder{3.4cm}{Figure 3 placeholder: measured-wind ladder ---
+dot-range plot of Table~\ref{tab:wind} (radius vs.\ configuration, 3-seed
+ranges), with the full-site plug-in bar and the 50\,m line for scale.}
+\caption{Accuracy vs.\ wind-uncertainty structure in the inputs
+(placeholder).}
+\label{fig:ladder}
+\end{figure}
 
 \section{Limitations}
 CH4-T is an instrument, not a deployment: single steady sources (no
@@ -318,28 +354,33 @@ zero-leak or multi-source scenarios), flat terrain without equipment wakes,
 known stability class, quasi-static stepping, in-distribution marginal
 coverage, and a 64$\times$64 grid whose $\sim$7.8\,m cells sit near the
 oracle reference scale (a grid-refinement study is pending). The 6--7\,m
-reference is a property of CH4-T's generative assumptions, not an
-atmospheric limit. Half of individual cases still exceed 50\,m, and the
-upper tail (p90 $=$ 131\,m) is unresolved. The architectural claim is
-scoped to tested encoders and budgets. Field claims await
-controlled-release validation --- comparisons here are exact regardless,
-because all models share one verified simulator.
+floor is a property of CH4-T's generative assumptions, not an atmospheric
+limit, and it exists only under known wind: a wind-marginalized exact
+reference is intractable here, so the measured-wind information floor is
+unknown. The wind-error budget is assumed known and correctly specified
+(instrument-specification information); sensitivity to a misspecified
+budget is future work. Half of individual clean-wind cases still exceed
+50\,m (p90 $=$ 170\,m), performance is mildly worse at the highest rates,
+and architectural claims are scoped to tested encoders and budgets. Field
+claims await controlled-release validation --- comparisons here are exact
+regardless, because all models share one verified simulator.
 
 \section{Conclusions}
 On a testbed with exact Bayesian ground truth, a calibrated deep localizer
-delivered a tenth of the sharpness its sensor data support; controlled
-elimination traced the gap to a single classical computation, and supplying
-that computation --- two matched-filter maps and a 0.2\%-parameter
-zero-initialized head, ordinary labels, nothing else --- brought three
-architectures into a 1.5\,m band at the 50\,m facility-association scale,
-halving the median search radius at unchanged cost, ahead of a strengthened
-flow-based estimator, and calibrated under wind error that reduces exact
-inversion to site-sized regions. The constructive message: simulators make
+delivered a tenth of the sharpness its data support; controlled elimination
+traced the gap to a single classical computation, and supplying it as input
+channels brought three architectures into a 1.5\,m band at the 50\,m
+facility scale. Made honest about wind --- a measurement, never the truth
+--- exact inversion built on the same physics collapsed to the full site,
+while one budget-aware recipe, provably classical at zero error, held its
+guarantee at 70--73\,m, its accuracy set by how much of the wind
+marginalization its inputs carry. The constructive message: simulators make
 exact posteriors available as \emph{instruments} for auditing what learned
-systems extract, and classical signal processing still knows computations
-that networks need not rediscover. We hope the evidence standard ---
-exact-posterior audits, blocking self-calibration gates,
-one-change-at-a-time controls --- travels furthest.
+systems extract; classical signal processing still knows computations
+networks need not rediscover; and under sensor uncertainty, the place to
+put physics --- including its own error model --- is the input. We hope the
+evidence standard --- exact-posterior audits, blocking self-calibration
+gates, one-change-at-a-time controls --- travels furthest.
 
 \appendix
 \section*{Appendix: Ablation and Control Record}
@@ -348,7 +389,7 @@ radius (m); $^{3s}$ marks 3-seed ranges.
 
 \begin{table}[h]
 \centering
-\caption{Component ablations (clean-wind track), all label-trained.}
+\caption{Component ablations ($\varepsilon{=}0$), all label-trained.}
 \label{tab:ablation}
 \begin{tabular}{lcc}
 \toprule
@@ -367,13 +408,13 @@ Exact-posterior reference & 6.2--7.0 & 0.89--0.95 \\
 
 \textbf{Reading.} Both channels contribute and the matched filter dominates;
 the sensitivity channel alone ($\log b$, no correlation with the readings)
-adds little over the baseline, confirming the correlation computation is the
-operative ingredient. The classical statistic without the network is
-overconfident-wrong and pays with full-site regions --- the learned
-calibration is load-bearing. Rate-stratified performance of the recipe
-(median radius / fraction below 50\,m): 10--30\,kg\,h$^{-1}$: 42.0\,m /
-55\%; 30--100: 43.4\,m / 58\%; 100--250: 50.1\,m / 50\%; 250--500:
-56.9\,m / 41\%.
+adds little over the baseline, confirming the correlation computation is
+the operative ingredient. The classical statistic without the network is
+overconfident-wrong --- the learned calibration is load-bearing.
+Rate-stratified performance of the recipe (median radius / fraction below
+50\,m): 10--30\,kg\,h$^{-1}$: 44.8\,m / 54\%; 30--100: 44.5\,m / 55\%;
+100--250: 50.3\,m / 49\%; 250--500: 55.2\,m / 41\% --- the highest
+emitters localize worst, an operationally relevant tail.
 
 \begin{thebibliography}{12}
 \bibitem{unep} UN Environment Programme (IMEO), ``An eye on methane: Methane
@@ -393,6 +434,9 @@ estimation,'' \emph{NeurIPS}, 2016.
 ``Neural spline flows,'' \emph{NeurIPS}, 2019.
 \bibitem{sbibm} J.-M. Lueckmann \emph{et al.}, ``Benchmarking
 simulation-based inference,'' \emph{AISTATS}, 2021.
+\bibitem{robsbi} P.~Cannon, D.~Ward, and S.~M. Schmon, ``Investigating the
+impact of model misspecification in neural simulation-based inference,''
+arXiv:2209.01845, 2022.
 \bibitem{newman} T.~Newman \emph{et al.}, ``Probabilistic inversion modeling
 of gas emissions: MCMC estimation of Gaussian plume parameters,''
 arXiv:2408.01298, 2024.
