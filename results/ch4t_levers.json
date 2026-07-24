@@ -131,5 +131,12 @@
     "median_radius_m": 47.472717029269525,
     "wilcoxon_p_vs_M1": 5.441604164937859e-293,
     "frac_sharper_than_M1": 0.9065
+  },
+  "lever_suffstats_st_labels": {
+    "tag": "lever_suffstats_st_labels",
+    "coverage": 0.8925,
+    "median_radius_m": 46.22867400549373,
+    "wilcoxon_p_vs_M1": 4.857099869462526e-294,
+    "frac_sharper_than_M1": 0.912
   }
 }

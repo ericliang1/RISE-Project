@@ -51,3 +51,10 @@
   suffstats ep 20 crit 4.98115
   suffstats ep 40 crit 4.95657
   suffstats ep 60 crit 4.92566
+  suffstats ep 80 crit 4.92865
+  suffstats ep 100 crit 4.96058
+  suffstats ep 120 crit 4.98749
+  suffstats ep 140 crit 5.03689
+  suffstats ep 160 crit 5.06202
+  suffstats ep 180 crit 5.07028
+{"tag": "lever_suffstats_st_labels", "coverage": 0.8925, "median_radius_m": 46.22867400549373, "wilcoxon_p_vs_M1": 4.857099869462526e-294, "frac_sharper_than_M1": 0.912}

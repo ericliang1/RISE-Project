@@ -75,5 +75,13 @@
       0.3929639297338215
     ],
     "frac_improved": 0.908
+  },
+  "nodistill_effect_vs_M0": {
+    "median_radius_reduction_vs_labels_only": 0.5029676745139473,
+    "bootstrap_ci95": [
+      0.48887608107665004,
+      0.519972411263046
+    ],
+    "frac_improved": 0.9635
   }
 }
