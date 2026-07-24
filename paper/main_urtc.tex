@@ -456,48 +456,6 @@ correlation computation is the operative ingredient: the evidence image
 alone reaches 65.0\,m, the sensitivity image alone 98.5\,m, both
 channels 47\,m.
 
-\begin{table*}[t]
-\centering
-\caption{Left: subgroup diagnostics (prespecified groups; seed-1 runs; diagnostic only, the conformal guarantee remains marginal over the complete test distribution). Right: reproducibility summary; full configuration and code in the repository.}
-\label{tab:subgroup}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
-\begin{minipage}[t]{0.40\linewidth}\centering
-\begin{tabular}[t]{lrrrrr}
-\toprule
- & & \multicolumn{2}{c}{Exact (ours)} &
-\multicolumn{2}{c}{Measured (full)} \\
-Subgroup & $n$ & Cov. & Med. & Cov. & Med. \\
-\midrule
-4--6 masts & 690 & 0.865 & 61.2 & 0.867 & 91.2 \\
-10--12 masts & 675 & 0.899 & 42.7 & 0.926 & 59.5 \\
-10--100\,kg/h & 1167 & 0.881 & 43.2 & 0.913 & 80.6 \\
-100--500\,kg/h & 833 & 0.904 & 53.8 & 0.881 & 61.6 \\
-wind $<$ 2.5\,m/s & 1000 & 0.885 & 49.6 & 0.884 & 63.0 \\
-wind $\ge$ 2.5\,m/s & 1000 & 0.896 & 46.8 & 0.916 & 79.8 \\
-\bottomrule
-\end{tabular}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.58\linewidth}\centering
-\begin{tabular}[t]{llll}
-\toprule
-Setting & Value & Setting & Value \\
-\midrule
-Split & 10k/1k/2k/2k & Optimizer & AdamW, cosine lr, wd $10^{-4}$ \\
-Site, grid & 500\,m; $64^2$ (7.8\,m cells) & Batch, epochs & 256; 200, best val-NLL state \\
-Masts & 4--12, uniform & Precision & bfloat16 autocast, clip 1.0 \\
-Readings & 30 $\times$ 1-min; drop $\le$20\% & Targets & smoothed 0.75 cells; D4 \\
-Noise $\sigma$ & log-unif.\ 0.2--3\,ppm & $z$, $\log b$ norm.\ & $\pm$60, $\div$10; $(\log_{10}b{+}8)/6$ \\
-Rate & log-unif.\ 10--500\,kg\,h$^{-1}$ & Residual norm.\ & min-shift, median-scale, clip 10 \\
-Wind & 1--8\,m\,s$^{-1}$; AR(1) $\rho{=}0.7$ & Parameters & 4.88\,M; head 10{,}721 (0.22\%) \\
-Meander & 20--40$^\circ$, 10--30\% & Seeds & fixed root; train 1--3; score seed \\
-Stability & PG A--F, uniform & Hardware & NVIDIA L40S \\
-Wind error & $10^\circ$, 10\% per step & Timing (b=1) & 30.4\,ms med., 31.7\,ms p95 \\
-\bottomrule
-\end{tabular}
-\end{minipage}
-\end{table*}
-
 \subsection{Measured wind: the main result}
 \label{sec:robust}
 \begin{table}[t]
@@ -628,5 +586,179 @@ modeling of gas emissions,'' arXiv:2408.01298, 2024.
 monitoring solutions under single-blind controlled testing,''
 \emph{Elementa}, 2025.
 \end{thebibliography}}
+
+\onecolumn
+\appendix
+\section*{Appendix A: Full Results}
+All numbers are median 90\% conformal region radii in meters over the
+2{,}000-scenario test set, with empirical coverage and the fraction of
+regions below the 50\,m facility scale; ranges are over 3 training seeds
+unless marked $^{1s}$ (single-seed diagnostic) or $^{2s}$.
+
+\begin{table}[h]
+\centering
+\caption{Exact wind ($\varepsilon=0$): all evaluated configurations.}
+\begin{tabular}{llccc}
+\toprule
+Configuration & Estimator & Coverage & Radius (m) & $<$50\,m \\
+\midrule
+Exact-model reference & --- & 0.89--0.95 & 6.2--7.0 & --- \\
+Labels only & DeepSets & 0.89 & 94--98 & 0\% \\
+Labels only & GNN & 0.89--0.91 & 55--58 & --- \\
+Labels only & Set Transformer & 0.89--0.91 & 69--75 & --- \\
++ physics images & DeepSets & 0.888--0.895 & 47.1--47.7 & 52.4\% \\
++ physics images & GNN & 0.891--0.902 & 46.2--47.5 & --- \\
++ physics images & Set Transformer & 0.887--0.901 & 46.2--47.3 & --- \\
+Flow-based estimator & spline flow & 0.90--0.91 & 62.8--71.2 & --- \\
+Flow + physics images & spline flow & 0.89--0.91 & 57.6--61.2 & --- \\
+Classical score alone & no network & 1.00 & 282 (full site) & 0\% \\
+\midrule
+Channel ablation: evidence only & DeepSets & 0.88 & 65.0$^{1s}$ & --- \\
+Channel ablation: sensitivity only & DeepSets & 0.90 & 98.5$^{1s}$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Measured wind ($10^\circ$/10\% per-step anemometer error; no
+method observes the true wind; calibration under the deployment
+condition).}
+\begin{tabular}{lccc}
+\toprule
+Configuration & Coverage & Radius (m) & $<$50\,m \\
+\midrule
+Direct physics inversion & 1.00 & 282 (full site) & 0\% \\
+Inversion, tuned noise inflation ($c^\ast{=}1.5$) & 1.00 & 282 (full site) & 0\% \\
+Network, no physics images & 0.898--0.907 & 107.9--110.5 & 0\% \\
+Random images, identical head$^{1s}$ & 0.889 & 107.5 & 0\% \\
+Ours, single-wind images & 0.911--0.920 & 82.2--84.2 & 15--17\% \\
+Ours, + moment images & 0.894--0.906 & 74.7--76.3 & 20--21\% \\
+Ours, full (+ fit quality) & 0.900--0.919 & 70.1--72.9 & 24--27\% \\
+\midrule
+Training-condition ablation: & & & \\
+~~single-wind images, trained exact wind & 0.908--0.912 & 84.1--85.1 & 21--22\% \\
+~~single-wind images, trained both conditions$^{2s}$ & 0.907--0.917 & 83.2--84.0 & 18\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Rate-stratified performance of the recipe (exact wind, seed 1).}
+\begin{tabular}{lrrr}
+\toprule
+Leak rate (kg\,h$^{-1}$) & $n$ & Median radius (m) & $<$50\,m \\
+\midrule
+10--30 & 582 & 44.8 & 54\% \\
+30--100 & 585 & 44.5 & 55\% \\
+100--250 & 483 & 50.3 & 49\% \\
+250--500 & 350 & 55.2 & 41\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Subgroup diagnostics (prespecified groups; seed-1 runs). These are diagnostic; the formal conformal guarantee remains marginal over the complete test distribution.}
+\label{tab:subgroup}
+\begin{tabular}{lrrrrr}
+\toprule
+ & & \multicolumn{2}{c}{Exact (ours)} &
+\multicolumn{2}{c}{Measured (full)} \\
+Subgroup & $n$ & Cov. & Med. & Cov. & Med. \\
+\midrule
+4--6 masts & 690 & 0.865 & 61.2 & 0.867 & 91.2 \\
+10--12 masts & 675 & 0.899 & 42.7 & 0.926 & 59.5 \\
+10--100\,kg/h & 1167 & 0.881 & 43.2 & 0.913 & 80.6 \\
+100--500\,kg/h & 833 & 0.904 & 53.8 & 0.881 & 61.6 \\
+wind $<$ 2.5\,m/s & 1000 & 0.885 & 49.6 & 0.884 & 63.0 \\
+wind $\ge$ 2.5\,m/s & 1000 & 0.896 & 46.8 & 0.916 & 79.8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Reproducibility summary; full configuration and code in the project repository.}
+\begin{tabular}{llll}
+\toprule
+Setting & Value & Setting & Value \\
+\midrule
+Split & 10k/1k/2k/2k & Optimizer & AdamW, lr $3{\times}10^{-4}\!\to\!3{\times}10^{-5}$ cosine, wd $10^{-4}$ \\
+Site, grid & 500\,m; $64^2$ (7.8\,m cells) & Batch, epochs & 256; 200, best validation-NLL state \\
+Masts & 4--12, count/positions uniform & Precision & bfloat16 autocast, grad clip 1.0 \\
+Readings & 30 $\times$ 1-min averages; dropout $\le$20\% & Targets & one-hot, Gaussian-smoothed $\sigma{=}0.75$ cells; D4 \\
+Noise $\sigma$ & log-uniform 0.2--3\,ppm, iid & $z$, $\log b$ normalization & clip $\pm$60, $\div$10; $(\log_{10}b{+}8)/6$ \\
+Leak rate & log-uniform 10--500\,kg\,h$^{-1}$ & Residual normalization & min-shift, median-scale, clip 10 \\
+Wind & speed log-unif.\ 1--8\,m\,s$^{-1}$; AR(1) $\rho{=}0.7$ & Parameters & 4.88\,M total; head 10{,}721 (0.22\%) \\
+Meander & 20--40$^\circ$ dir., 10--30\% speed & Seeds & fixed data root; training 1--3; fixed score seed \\
+Stability & PG classes A--F, uniform & Hardware & NVIDIA L40S \\
+Wind error & $10^\circ$ dir., 10\% speed, per step & Timing (batch 1) & maps 29.6\,ms, net 0.8\,ms; 30.4 med, 31.7 p95 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\textbf{Reading the ablations.} Both physics images contribute and the
+evidence image (the correlation computation) carries most of the gain;
+the sensitivity image alone, which never touches the readings, adds
+little over the baseline. The classical score without a network is
+overconfident-wrong and pays with full-site regions, so the learned
+calibration is load-bearing. The random-image control matches the
+no-physics baseline, so the improvement traces to the physics content of
+the images rather than to added parameters or spatial regularization.
+The training-condition ablation shows the measured-wind gains come
+mainly from the images themselves rather than from training under the
+deployment condition.
+
+\section*{Appendix B: Paired Bootstrap Details}
+For each comparison, both methods are evaluated on the same 2{,}000 test
+scenarios; we resample scenarios jointly (10{,}000 bootstrap draws), so
+every draw contains paired results, and report the difference of median
+radii with percentile 95\% intervals. Fractions below 50\,m carry exact
+Clopper--Pearson 95\% intervals. Exact wind, labels-only vs.\ recipe:
+median reduction 46.1\,m, CI $[43.6, 48.1]$; 96.4\% of scenarios
+improved; 52.4\% below 50\,m, CI $[50.2, 54.6]$\%. Measured wind,
+no-physics vs.\ full method: median reduction 39.4\,m, CI
+$[37.3, 41.9]$; 96.2\% improved; 26.6\% below 50\,m, CI
+$[24.7, 28.6]$\%.
+
+\section*{Appendix C: Additional Result Figures}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.5\linewidth]{../figures/paper/fig_data_scatter.pdf}
+\caption{Scenario-by-scenario paired comparison under measured wind
+(same 2{,}000 test scenarios): 96\% of points lie below the identity
+line; medians 110\,m $\to$ 71\,m.}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.72\linewidth]{../figures/paper/fig_data_coverage.pdf}
+\caption{The guarantee check: empirical coverage of every configuration
+against the nominal 90\% line with the $n{=}2{,}000$ sampling band.
+Direct inversion holds its guarantee only at coverage 1.0, i.e., by
+returning the full site.}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.72\linewidth]{../figures/paper/fig_data_rates.pdf}
+\caption{Performance by leak rate (ours, exact wind): the largest
+emitters are the hardest cases.}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\linewidth]{../figures/poster/poster_maps.pdf}
+\caption{The four physics input images for one test scenario (closed
+form, computed from the network's own inputs at the measured wind):
+average evidence, evidence variability across the wind-error range,
+sensitivity, and fit quality. The circle marks the true source; dots
+mark the sensor masts.}
+\end{figure}
+
 
 \end{document}
