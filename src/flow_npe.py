@@ -76,29 +76,31 @@ def rqs_cell_masses(theta, edges):
 
 # ------------------------------------------------------------------- model
 class NPEFlow(nn.Module):
-    """DeepSetsT encoder (decoder stripped) + autoregressive 2-D RQS flow."""
+    """DeepSetsT encoder (decoder stripped) + autoregressive 2-D RQS flow.
+    fair=True removes the review-flagged handicaps: larger head + full-band
+    Fourier x-conditioning (the conditional p(y|x) varies at 1/64 scale)."""
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, fair=False):
         super().__init__()
         self.enc = DeepSetsT(cfg)
         m = cfg["model"]
         feat = 2 * m["token_hidden"] + m["context_hidden"]
         self.enc.decoder = nn.Identity()
-        hid = 256
+        hid = 512 if fair else 256
+        self.xfreqs = [1, 2, 4, 8, 16, 32] if fair else [1, 2]
+        n_x = 1 + 2 * len(self.xfreqs)
         self.cond_x = nn.Sequential(nn.Linear(feat, hid), nn.GELU(),
                                     nn.Linear(hid, 3 * K + 1))
-        self.cond_y = nn.Sequential(nn.Linear(feat + 5, hid), nn.GELU(),
+        self.cond_y = nn.Sequential(nn.Linear(feat + n_x, hid), nn.GELU(),
                                     nn.Linear(hid, 3 * K + 1))
 
     def feats(self, b):
         return self.enc(b)
 
     def y_theta(self, f, x):
-        xf = torch.stack([x, torch.sin(2 * np.pi * x),
-                          torch.cos(2 * np.pi * x),
-                          torch.sin(4 * np.pi * x),
-                          torch.cos(4 * np.pi * x)], -1)
-        return self.cond_y(torch.cat([f, xf], -1))
+        xf = [x] + [t(2 * np.pi * fq * x) for fq in self.xfreqs
+                    for t in (torch.sin, torch.cos)]
+        return self.cond_y(torch.cat([f, torch.stack(xf, -1)], -1))
 
     def nll(self, b, xy):
         f = self.feats(b)
@@ -125,23 +127,27 @@ class NPEFlow(nn.Module):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=1)
+    ap.add_argument("--fair", action="store_true",
+                    help="review-fair variant: 500 epochs, hid 512, "
+                         "full-band x conditioning")
     args = ap.parse_args()
     cfg = load_config()
     device = get_device()
     dd = resolve(cfg, "data_dir")
     rr = resolve(cfg, "results_dir")
     tr = cfg["training"]
+    n_epochs = 500 if args.fair else 200
     data = {n: dict(np.load(dd / f"ch4t_{n}.npz", allow_pickle=True))
             for n in ("train", "val", "calib", "test")}
     torch.manual_seed(6000 + args.seed + 700)
     rng = np.random.default_rng(args.seed)
-    model = NPEFlow(cfg).to(device)
+    model = NPEFlow(cfg, fair=args.fair).to(device)
     print(f"NPEFlow params: "
           f"{sum(p.numel() for p in model.parameters())/1e6:.2f}M", flush=True)
     opt = torch.optim.AdamW(model.parameters(), lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(
-        opt, T_max=200, eta_min=tr["lr_final"])
+        opt, T_max=n_epochs, eta_min=tr["lr_final"])
     d_train, d_val = data["train"], data["val"]
     n_train = len(d_train["ids"])
     cell_w = 1.0 / N_GRID
@@ -159,7 +165,7 @@ def main():
                 tot += float(model.nll(b, xy)) * len(idx)
         return tot / len(d_val["ids"])
 
-    for ep in range(200):
+    for ep in range(n_epochs):
         model.train()
         perm = rng.permutation(n_train)
         for lo in range(0, n_train, tr["batch_size"]):
@@ -218,7 +224,7 @@ def main():
     m1 = np.load(dd / "ch4t_audit_M1.npz")["sizes"]
     w = wilcoxon(np.log(m1.astype(float)),
                  np.log(reg["sizes"].astype(float)), alternative="greater")
-    out = {"tag": f"flow_npe_seed{args.seed}",
+    out = {"tag": f"flow_npe{'_fair' if args.fair else ''}_seed{args.seed}",
            "coverage": float(reg["covered"].mean()),
            "median_radius_m": rad_m(reg["sizes"]),
            "wilcoxon_p_vs_M1": float(w.pvalue),
@@ -229,7 +235,7 @@ def main():
     all_res[out["tag"]] = out
     with open(res_path, "w") as f:
         json.dump(all_res, f, indent=2)
-    np.savez_compressed(dd / f"ch4t_audit_flow_npe_seed{args.seed}.npz",
+    np.savez_compressed(dd / f"ch4t_audit_flow_npe{'_fair' if args.fair else ''}_seed{args.seed}.npz",
                         sizes=reg["sizes"])
     print(json.dumps(out), flush=True)
 
