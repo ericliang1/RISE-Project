@@ -1,0 +1,22 @@
+NPEFlowPhys params: 0.85M
+  ep 0 val_nll -0.6882
+  ep 25 val_nll -2.2854
+  ep 50 val_nll -2.5400
+  ep 75 val_nll -2.6202
+  ep 100 val_nll -2.7401
+  ep 125 val_nll -2.7016
+  ep 150 val_nll -2.7328
+  ep 175 val_nll -2.7931
+  ep 200 val_nll -2.7327
+  ep 225 val_nll -2.7981
+  ep 250 val_nll -2.8141
+  ep 275 val_nll -2.7473
+  ep 300 val_nll -2.7006
+  ep 325 val_nll -2.6798
+  ep 350 val_nll -2.6474
+  ep 375 val_nll -2.5908
+  ep 400 val_nll -2.5456
+  ep 425 val_nll -2.4767
+  ep 450 val_nll -2.4589
+  ep 475 val_nll -2.4031
+{"tag": "flow_phys_seed2", "coverage": 0.8945, "median_radius_m": 57.55423499165486, "wilcoxon_p_sharper_than_recipe": 1.0, "frac_sharper_than_recipe": 0.4375}

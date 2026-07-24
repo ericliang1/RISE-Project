@@ -130,6 +130,9 @@ def main():
     ap.add_argument("--fair", action="store_true",
                     help="review-fair variant: 500 epochs, hid 512, "
                          "full-band x conditioning")
+    ap.add_argument("--noisy-wind", action="store_true",
+                    help="Track-2: model sees the OBSERVED wind "
+                         "(ch4tu_*_uobs.npy) instead of the true wind")
     args = ap.parse_args()
     cfg = load_config()
     device = get_device()
@@ -139,6 +142,10 @@ def main():
     n_epochs = 500 if args.fair else 200
     data = {n: dict(np.load(dd / f"ch4t_{n}.npz", allow_pickle=True))
             for n in ("train", "val", "calib", "test")}
+    if args.noisy_wind:
+        from methane_t_uncertain import with_obs_wind
+        data = {n: with_obs_wind(d, np.load(dd / f"ch4tu_{n}_uobs.npy"))
+                for n, d in data.items()}
     torch.manual_seed(6000 + args.seed + 700)
     rng = np.random.default_rng(args.seed)
     model = NPEFlow(cfg, fair=args.fair).to(device)
@@ -224,7 +231,9 @@ def main():
     m1 = np.load(dd / "ch4t_audit_M1.npz")["sizes"]
     w = wilcoxon(np.log(m1.astype(float)),
                  np.log(reg["sizes"].astype(float)), alternative="greater")
-    out = {"tag": f"flow_npe{'_fair' if args.fair else ''}_seed{args.seed}",
+    out = {"tag": (f"flow_npe{'_fair' if args.fair else ''}"
+                   f"{'_noisywind' if args.noisy_wind else ''}"
+                   f"_seed{args.seed}"),
            "coverage": float(reg["covered"].mean()),
            "median_radius_m": rad_m(reg["sizes"]),
            "wilcoxon_p_vs_M1": float(w.pvalue),
