@@ -1,29 +1,28 @@
-"""Paired Wind-Robust Physics-Guided Localization.
+"""Wind-robust physics-guided localization under measured wind.
 
-One shared model, two training views per scenario (clean wind w_true and the
-fixed 10-deg/10% observed wind w_obs already used by the robustness track),
-ordinary CE to the source cell on both views, plus an optional
-expected-physics-residual loss  L_phys = sum_c p(c) rbar_c  where rbar is the
-per-example normalized, clipped residual of the best nonnegative rate fit
-(closed form: R_c = yy - 2 qhat_c a_c + qhat_c^2 b_c, qhat = max(0, a/b)).
-No inference-time ensembling; deployment = one forward pass on measured wind.
+Noisy wind is part of the simulator's output: readings are generated at the
+true wind, the dataset records only u_obs (10-deg/10% per-step error), and
+models never see the truth.  Physics enters ONLY through input maps; ordinary
+CE to the source cell; no auxiliary losses; deployment = one forward pass.
 
-Dual-condition audit: each model is evaluated under BOTH conditions with
-condition-matched conformal calibration (clean calib for clean eval, noisy
-calib for noisy eval).
+Map kinds (--maps), all closed-form linear algebra at preprocessing:
+  det    2ch  z, log b at the reported wind
+  smear  2ch  analytically direction-smeared z, log b (zero MC noise)
+  ens    3ch  mean z, spread z, mean log b over 8 error-model draws
+  ensr   4ch  ens + wind-marginalized residual (goodness-of-fit) channel
+  ensp/full   ens + MC-marginal-posterior channel (+ smear/resid variants)
+  off         plain DeepSetsT, no physics channels
 
-Also the 2x2 factorial under measured wind (--views noisy):
-{--maps on|off} x {--lam 0|>0} = original model / +maps / +physics loss /
-+maps+loss, all trained AND evaluated with the observed wind (noisy wind is
-part of the simulator's output; models never see the true wind).
+Dual-condition audit with condition-matched conformal calibration (noisy-only
+map kinds audit under measured wind only).
 
 Stages:
-  gen      noisy-view raw suffstats (a,b) at u_obs + residual maps (both views)
-  verify   closed-form residual vs direct reconstruction on sampled cells
-  train    --views clean|noisy|paired  --maps on|off  --lam <float>  [--seed 1]
+  gen / gen-marg / gen-smear         map & residual-channel generation
+  verify / verify-marg / verify-smear   gates: closed form vs direct / MC
+  train    --views clean|noisy|paired  --maps <kind>  [--seed 1]
 Usage examples:
-  python src/paired_wind.py --stage gen
-  python src/paired_wind.py --stage train --views noisy --maps off --lam 0.05
+  python src/paired_wind.py --stage gen-marg
+  python src/paired_wind.py --stage train --views noisy --maps ensr --seed 2
 """
 import argparse
 import json
@@ -325,8 +324,8 @@ def stage_verify(cfg, device):
 
 
 # ---------------------------------------------------------------- stage train
-def make_view(cfg, dd, name_data, view, maps="det", resid_kind="plain"):
-    """(data dict, input maps tensor or None, residual tensor).
+def make_view(cfg, dd, name_data, view, maps="det"):
+    """(data dict, input maps tensor or None).
     maps: "det" (2ch at u_obs), "ens" (3ch over wind draws), "ensr" (ens +
     marginalized-residual channel), or None (no physics-map channels)."""
     split, d_clean = name_data
@@ -366,18 +365,10 @@ def make_view(cfg, dd, name_data, view, maps="det", resid_kind="plain"):
                     stats = torch.cat([sm, ens[:, 1:2], r, lp], 1)
         else:
             stats = None
-    if resid_kind == "marg":
-        assert view == "noisy", "marginalized residual is noisy-view only"
-        resid = torch.tensor(np.load(dd / f"pw_{split}_resid_marg.npz")
-                             ["noisy"].astype(np.float32))
-    else:
-        resid = torch.tensor(
-            np.load(dd / f"pw_{split}_resid.npz")[view].astype(np.float32))
-    return d, stats, resid
+    return d, stats
 
 
-def stage_train(cfg, device, views, lam, seed, maps="det",
-                resid_kind="plain"):
+def stage_train(cfg, device, views, seed, maps="det"):
     dd = resolve(cfg, "data_dir")
     rr = resolve(cfg, "results_dir")
     tr = cfg["training"]
@@ -388,7 +379,7 @@ def stage_train(cfg, device, views, lam, seed, maps="det",
     view_list = (["clean", "noisy"] if views == "paired" else [views])
     if maps in NOISY_ONLY_MAPS:
         assert views == "noisy", f"{maps} configs are noisy-view only"
-    V = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps, resid_kind)
+    V = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps)
              for v in view_list} for s in SPLITS}
     # audit conditions; these map kinds only exist under measured wind
     conds = (("noisy",) if maps in NOISY_ONLY_MAPS
@@ -408,7 +399,7 @@ def stage_train(cfg, device, views, lam, seed, maps="det",
     best, best_state = np.inf, None
 
     def fwd_loss(v, idx):
-        d, stats, resid = V["train"][v]
+        d, stats = V["train"][v]
         batch = to_batch_t(d, idx, device)
         batch, xs, codes = d4_augment_t(batch, d["xs"][idx],
                                         batch["u_seq"], rng, device)
@@ -424,16 +415,11 @@ def stage_train(cfg, device, views, lam, seed, maps="det",
         with torch.autocast("cuda", dtype=torch.bfloat16):
             logits = model(batch)
         logp = torch.log_softmax(logits.float(), -1)
-        ce = -(tgt * logp).sum(1).mean()
-        if lam > 0:
-            rb = resid[idx].to(device).gather(1, gi)
-            phys = (torch.softmax(logits.float(), -1) * rb).sum(1).mean()
-            return ce + lam * phys
-        return ce
+        return -(tgt * logp).sum(1).mean()
 
     @torch.no_grad()
     def probs(split_views, split, v):
-        d, stats, _ = split_views[split][v]
+        d, stats = split_views[split][v]
         out = []
         for lo in range(0, len(d["ids"]), 512):
             idx = np.arange(lo, min(lo + 512, len(d["ids"])))
@@ -461,7 +447,7 @@ def stage_train(cfg, device, views, lam, seed, maps="det",
         model.eval()
         tot = 0.0
         for v in view_list:
-            d, stats, _ = V["val"][v]
+            d, stats = V["val"][v]
             with torch.no_grad():
                 for lo in range(0, len(d["ids"]), 512):
                     idx = np.arange(lo, min(lo + 512, len(d["ids"])))
@@ -487,10 +473,8 @@ def stage_train(cfg, device, views, lam, seed, maps="det",
     # dual-condition audit, condition-matched calibration
     mt = {"det": "", "ens": "_ens", "ensr": "_ensr", "smear": "_smear",
           "ensp": "_ensp", "full": "_full", None: "_nomaps"}[maps]
-    tag = (f"pw_{views}{mt}{'_marg' if resid_kind == 'marg' else ''}"
-           f"_lam{lam}_seed{seed}")
-    out = {"tag": tag, "maps": maps or "off", "lam": lam,
-           "resid": resid_kind, "val_nll": float(best)}
+    tag = f"pw_{views}{mt}_seed{seed}"
+    out = {"tag": tag, "maps": maps or "off", "val_nll": float(best)}
     for cond in conds:
         Pc = probs(A, "calib", cond)
         Pt = probs(A, "test", cond)
@@ -528,9 +512,6 @@ def main():
                          "+ marg-residual; ensp: ens + marg-posterior; "
                          "full: smear + spread + marg-posterior; off: plain "
                          "DeepSetsT")
-    ap.add_argument("--resid", choices=["plain", "marg"], default="plain",
-                    help="marg = wind-marginalized residual in the loss")
-    ap.add_argument("--lam", type=float, default=0.0)
     ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args()
     cfg = load_config()
@@ -548,10 +529,9 @@ def main():
     elif args.stage == "verify-smear":
         stage_verify_smear(cfg, device)
     else:
-        stage_train(cfg, device, args.views, args.lam, args.seed,
+        stage_train(cfg, device, args.views, args.seed,
                     maps={"on": "det", "off": None}.get(args.maps,
-                                                        args.maps),
-                    resid_kind=args.resid)
+                                                        args.maps))
 
 
 if __name__ == "__main__":

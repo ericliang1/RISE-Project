@@ -395,3 +395,17 @@ paired-view spec runs (pw_clean_*, pw_paired_*) remain in
 results/paired_wind.json as reference rows; paired lam sweep was cancelled.
 Interim: baseline nomaps 107.9-110.5 m noisy (frac<50m = 0.000 all seeds);
 +maps 82.2-84.2 m.
+
+## 2026-07-24 — Residual loss removed from method (user directive)
+"remove residual loss": the expected-physics-residual training loss is out of
+the method entirely — code (--lam/--resid stripped from src/paired_wind.py),
+chain scripts (pw_factorial/pw_marg/pw_below80/pw_select_lam deleted; git
+history retains them), and results (10 lam>0 rows archived to
+results/paired_wind_loss_archive.json).  Recorded verdict, for the log: loss
+alone 105-109 m (baseline 106-110), loss+det maps 84-86 m vs maps-alone
+82-84 m — useless to mildly harmful.  The wind-MARGINALIZED RESIDUAL SURVIVES
+AS AN INPUT CHANNEL (ensr, the current best method: 70.1-72.9 m noisy) —
+input map, not loss.  smear/ensp/full upgrade arms were killed mid-chain by
+user order (smear seed1 85.0 m recorded, incomplete); gen artifacts
+(maps_smear, resid_marg, oracle_marg channels) remain on disk, chains
+idempotent if resumed.
