@@ -65,3 +65,53 @@ skip pw_noisy_lam0.0_seed3 (already done)
   ep 0 val_nll 6.5611
   ep 25 val_nll 6.0795
   ep 50 val_nll 6.2267
+  ep 75 val_nll 6.3971
+  ep 100 val_nll 6.5811
+  ep 125 val_nll 6.7133
+  ep 150 val_nll 6.8135
+  ep 175 val_nll 6.8724
+{"tag": "pw_noisy_lam0.01_seed1", "maps": true, "lam": 0.01, "val_nll": 6.06136962890625, "clean": {"coverage": 0.911, "median_radius_m": 58.97142326082508, "frac_below_50m": 0.379}, "noisy": {"coverage": 0.9125, "median_radius_m": 82.34321271399627, "frac_below_50m": 0.168}}
+=== pw_noisy_lam0.05_seed1 ===
+  ep 0 val_nll 6.5608
+  ep 25 val_nll 6.0781
+  ep 50 val_nll 6.2354
+  ep 75 val_nll 6.3842
+  ep 100 val_nll 6.5254
+  ep 125 val_nll 6.6164
+  ep 150 val_nll 6.7065
+  ep 175 val_nll 6.7407
+{"tag": "pw_noisy_lam0.05_seed1", "maps": true, "lam": 0.05, "val_nll": 6.0602236328125, "clean": {"coverage": 0.9075, "median_radius_m": 59.463543808999674, "frac_below_50m": 0.3715}, "noisy": {"coverage": 0.918, "median_radius_m": 86.09191438999788, "frac_below_50m": 0.1405}}
+=== pw_noisy_lam0.1_seed1 ===
+  ep 0 val_nll 6.5607
+  ep 25 val_nll 6.0783
+  ep 50 val_nll 6.2218
+  ep 75 val_nll 6.3754
+  ep 100 val_nll 6.5323
+  ep 125 val_nll 6.6689
+  ep 150 val_nll 6.7456
+  ep 175 val_nll 6.8022
+{"tag": "pw_noisy_lam0.1_seed1", "maps": true, "lam": 0.1, "val_nll": 6.0605263671875, "clean": {"coverage": 0.9075, "median_radius_m": 58.141966712622, "frac_below_50m": 0.386}, "noisy": {"coverage": 0.9105, "median_radius_m": 82.28420646298329, "frac_below_50m": 0.1685}}
+arm=nomaps selected lam=0.1
+=== pw_noisy_nomaps_lam0.1_seed2 ===
+  ep 0 val_nll 7.9791
+  ep 25 val_nll 7.2216
+  ep 50 val_nll 6.8783
+  ep 75 val_nll 6.8241
+  ep 100 val_nll 6.8195
+  ep 125 val_nll 6.7884
+  ep 150 val_nll 6.8257
+  ep 175 val_nll 6.8456
+{"tag": "pw_noisy_nomaps_lam0.1_seed2", "maps": false, "lam": 0.1, "val_nll": 6.765367919921875, "clean": {"coverage": 0.894, "median_radius_m": 106.69987287968232, "frac_below_50m": 0.0}, "noisy": {"coverage": 0.905, "median_radius_m": 108.59490245385582, "frac_below_50m": 0.0}}
+=== pw_noisy_nomaps_lam0.1_seed3 ===
+  ep 0 val_nll 7.9862
+  ep 25 val_nll 7.2020
+  ep 50 val_nll 6.8425
+  ep 75 val_nll 6.7717
+  ep 100 val_nll 6.7585
+  ep 125 val_nll 6.7956
+  ep 150 val_nll 6.8058
+  ep 175 val_nll 6.8206
+{"tag": "pw_noisy_nomaps_lam0.1_seed3", "maps": false, "lam": 0.1, "resid": "plain", "val_nll": 6.71983349609375, "clean": {"coverage": 0.8905, "median_radius_m": 102.80507253874282, "frac_below_50m": 0.0}, "noisy": {"coverage": 0.8955, "median_radius_m": 106.33508592173975, "frac_below_50m": 0.0}}
+arm=maps selected lam=0.05
+=== pw_noisy_lam0.05_seed2 ===
+  ep 0 val_nll 6.6502

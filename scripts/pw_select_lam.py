@@ -1,10 +1,12 @@
 """Print the lam in {0.01,0.05,0.1} with the lowest seed-1 validation NLL
-for one factorial arm (nomaps|maps).  Used by scripts/pw_factorial.sh."""
+for one factorial arm.  Arg is either the shorthand nomaps|maps or a full
+tag prefix ending in "_lam" (e.g. pw_noisy_marg_lam)."""
 import json
 import sys
 
 arm = sys.argv[1]
-pre = "pw_noisy_nomaps_lam" if arm == "nomaps" else "pw_noisy_lam"
+pre = {"nomaps": "pw_noisy_nomaps_lam",
+       "maps": "pw_noisy_lam"}.get(arm, arm)
 res = json.load(open("results/paired_wind.json"))
 cands = {}
 for lam in ("0.01", "0.05", "0.1"):

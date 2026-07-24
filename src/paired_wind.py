@@ -36,12 +36,14 @@ from conformal import regions, tail_scores, tail_threshold
 from methane_t import DeepSetsT, N_GRID, SPLITS, cell_responses_t, \
     d4_augment_t, stab_of, to_batch_t
 from methane_t_levers import stats_maps
-from methane_t_uncertain import PhysHeadNet, with_obs_wind
+from methane_t_uncertain import PhysHeadNet, ab_maps, perturb_wind, \
+    split_tag, with_obs_wind
 from model import smoothed_targets
 from train import d4_target_perms
 
 N_CELLS = N_GRID * N_GRID
 R_MAX = 10.0
+K_MARG = 8       # wind draws for the marginalized residual (stream 93)
 
 
 def rad_m(sizes):
@@ -103,6 +105,94 @@ def stage_gen(cfg, device):
             print(f"  {name}: residual maps saved", flush=True)
 
 
+# ------------------------------------------------------------- stage gen-marg
+@torch.no_grad()
+def stage_gen_marg(cfg, device, k_draws=K_MARG):
+    """Wind-marginalized residual for the noisy view: MEAN closed-form
+    residual over k_draws winds drawn from the error model centered at u_obs
+    (streams [root, 93, split_tag, i, k]; independent of the ens-maps 92
+    stream).  The plain residual scores fit at the single misreported wind;
+    this one scores expected fit over the winds the error model says are
+    plausible, so the true cell is no longer penalized for the wind error."""
+    dd = resolve(cfg, "data_dir")
+    root = cfg["seeds"]["root_entropy"]
+    cells = torch.tensor(cell_centers(N_GRID), device=device,
+                         dtype=torch.float64)
+    for name in SPLITS:
+        path = dd / f"pw_{name}_resid_marg.npz"
+        if path.exists():
+            continue
+        d = dict(np.load(dd / f"ch4t_{name}.npz", allow_pickle=True))
+        u_obs = np.load(dd / f"ch4tu_{name}_uobs.npy")
+        n = len(d["ids"])
+        tag = split_tag(name)
+        yy, nob = yy_nobs(d)
+        Rsum = np.zeros((n, N_CELLS), np.float64)
+        for k in range(k_draws):
+            uk = np.stack([perturb_wind(u_obs[i],
+                                        np.random.default_rng(
+                                            [root, 93, tag, i, k]))
+                           for i in range(n)])
+            A, B = ab_maps(d, uk, cells, device)
+            qh = np.maximum(0.0, A / (B + 1e-30))
+            Rsum += yy[:, None] - 2 * qh * A + qh ** 2 * B
+            print(f"  {name}: marg draw {k+1}/{k_draws}", flush=True)
+        r = (Rsum / k_draws) / np.maximum(nob, 1)[:, None]
+        r = r - r.min(1, keepdims=True)
+        med = np.median(r, axis=1, keepdims=True) + 1e-12
+        np.savez_compressed(path, noisy=np.minimum(r / med, R_MAX)
+                            .astype(np.float16))
+        print(f"  {name}: marginalized residual saved", flush=True)
+
+
+# ---------------------------------------------------------- stage verify-marg
+@torch.no_grad()
+def stage_verify_marg(cfg, device, k_draws=K_MARG):
+    """End-to-end recompute of the marginalized residual for sampled test
+    scenarios with the same streams, vs the saved fp16 rows; plus closed-form
+    vs direct ||y - qhat g||^2 on sampled cells of every draw."""
+    dd = resolve(cfg, "data_dir")
+    root = cfg["seeds"]["root_entropy"]
+    cells = torch.tensor(cell_centers(N_GRID), device=device,
+                         dtype=torch.float64)
+    d = dict(np.load(dd / "ch4t_test.npz", allow_pickle=True))
+    u_obs = np.load(dd / "ch4tu_test_uobs.npy")
+    tag = split_tag("test")
+    saved = np.load(dd / "pw_test_resid_marg.npz")["noisy"]
+    yy, nob = yy_nobs(d)
+    rng = np.random.default_rng(1)
+    worst_cell, worst_row = 0.0, 0.0
+    for i in rng.integers(0, len(d["ids"]), 3):
+        ns = int(d["n_sensors"][i])
+        keep = d["keep"][i, :ns]
+        y = torch.tensor(d["readings"][i, :ns][keep], device=device,
+                         dtype=torch.float64)
+        Rbar = np.zeros(N_CELLS)
+        for k in range(k_draws):
+            uk = perturb_wind(u_obs[i],
+                              np.random.default_rng([root, 93, tag, i, k]))
+            g = cell_responses_t(cells, d["sensors"][i, :ns], uk,
+                                 stab_of(d, i), device)
+            g = g[:, torch.tensor(keep, device=device)]
+            a = (g @ y).cpu().numpy()
+            b = (g * g).sum(1).cpu().numpy()
+            qh = np.maximum(0.0, a / (b + 1e-30))
+            R = yy[i] - 2 * qh * a + qh ** 2 * b
+            for c in rng.integers(0, N_CELLS, 5):
+                direct = float(((y - float(qh[c]) * g[c]) ** 2).sum())
+                worst_cell = max(worst_cell,
+                                 abs(R[c] - direct) / max(direct, 1e-9))
+            Rbar += R
+        r = (Rbar / k_draws) / max(float(nob[i]), 1.0)
+        r = r - r.min()
+        r = np.minimum(r / (np.median(r) + 1e-12), R_MAX)
+        worst_row = max(worst_row,
+                        float(np.abs(r - saved[i].astype(np.float64)).max()))
+    print(f"marg verify: closed-vs-direct worst rel {worst_cell:.2e}, "
+          f"saved-row worst abs {worst_row:.2e}", flush=True)
+    assert worst_cell < 1e-4 and worst_row < 2e-2, "marg residual mismatch"
+
+
 # --------------------------------------------------------------- stage verify
 @torch.no_grad()
 def stage_verify(cfg, device):
@@ -137,7 +227,7 @@ def stage_verify(cfg, device):
 
 
 # ---------------------------------------------------------------- stage train
-def make_view(cfg, dd, name_data, view, maps=True):
+def make_view(cfg, dd, name_data, view, maps=True, resid_kind="plain"):
     """(data dict, input maps tensor or None, residual tensor)."""
     split, d_clean = name_data
     if view == "clean":
@@ -149,12 +239,17 @@ def make_view(cfg, dd, name_data, view, maps=True):
         stats = torch.tensor(
             np.load(dd / f"ch4tu_{split}_maps_det.npz")["maps"]) \
             if maps else None
-    resid = torch.tensor(
-        np.load(dd / f"pw_{split}_resid.npz")[view].astype(np.float32))
+    if resid_kind == "marg":
+        assert view == "noisy", "marginalized residual is noisy-view only"
+        resid = torch.tensor(np.load(dd / f"pw_{split}_resid_marg.npz")
+                             ["noisy"].astype(np.float32))
+    else:
+        resid = torch.tensor(
+            np.load(dd / f"pw_{split}_resid.npz")[view].astype(np.float32))
     return d, stats, resid
 
 
-def stage_train(cfg, device, views, lam, seed, maps=True):
+def stage_train(cfg, device, views, lam, seed, maps=True, resid_kind="plain"):
     dd = resolve(cfg, "data_dir")
     rr = resolve(cfg, "results_dir")
     tr = cfg["training"]
@@ -163,9 +258,9 @@ def stage_train(cfg, device, views, lam, seed, maps=True):
     clean = {s: dict(np.load(dd / f"ch4t_{s}.npz", allow_pickle=True))
              for s in SPLITS}
     view_list = (["clean", "noisy"] if views == "paired" else [views])
-    V = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps)
+    V = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps, resid_kind)
              for v in view_list} for s in SPLITS}
-    # audit always needs both conditions
+    # audit always needs both conditions; it never touches residuals
     A = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps)
              for v in ("clean", "noisy")} for s in ("calib", "test")}
     torch.manual_seed(6000 + seed + 1300)
@@ -257,8 +352,10 @@ def stage_train(cfg, device, views, lam, seed, maps=True):
     model.eval()
 
     # dual-condition audit, condition-matched calibration
-    tag = f"pw_{views}{'' if maps else '_nomaps'}_lam{lam}_seed{seed}"
-    out = {"tag": tag, "maps": maps, "lam": lam, "val_nll": float(best)}
+    tag = (f"pw_{views}{'' if maps else '_nomaps'}"
+           f"{'_marg' if resid_kind == 'marg' else ''}_lam{lam}_seed{seed}")
+    out = {"tag": tag, "maps": maps, "lam": lam, "resid": resid_kind,
+           "val_nll": float(best)}
     for cond in ("clean", "noisy"):
         Pc = probs(A, "calib", cond)
         Pt = probs(A, "test", cond)
@@ -284,11 +381,14 @@ def stage_train(cfg, device, views, lam, seed, maps=True):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", required=True,
-                    choices=["gen", "verify", "train"])
+                    choices=["gen", "gen-marg", "verify", "verify-marg",
+                             "train"])
     ap.add_argument("--views", choices=["clean", "noisy", "paired"],
                     default="paired")
     ap.add_argument("--maps", choices=["on", "off"], default="on",
                     help="off = plain DeepSetsT, no physics-map channels")
+    ap.add_argument("--resid", choices=["plain", "marg"], default="plain",
+                    help="marg = wind-marginalized residual in the loss")
     ap.add_argument("--lam", type=float, default=0.0)
     ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args()
@@ -296,11 +396,15 @@ def main():
     device = get_device()
     if args.stage == "gen":
         stage_gen(cfg, device)
+    elif args.stage == "gen-marg":
+        stage_gen_marg(cfg, device)
     elif args.stage == "verify":
         stage_verify(cfg, device)
+    elif args.stage == "verify-marg":
+        stage_verify_marg(cfg, device)
     else:
         stage_train(cfg, device, args.views, args.lam, args.seed,
-                    maps=(args.maps == "on"))
+                    maps=(args.maps == "on"), resid_kind=args.resid)
 
 
 if __name__ == "__main__":
