@@ -12,3 +12,42 @@
   suffstats ep 140 crit 5.21148
   suffstats ep 160 crit 5.27796
   suffstats ep 180 crit 5.30209
+{"tag": "lever_suffstats_gnn_labels", "coverage": 0.902, "median_radius_m": 47.472717029269525, "wilcoxon_p_vs_M1": 1.2300082740833501e-292, "frac_sharper_than_M1": 0.9095}
+  suffstats ep 0 crit 6.02988
+  suffstats ep 1 crit 5.36743
+  suffstats ep 2 crit 5.20214
+  suffstats ep 3 crit 5.16964
+  suffstats ep 4 crit 5.13371
+  suffstats ep 20 crit 4.99044
+  suffstats ep 40 crit 4.94338
+  suffstats ep 60 crit 4.92601
+  suffstats ep 80 crit 4.96225
+  suffstats ep 100 crit 5.07643
+  suffstats ep 120 crit 5.15707
+  suffstats ep 140 crit 5.22246
+  suffstats ep 160 crit 5.28019
+  suffstats ep 180 crit 5.31777
+{"tag": "lever_suffstats_gnn_labels_seed2", "coverage": 0.891, "median_radius_m": 46.22867400549373, "wilcoxon_p_vs_M1": 8.471106581262642e-296, "frac_sharper_than_M1": 0.912}
+  suffstats ep 0 crit 6.03268
+  suffstats ep 1 crit 5.39022
+  suffstats ep 2 crit 5.22796
+  suffstats ep 3 crit 5.19910
+  suffstats ep 4 crit 5.13183
+  suffstats ep 20 crit 4.95528
+  suffstats ep 40 crit 4.94534
+  suffstats ep 60 crit 4.95354
+  suffstats ep 80 crit 4.98010
+  suffstats ep 100 crit 5.09028
+  suffstats ep 120 crit 5.19076
+  suffstats ep 140 crit 5.24401
+  suffstats ep 160 crit 5.30097
+  suffstats ep 180 crit 5.34440
+{"tag": "lever_suffstats_gnn_labels_seed3", "coverage": 0.895, "median_radius_m": 47.472717029269525, "wilcoxon_p_vs_M1": 5.441604164937859e-293, "frac_sharper_than_M1": 0.9065}
+  suffstats ep 0 crit 5.98070
+  suffstats ep 1 crit 5.36727
+  suffstats ep 2 crit 5.18865
+  suffstats ep 3 crit 5.18825
+  suffstats ep 4 crit 5.13598
+  suffstats ep 20 crit 4.98115
+  suffstats ep 40 crit 4.95657
+  suffstats ep 60 crit 4.92566
