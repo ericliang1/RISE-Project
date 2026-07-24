@@ -76,6 +76,35 @@ def plume_ppm_per_kgh(sensors_norm, xs_norm, u_norm, stab):
     return c / PPM_KGM3                                       # ppm per kg/h
 
 
+def plume_ppm_per_kgh_smeared(sensors_norm, xs_norm, u_norm, stab, sig_th):
+    """Expected plume under N(0, sig_th^2) wind-direction error.
+
+    First-order in the rotation: the crosswind offset shifts by -x*dth, so
+    the crosswind Gaussian convolves to sigma_y_eff^2 = sigma_y^2 +
+    (sig_th * x)^2 (classic meander-enhanced dispersion), and the hard
+    upwind cutoff becomes the Gaussian gate P(x_dw > 0) with x_dw jitter
+    std sig_th*|y_cw|.  Speed error is a near-constant scale factor and
+    cancels in the matched-filter z statistic, so it is not smeared here."""
+    d = (sensors_norm - xs_norm) * L_SITE
+    u_phys = u_norm * U_SCALE
+    U = torch.linalg.norm(u_phys, dim=-1).clamp(min=0.5)
+    ux = u_phys[..., 0] / U
+    uy = u_phys[..., 1] / U
+    x_dw = d[..., 0] * ux + d[..., 1] * uy
+    y_cw = -d[..., 0] * uy + d[..., 1] * ux
+    x_eff = x_dw.clamp(min=X_MIN)
+    sy, sz = _sigmas(x_eff, stab)
+    sy = torch.sqrt(sy ** 2 + SIGMA_Y0 ** 2 + (sig_th * x_eff) ** 2)
+    sz = torch.sqrt(sz ** 2 + SIGMA_Z0 ** 2)
+    c = (KGH_KGS / (2.0 * np.pi * U * sy * sz)
+         * torch.exp(-0.5 * (y_cw / sy) ** 2)
+         * (torch.exp(-0.5 * ((Z_R - H_SRC) / sz) ** 2)
+            + torch.exp(-0.5 * ((Z_R + H_SRC) / sz) ** 2)))
+    gate = 0.5 * (1.0 + torch.erf(
+        x_dw / (sig_th * y_cw.abs() + 1e-6) / np.sqrt(2.0)))
+    return c * gate / PPM_KGM3
+
+
 def ch4_cell_responses(cells, sensors, u_norm, stab, device, chunk=2048):
     """Unit-rate (1 kg/h) response g_c for all candidate cells.
 

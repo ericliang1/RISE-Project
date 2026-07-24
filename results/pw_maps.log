@@ -1,1 +1,63 @@
 waiting for GPU (gen-marg still finishing)
+marg verify: closed-vs-direct worst rel 7.68e-08, saved-row worst abs 4.88e-04
+=== pw_noisy_ens_lam0.0_seed1 ===
+  ep 0 val_nll 6.4865
+  ep 25 val_nll 5.8423
+  ep 50 val_nll 5.9854
+  ep 75 val_nll 6.1386
+  ep 100 val_nll 6.3281
+  ep 125 val_nll 6.4622
+  ep 150 val_nll 6.5565
+  ep 175 val_nll 6.6132
+{"tag": "pw_noisy_ens_lam0.0_seed1", "maps": "ens", "lam": 0.0, "resid": "plain", "val_nll": 5.83048828125, "noisy": {"coverage": 0.8945, "median_radius_m": 74.67170062637717, "frac_below_50m": 0.214}}
+=== pw_noisy_ens_lam0.0_seed2 ===
+  ep 0 val_nll 6.6278
+  ep 25 val_nll 5.8525
+  ep 50 val_nll 5.9422
+  ep 75 val_nll 6.1187
+  ep 100 val_nll 6.2659
+  ep 125 val_nll 6.3948
+  ep 150 val_nll 6.4877
+  ep 175 val_nll 6.5445
+{"tag": "pw_noisy_ens_lam0.0_seed2", "maps": "ens", "lam": 0.0, "resid": "plain", "val_nll": 5.841078369140625, "noisy": {"coverage": 0.9065, "median_radius_m": 75.70526813603183, "frac_below_50m": 0.2075}}
+=== pw_noisy_ens_lam0.0_seed3 ===
+  ep 0 val_nll 6.5108
+  ep 25 val_nll 5.8411
+  ep 50 val_nll 5.9702
+  ep 75 val_nll 6.1215
+  ep 100 val_nll 6.2783
+  ep 125 val_nll 6.4055
+  ep 150 val_nll 6.4817
+  ep 175 val_nll 6.5304
+{"tag": "pw_noisy_ens_lam0.0_seed3", "maps": "ens", "lam": 0.0, "resid": "plain", "val_nll": 5.830466796875, "noisy": {"coverage": 0.9065, "median_radius_m": 76.34414248483124, "frac_below_50m": 0.2035}}
+=== pw_noisy_ensr_lam0.0_seed1 ===
+  ep 0 val_nll 6.6143
+  ep 25 val_nll 5.6638
+  ep 50 val_nll 5.7821
+  ep 75 val_nll 5.9664
+  ep 100 val_nll 6.1716
+  ep 125 val_nll 6.3066
+  ep 150 val_nll 6.4195
+  ep 175 val_nll 6.4648
+{"tag": "pw_noisy_ensr_lam0.0_seed1", "maps": "ensr", "lam": 0.0, "resid": "plain", "val_nll": 5.65950146484375, "noisy": {"coverage": 0.9, "median_radius_m": 70.6613052898181, "frac_below_50m": 0.266}}
+=== pw_noisy_ensr_lam0.0_seed2 ===
+  ep 0 val_nll 6.6771
+  ep 25 val_nll 5.6762
+  ep 50 val_nll 5.7763
+  ep 75 val_nll 5.9558
+  ep 100 val_nll 6.0978
+  ep 125 val_nll 6.2371
+  ep 150 val_nll 6.3339
+  ep 175 val_nll 6.3955
+{"tag": "pw_noisy_ensr_lam0.0_seed2", "maps": "ensr", "lam": 0.0, "resid": "plain", "val_nll": 5.66360888671875, "noisy": {"coverage": 0.919, "median_radius_m": 72.89433181192355, "frac_below_50m": 0.2375}}
+=== pw_noisy_ensr_lam0.0_seed3 ===
+  ep 0 val_nll 6.7444
+  ep 25 val_nll 5.6662
+  ep 50 val_nll 5.8340
+  ep 75 val_nll 6.0123
+  ep 100 val_nll 6.1381
+  ep 125 val_nll 6.2525
+  ep 150 val_nll 6.3160
+  ep 175 val_nll 6.3876
+{"tag": "pw_noisy_ensr_lam0.0_seed3", "maps": "ensr", "lam": 0.0, "resid": "plain", "val_nll": 5.660421875, "noisy": {"coverage": 0.903, "median_radius_m": 70.10925538546454, "frac_below_50m": 0.259}}
+MAPS DONE

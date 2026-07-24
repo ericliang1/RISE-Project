@@ -48,3 +48,5 @@ waiting for GPU (factorial chain still active)
   test: marg draw 5/8
   test: marg draw 6/8
   test: marg draw 7/8
+  test: marg draw 8/8
+  test: marginalized residual saved

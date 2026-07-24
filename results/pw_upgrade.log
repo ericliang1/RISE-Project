@@ -1,0 +1,3 @@
+  train: smear 2000/10000
+  train: smear 4000/10000
+  train: smear 6000/10000

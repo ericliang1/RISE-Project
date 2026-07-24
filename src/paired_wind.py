@@ -35,15 +35,19 @@ from common import cell_centers, get_device, load_config, pos_to_cell, resolve
 from conformal import regions, tail_scores, tail_threshold
 from methane_t import DeepSetsT, N_GRID, SPLITS, cell_responses_t, \
     d4_augment_t, stab_of, to_batch_t
+from methane_model import plume_ppm_per_kgh_smeared
+from methane_t import T as T_STEPS
 from methane_t_levers import stats_maps
-from methane_t_uncertain import PhysHeadNet, ab_maps, perturb_wind, \
-    split_tag, with_obs_wind
+from methane_t_uncertain import PhysHeadNet, SIG_TH, ab_maps, logbmap, \
+    perturb_wind, split_tag, with_obs_wind, zmap
 from model import smoothed_targets
 from train import d4_target_perms
 
 N_CELLS = N_GRID * N_GRID
 R_MAX = 10.0
 K_MARG = 8       # wind draws for the marginalized residual (stream 93)
+# map kinds that only exist under the measured-wind condition
+NOISY_ONLY_MAPS = ("ens", "ensr", "smear", "ensp", "full")
 
 
 def rad_m(sizes):
@@ -103,6 +107,100 @@ def stage_gen(cfg, device):
             np.savez_compressed(rpath, clean=out["clean"],
                                 noisy=out["noisy"])
             print(f"  {name}: residual maps saved", flush=True)
+
+
+# ------------------------------------------------------------ stage gen-smear
+@torch.no_grad()
+def cell_responses_t_smeared(cells, sensors, u_seq, stab, device, chunk=512):
+    """cell_responses_t with the direction-error-smeared plume."""
+    C, S = cells.shape[0], sensors.shape[0]
+    out = torch.empty((C, S, T_STEPS), device=device, dtype=torch.float64)
+    uu = torch.as_tensor(u_seq, dtype=torch.float64, device=device)
+    ss = torch.as_tensor(sensors, dtype=torch.float64, device=device)
+    for lo in range(0, C, chunk):
+        hi = min(lo + chunk, C)
+        c = hi - lo
+        cc = cells[lo:hi][:, None, None, :].expand(c, S, T_STEPS, 2)
+        s2 = ss[None, :, None, :].expand(c, S, T_STEPS, 2)
+        u2 = uu[None, None, :, :].expand(c, S, T_STEPS, 2)
+        st = torch.full((c, S, T_STEPS), int(stab), dtype=torch.long,
+                        device=device)
+        out[lo:hi] = plume_ppm_per_kgh_smeared(s2, cc, u2, st, SIG_TH)
+    return out
+
+
+@torch.no_grad()
+def stage_gen_smear(cfg, device):
+    """Analytically wind-smeared maps at u_obs: the matched filter of the
+    EXPECTED fingerprint under the per-step direction-error model.  Same
+    marginal the ens mean channel estimates with 8 MC draws, but in closed
+    form -- zero MC noise, det-map cost."""
+    dd = resolve(cfg, "data_dir")
+    cells = torch.tensor(cell_centers(N_GRID), device=device,
+                         dtype=torch.float64)
+    for name in SPLITS:
+        path = dd / f"ch4tu_{name}_maps_smear.npz"
+        if path.exists():
+            continue
+        d = dict(np.load(dd / f"ch4t_{name}.npz", allow_pickle=True))
+        u_obs = np.load(dd / f"ch4tu_{name}_uobs.npy")
+        n = len(d["ids"])
+        A = np.empty((n, N_CELLS), np.float64)
+        B = np.empty((n, N_CELLS), np.float64)
+        for i in range(n):
+            ns = int(d["n_sensors"][i])
+            keep = d["keep"][i, :ns]
+            g = cell_responses_t_smeared(cells, d["sensors"][i, :ns],
+                                         u_obs[i], stab_of(d, i), device)
+            g = g[:, torch.tensor(keep, device=device)]
+            y = torch.tensor(d["readings"][i, :ns][keep], device=device,
+                             dtype=torch.float64)
+            A[i] = (g @ y).cpu().numpy()
+            B[i] = (g * g).sum(1).cpu().numpy()
+            if (i + 1) % 2000 == 0:
+                print(f"  {name}: smear {i+1}/{n}", flush=True)
+        maps = np.stack([zmap(A, B, d["sigma"]), logbmap(B)], 1)
+        np.savez_compressed(path, maps=maps.astype(np.float32))
+        print(f"  {name}: smear maps saved", flush=True)
+
+
+# --------------------------------------------------------- stage verify-smear
+@torch.no_grad()
+def stage_verify_smear(cfg, device, n_draws=256):
+    """MC check of the analytic smearing: per-cell a-statistic of the
+    smeared fingerprint vs the mean over n_draws direction-only draws of the
+    sharp plume (direction only: speed error cancels in z and is not
+    smeared).  MC noise at 256 draws is ~1-2%, so tolerances are loose."""
+    dd = resolve(cfg, "data_dir")
+    d = dict(np.load(dd / "ch4t_test.npz", allow_pickle=True))
+    u_obs = np.load(dd / "ch4tu_test_uobs.npy")
+    cells = torch.tensor(cell_centers(N_GRID), device=device,
+                         dtype=torch.float64)
+    rng = np.random.default_rng(2)
+    for i in rng.integers(0, len(d["ids"]), 2):
+        ns = int(d["n_sensors"][i])
+        keep = d["keep"][i, :ns]
+        y = torch.tensor(d["readings"][i, :ns][keep], device=device,
+                         dtype=torch.float64)
+        g_sm = cell_responses_t_smeared(cells, d["sensors"][i, :ns],
+                                        u_obs[i], stab_of(d, i), device)
+        a_sm = (g_sm[:, torch.tensor(keep, device=device)] @ y).cpu().numpy()
+        acc = np.zeros(N_CELLS)
+        for _ in range(n_draws):
+            th = rng.normal(0, SIG_TH, u_obs[i].shape[0])
+            ck, sk = np.cos(th), np.sin(th)
+            uk = np.stack([u_obs[i][:, 0] * ck - u_obs[i][:, 1] * sk,
+                           u_obs[i][:, 0] * sk + u_obs[i][:, 1] * ck], 1)
+            g = cell_responses_t(cells, d["sensors"][i, :ns], uk,
+                                 stab_of(d, i), device)
+            acc += (g[:, torch.tensor(keep, device=device)] @ y).cpu().numpy()
+        a_mc = acc / n_draws
+        top = a_mc >= np.quantile(a_mc, 0.9)
+        rel = np.abs(a_sm[top] - a_mc[top]) / (np.abs(a_mc[top]) + 1e-12)
+        corr = float(np.corrcoef(a_sm, a_mc)[0, 1])
+        print(f"  scen {i}: corr {corr:.4f}, top-decile median rel err "
+              f"{float(np.median(rel)):.3f}", flush=True)
+        assert corr > 0.99 and np.median(rel) < 0.05, "smear mismatch"
 
 
 # ------------------------------------------------------------- stage gen-marg
@@ -242,13 +340,30 @@ def make_view(cfg, dd, name_data, view, maps="det", resid_kind="plain"):
         if maps == "det":
             stats = torch.tensor(
                 np.load(dd / f"ch4tu_{split}_maps_det.npz")["maps"])
-        elif maps in ("ens", "ensr"):
+        elif maps == "smear":
             stats = torch.tensor(
+                np.load(dd / f"ch4tu_{split}_maps_smear.npz")["maps"])
+        elif maps in ("ens", "ensr", "ensp", "full"):
+            ens = torch.tensor(
                 np.load(dd / f"ch4tu_{split}_maps_ens.npz")["maps"])
-            if maps == "ensr":
+            if maps == "ens":
+                stats = ens
+            elif maps == "ensr":
                 r = np.load(dd / f"pw_{split}_resid_marg.npz")["noisy"]
                 r = torch.tensor(r.astype(np.float32) / R_MAX)[:, None, :]
-                stats = torch.cat([stats, r], 1)
+                stats = torch.cat([ens, r], 1)
+            else:
+                P = np.load(dd / f"ch4tu_{split}_oracle_marg.npz")["probs"]
+                lp = torch.tensor(((np.log10(P + 1e-30) + 30.0) / 30.0)
+                                  .astype(np.float32))[:, None, :]
+                if maps == "ensp":
+                    stats = torch.cat([ens, lp], 1)
+                else:   # full: smeared evidence + spread + resid + marg post
+                    sm = torch.tensor(np.load(
+                        dd / f"ch4tu_{split}_maps_smear.npz")["maps"])
+                    r = np.load(dd / f"pw_{split}_resid_marg.npz")["noisy"]
+                    r = torch.tensor(r.astype(np.float32) / R_MAX)[:, None, :]
+                    stats = torch.cat([sm, ens[:, 1:2], r, lp], 1)
         else:
             stats = None
     if resid_kind == "marg":
@@ -271,12 +386,13 @@ def stage_train(cfg, device, views, lam, seed, maps="det",
     clean = {s: dict(np.load(dd / f"ch4t_{s}.npz", allow_pickle=True))
              for s in SPLITS}
     view_list = (["clean", "noisy"] if views == "paired" else [views])
-    if maps in ("ens", "ensr"):
-        assert views == "noisy", "ens/ensr configs are noisy-view only"
+    if maps in NOISY_ONLY_MAPS:
+        assert views == "noisy", f"{maps} configs are noisy-view only"
     V = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps, resid_kind)
              for v in view_list} for s in SPLITS}
-    # audit conditions; ens/ensr maps only exist for the noisy condition
-    conds = ("noisy",) if maps in ("ens", "ensr") else ("clean", "noisy")
+    # audit conditions; these map kinds only exist under measured wind
+    conds = (("noisy",) if maps in NOISY_ONLY_MAPS
+             else ("clean", "noisy"))
     A = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps)
              for v in conds} for s in ("calib", "test")}
     torch.manual_seed(6000 + seed + 1300)
@@ -369,7 +485,8 @@ def stage_train(cfg, device, views, lam, seed, maps="det",
     model.eval()
 
     # dual-condition audit, condition-matched calibration
-    mt = {"det": "", "ens": "_ens", "ensr": "_ensr", None: "_nomaps"}[maps]
+    mt = {"det": "", "ens": "_ens", "ensr": "_ensr", "smear": "_smear",
+          "ensp": "_ensp", "full": "_full", None: "_nomaps"}[maps]
     tag = (f"pw_{views}{mt}{'_marg' if resid_kind == 'marg' else ''}"
            f"_lam{lam}_seed{seed}")
     out = {"tag": tag, "maps": maps or "off", "lam": lam,
@@ -399,15 +516,18 @@ def stage_train(cfg, device, views, lam, seed, maps="det",
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", required=True,
-                    choices=["gen", "gen-marg", "verify", "verify-marg",
-                             "train"])
+                    choices=["gen", "gen-marg", "gen-smear", "verify",
+                             "verify-marg", "verify-smear", "train"])
     ap.add_argument("--views", choices=["clean", "noisy", "paired"],
                     default="paired")
-    ap.add_argument("--maps", choices=["on", "det", "ens", "ensr", "off"],
+    ap.add_argument("--maps", choices=["on", "det", "smear", "ens", "ensr",
+                                       "ensp", "full", "off"],
                     default="on",
-                    help="det (=on): 2ch at u_obs; ens: 3ch over wind "
-                         "draws; ensr: ens + marg-residual channel; "
-                         "off: plain DeepSetsT")
+                    help="det (=on): 2ch at u_obs; smear: 2ch analytically "
+                         "wind-smeared; ens: 3ch over wind draws; ensr: ens "
+                         "+ marg-residual; ensp: ens + marg-posterior; "
+                         "full: smear + spread + marg-posterior; off: plain "
+                         "DeepSetsT")
     ap.add_argument("--resid", choices=["plain", "marg"], default="plain",
                     help="marg = wind-marginalized residual in the loss")
     ap.add_argument("--lam", type=float, default=0.0)
@@ -419,10 +539,14 @@ def main():
         stage_gen(cfg, device)
     elif args.stage == "gen-marg":
         stage_gen_marg(cfg, device)
+    elif args.stage == "gen-smear":
+        stage_gen_smear(cfg, device)
     elif args.stage == "verify":
         stage_verify(cfg, device)
     elif args.stage == "verify-marg":
         stage_verify_marg(cfg, device)
+    elif args.stage == "verify-smear":
+        stage_verify_smear(cfg, device)
     else:
         stage_train(cfg, device, args.views, args.lam, args.seed,
                     maps={"on": "det", "off": None}.get(args.maps,
