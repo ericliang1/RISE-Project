@@ -13,35 +13,34 @@
 
 \begin{document}
 
-\title{Reaching the Actionable Radius:\\
-Physics-Guided Calibrated Localization of Methane Sources\\
-under Wind Uncertainty}
+\title{Physics-Guided Calibrated Localization\\ of Methane Sources}
 
 \author{\IEEEauthorblockN{Edward Cha, Eric Liang, and Alex Zhang}}
 
 \maketitle
 
 \begin{abstract}
-Inexpensive sensor networks can watch a natural-gas site around the clock,
-and machine learning can turn their readings into a leak search region in
-milliseconds, with a statistical guarantee that the region contains the
-source 90\% of the time. We show that the guarantee alone is not enough,
-and we provide a simple, verified way to make the regions small enough to
-act on, even when the wind measurement is imperfect. On a simulation
-testbed whose physics is exactly solvable, we compute the smallest region
-the sensor data truly support and use it as a measuring stick: a
-guaranteed deep-learning localizer produced 94--98\,m regions where the
-data supported 6--7\,m. We close half of that gap with one change. For
-every map cell, we compute how well a leak at that cell would explain the
-readings, a classical signal-processing operation, and we provide these
-maps to the network as additional input images. With ordinary training and
-0.2\% added parameters, three different network families all reach
-46--48\,m, the scale that U.S. EPA super-emitter notifications use to
-associate a leak with a facility (50\,m). We then make the test realistic:
-the network only ever sees a wind \emph{measurement} with typical
-instrument error (10$^\circ$ direction, 10\% speed). The same recipe,
-extended so that the input maps also carry the wind sensor's stated error
-range, retains its guarantee and reaches \textbf{70--73\,m}, with a
+We present a physics-guided method for localizing methane leaks from
+inexpensive sensor networks, with a statistical guarantee that the
+reported region contains the source 90\% of the time. The core of the
+method is a set of \emph{physics input images}: for every cell of a site
+map, closed-form formulas score how strongly the sensor readings point to
+a leak at that cell, how visible such a leak would be to the sensor
+layout, and how well the best-fitting leak rate at that cell explains the
+readings. Computed in milliseconds, these images are supplied to a
+standard neural network as additional input channels through a small
+zero-initialized head (0.2\% added parameters), trained with ordinary
+labels, and calibrated with split conformal prediction. When the wind is
+only measured rather than known, the images are averaged over the wind
+sensor's stated error range, so the network also sees how fragile each
+cell's evidence is to wind error. On a testbed whose physics is exactly
+solvable, so the smallest supported region is computable, the method
+halves the median 90\% region of a calibrated deep localizer from
+94--98\,m to 46--48\,m across three network families, at the 50\,m scale
+that U.S. EPA super-emitter notifications use to associate a leak with a
+facility. Under realistic wind-measurement error (10$^\circ$ direction,
+10\% speed), where direct physics inversion returns essentially the whole
+site, the method retains its guarantee at \textbf{70--73\,m}, with a
 quarter of cases below 50\,m. All results are verified against exact
 references and reported over multiple training seeds.
 \end{abstract}
@@ -82,26 +81,32 @@ plume physics directly requires the wind to be known exactly, while every
 real site has only a wind \emph{measurement}; how each approach behaves
 under that everyday mismatch had not been carefully quantified.
 
-\textbf{Contributions.}
+\textbf{Contributions.} The paper centers on a single method and the
+evidence for it.
 \begin{itemize}
-\item \textbf{C1: A measuring stick for guaranteed regions.} A methane
-testbed (CH4-T) whose physics is exactly solvable, so the smallest region
-the data support is computable for every scenario. This allows any
-guaranteed localizer to be audited in meters. A verified-90\% deep
-localizer delivered 94--98\,m where the data supported 6--7\,m.
-\item \textbf{C2: A diagnosis, and a simple fix through the inputs.}
-Controlled comparisons across three network families and a modern
-generative estimator point to one missing ingredient: the classical
-computation that scores, for every map cell, how well a leak there would
-explain the readings. Supplied as two additional input images (closed
-form, milliseconds) with a near-zero-cost add-on head and ordinary
-training, it brings all three families to 46--48\,m.
-\item \textbf{C3: One recipe that carries its wind-error budget.} The
-same input maps, extended with the wind sensor's stated error range (the
-average evidence, its variability, and a fit-quality map across plausible
-winds), retain the guarantee under realistic wind error and reach
-70--73\,m. When the error budget is set to zero, the extended maps reduce
-exactly to the classical ones, so a single recipe covers both settings.
+\item \textbf{C1: Physics input images that carry their wind-error
+budget.} For every candidate cell, closed-form formulas produce four
+images: the evidence for a leak at that cell, the fragility of that
+evidence across the wind sensor's stated error range, the visibility of
+such a leak to the sensor layout, and the fit quality of the best leak
+rate at that cell. A zero-initialized head (0.2\% added parameters) joins
+the images to any base network at the logits; training is ordinary
+supervised learning; split conformal prediction supplies the guarantee.
+When the error budget is set to zero, the images provably reduce to the
+classical matched-filter pair, so one recipe covers exact and measured
+wind alike.
+\item \textbf{C2: A measuring stick that quantifies the method's value.}
+A methane testbed (CH4-T) whose physics is exactly solvable, so the
+smallest region the data support is computable for every scenario and any
+guaranteed localizer can be audited in meters. A verified-90\% deep
+localizer delivered 94--98\,m where the data supported 6--7\,m; the
+images close half of that gap on all three network families we tested
+(46--48\,m).
+\item \textbf{C3: Robustness where direct inversion is not viable.}
+Under realistic wind-measurement error, direct physics inversion retains
+its guarantee only by returning essentially the whole site, while the
+method degrades gracefully, and each added image tightens the guaranteed
+regions further, to 70--73\,m.
 \end{itemize}
 Every component is standard and auditable: classical detection theory,
 ordinary supervised training, and textbook conformal calibration. Every
@@ -186,7 +191,7 @@ with $\sigma_\theta = 10^\circ$ and $\sigma_s = 0.10$, the accuracy class
 of inexpensive monitoring anemometers. No model, at any stage, observes
 the true wind.
 
-\subsection{The exact reference posterior (C1)}
+\subsection{The exact reference posterior (C2)}
 Because the model \eqref{eq:readings} is linear in $q$, the per-cell
 likelihood depends on the data only through three summary quantities,
 \begin{equation}
@@ -212,7 +217,7 @@ the exact map itself, to reproduce its own guarantee before any
 experiment proceeds; this check caught two real implementation bugs,
 including a tie-handling correction that we report for reuse.
 
-\subsection{Physics input images with a wind-error budget (C2, C3)}
+\subsection{Physics input images with a wind-error budget (C1)}
 \label{sec:maps}
 The classical matched-filter score of cell $c$ normalizes the alignment
 $a_c$ by the fingerprint's energy,
@@ -313,7 +318,7 @@ setting. Region sizes are reported as the radius of the circle of equal
 area; all models share identical data (10k/1k/2k/2k splits, a standard
 budget for this field \cite{sbibm}) and identical symmetry augmentation.
 
-\subsection{Diagnosis: what was missing (C2)}
+\subsection{Diagnosis: why the images are the right ingredient (C2)}
 A set-based network trained with \eqref{eq:loss} alone is correctly
 calibrated (coverage 0.89) at 94--98\,m, so the information required for
 6--7\,m is present in the readings and waits to be extracted. Three
