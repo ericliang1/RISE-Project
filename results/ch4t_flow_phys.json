@@ -19,5 +19,12 @@
     "median_radius_m": 57.55423499165486,
     "wilcoxon_p_sharper_than_recipe": 1.0,
     "frac_sharper_than_recipe": 0.4375
+  },
+  "flow_phys_seed3": {
+    "tag": "flow_phys_seed3",
+    "coverage": 0.903,
+    "median_radius_m": 61.1547874294063,
+    "wilcoxon_p_sharper_than_recipe": 1.0,
+    "frac_sharper_than_recipe": 0.38
   }
 }

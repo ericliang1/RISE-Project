@@ -20,3 +20,32 @@ NPEFlowPhys params: 0.85M
   ep 450 val_nll -2.4589
   ep 475 val_nll -2.4031
 {"tag": "flow_phys_seed2", "coverage": 0.8945, "median_radius_m": 57.55423499165486, "wilcoxon_p_sharper_than_recipe": 1.0, "frac_sharper_than_recipe": 0.4375}
+NPEFlowPhys params: 0.85M
+  ep 0 val_nll -0.6140
+  ep 25 val_nll -2.0085
+  ep 50 val_nll -2.3509
+  ep 75 val_nll -2.4878
+  ep 100 val_nll -2.6132
+  ep 125 val_nll -2.6315
+  ep 150 val_nll -2.6823
+  ep 175 val_nll -2.6886
+  ep 200 val_nll -2.6717
+  ep 225 val_nll -2.7487
+  ep 250 val_nll -2.7104
+  ep 275 val_nll -2.6393
+  ep 300 val_nll -2.7735
+  ep 325 val_nll -2.6632
+  ep 350 val_nll -2.6310
+  ep 375 val_nll -2.6106
+  ep 400 val_nll -2.5664
+  ep 425 val_nll -2.5204
+  ep 450 val_nll -2.4694
+  ep 475 val_nll -2.4727
+{"tag": "flow_phys_seed3", "coverage": 0.903, "median_radius_m": 61.1547874294063, "wilcoxon_p_sharper_than_recipe": 1.0, "frac_sharper_than_recipe": 0.38}
+NPEFlowPhys params: 0.85M
+  ep 0 val_nll -0.4553
+  ep 25 val_nll -1.7807
+  ep 50 val_nll -2.1018
+  ep 75 val_nll -2.2462
+  ep 100 val_nll -2.3708
+  ep 125 val_nll -2.3954

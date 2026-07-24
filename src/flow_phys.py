@@ -86,6 +86,9 @@ def main():
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--teacher", action="store_true",
                     help="train on samples from the tempered exact posterior")
+    ap.add_argument("--noisy-wind", action="store_true",
+                    help="Track-2: observed wind tokens, det maps at u_hat, "
+                         "det-oracle teacher (matches recipe s_det_det setup)")
     args = ap.parse_args()
     cfg = load_config()
     device = get_device()
@@ -95,12 +98,21 @@ def main():
     n_epochs = 500
     data = {n: dict(np.load(dd / f"ch4t_{n}.npz", allow_pickle=True))
             for n in ("train", "val", "calib", "test")}
-    stats = {n: stats_maps(dd, n, data[n])
-             for n in ("train", "val", "calib", "test")}
+    if args.noisy_wind:
+        from methane_t_uncertain import with_obs_wind
+        data = {n: with_obs_wind(d, np.load(dd / f"ch4tu_{n}_uobs.npy"))
+                for n, d in data.items()}
+        stats = {n: torch.tensor(
+            np.load(dd / f"ch4tu_{n}_maps_det.npz")["maps"])
+            for n in ("train", "val", "calib", "test")}
+    else:
+        stats = {n: stats_maps(dd, n, data[n])
+                 for n in ("train", "val", "calib", "test")}
     teacher = None
     if args.teacher:
-        P_tr = torch.tensor(np.load(dd / "ch4t_train_posterior.npz")
-                            ["probs"].astype(np.float32))
+        tp = ("ch4tu_train_oracle_det.npz" if args.noisy_wind
+              else "ch4t_train_posterior.npz")
+        P_tr = torch.tensor(np.load(dd / tp)["probs"].astype(np.float32))
         teacher = blur_teacher(P_tr, N_GRID, 0.75, device=device).to(device)
     torch.manual_seed(6000 + args.seed + 900)
     rng = np.random.default_rng(args.seed)
@@ -204,10 +216,15 @@ def main():
     th = tail_threshold(tail_scores(Pc, data["calib"]["true_cell"], rng_c),
                         cfg["conformal"]["alpha"])
     reg = regions(Pt, th, data["test"]["true_cell"])
-    recipe = np.load(dd / "ch4t_audit_lever_suffstats.npz")["sizes"]
+    # paired reference must be SAME-TRACK: clean-wind recipe on Track 1,
+    # the det-maps recipe student on Track 2 -- never cross tracks
+    ref_file = ("ch4tu_audit_s_det_det.npz" if args.noisy_wind
+                else "ch4t_audit_lever_suffstats.npz")
+    recipe = np.load(dd / ref_file)["sizes"]
     w = wilcoxon(np.log(recipe.astype(float)),
                  np.log(reg["sizes"].astype(float)), alternative="greater")
-    tag = f"flow_phys{'_teach' if args.teacher else ''}_seed{args.seed}"
+    tag = (f"flow_phys{'_teach' if args.teacher else ''}"
+           f"{'_noisywind' if args.noisy_wind else ''}_seed{args.seed}")
     out = {"tag": tag, "coverage": float(reg["covered"].mean()),
            "median_radius_m": rad_m(reg["sizes"]),
            "wilcoxon_p_sharper_than_recipe": float(w.pvalue),
