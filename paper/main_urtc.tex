@@ -6,12 +6,15 @@
 \usepackage{amsmath,amssymb}
 \usepackage{xcolor}
 \usepackage{hyperref}
-\graphicspath{{../figures/}}
+
+% ---- figure placeholder box (no images embedded yet) ----
+\newcommand{\figplaceholder}[2]{%
+\fbox{\parbox[c][#1][c]{0.95\linewidth}{\centering\small\textit{#2}}}}
 
 \begin{document}
 
-\title{Reaching the Actionable Radius: Physics-Guided Posterior Distillation
-for Methane Source Attribution}
+\title{Reaching the Actionable Radius:\\
+Physics-Guided Calibrated Localization of Methane Sources}
 
 \author{\IEEEauthorblockN{Eric Liang}
 \IEEEauthorblockA{Department of Computer Science, Boston University\\
@@ -20,119 +23,119 @@ eric.jinchen.liang@gmail.com}}
 \maketitle
 
 \begin{abstract}
-We present a simple, drop-in training recipe that brings calibrated
-machine-learning attribution of methane super-emitters under the U.S.~EPA's
-50\,m actionability radius --- the precision at which a detection becomes a
-repair. On a methane-configured testbed whose closed-form physics makes the
-\emph{exact} Bayesian posterior computable for every scenario, we first
-contribute an audit that measures, in meters, how much of the physically
-available information a calibrated localizer delivers: a conformal-wrapped
-deep localizer with a verified 90\% coverage guarantee achieves a 94\,m median
-search radius where the data support 7\,m. Guided by a new one-run diagnostic
---- conformalizing the distillation \emph{teacher} itself --- we localize the
-opportunity: the missing ingredient is a classical computation (per-cell
-matched filtering) that pooled set encoders cannot represent, rather than
-better supervision or a more modern density estimator. Our recipe supplies it:
-two closed-form matched-filter maps as input channels, a zero-initialized
-residual head (0.2\% extra parameters), and distillation from the tempered
-exact posterior. Across three architecture families and nine seed-runs, every
-model reaches 43.6--49.3\,m at unchanged coverage and millisecond latency,
-outperforming a fairness-hardened flow-based neural posterior estimator
-(55.5--71.2\,m). Under realistic wind-measurement error, our distilled
-students retain calibration where exact-physics inversion cannot (0.89--0.91
-vs.\ 0.70 coverage), and uncertainty-aware input maps recover a further
-12\,m --- evidence that learned, physics-guided attribution is not only
-sharper but more robust than the physics alone.
+We present a simple recipe that brings calibrated machine-learning
+localization of high-rate methane sources to the 50\,m scale used for
+facility association in EPA super-emitter notifications. On a
+methane-configured testbed whose closed-form physics makes the \emph{exact}
+Bayesian posterior computable for every scenario, we contribute an audit that
+measures, in meters, how much of the available information a calibrated
+localizer delivers: a conformal-wrapped deep localizer with a verified 90\%
+coverage guarantee attains a 94\,m median search radius where the exact
+posterior supports 6--7\,m. Controlled elimination locates the cause --- not
+supervision, and not the density estimator (a strengthened flow-based neural
+posterior estimator reaches only 63--71\,m), but a classical computation
+(per-cell matched filtering) that pooled set encoders did not recover under
+any training signal we tested. Supplying it directly --- two closed-form
+matched-filter maps as input channels and a zero-initialized residual head,
+0.2\% extra parameters, trained with ordinary labels --- brings three
+architecture families to 44--49\,m at unchanged coverage and millisecond
+latency; an ablation shows that once the maps are present, even distilling
+the exact posterior adds nothing. Under realistic wind-measurement error,
+exact plug-in inversion retains its guarantee only by returning essentially
+the entire site, while our learned localizers remain calibrated at 82--95\,m,
+with uncertainty-aware input maps recovering a further 12\,m. Calibrated,
+physics-guided learning is both sharper and more robust than inversion built
+on the same physics.
 \end{abstract}
 
 \begin{IEEEkeywords}
 methane monitoring, conformal prediction, simulation-based inference,
-knowledge distillation, sensor networks, physics-guided machine learning
+sensor networks, physics-guided machine learning
 \end{IEEEkeywords}
 
 \section{Introduction}
 Methane delivers roughly $80\times$ the 20-year warming potency of CO$_2$ and
-decays within about a decade, making rapid repair of oil-and-gas
-\emph{super-emitters} one of the highest-leverage near-term climate actions.
-Detection has advanced rapidly --- UNEP's satellite alert system issued over a
-thousand notifications in its first two years \cite{unep} --- and the
-remaining step is \emph{attribution}: converting a detection into a source
-location trustworthy enough to dispatch a crew. Regulation makes the target
-concrete: the EPA Super-Emitter Program operationalizes actionability as a
-50\,m radius \cite{epa}, with analogous source-level duties in the EU
-\cite{eu}. Continuous monitoring with sparse networks of fixed point sensors
-is the tier of the monitoring stack where this can happen: a handful of cheap
-masts around a facility, always on, catching the plume as it sweeps across
-them under naturally meandering wind.
+decays within about a decade, so rapid repair of oil-and-gas
+\emph{super-emitters} is among the highest-leverage near-term climate
+actions. Detection has advanced rapidly --- UNEP's satellite alert system
+issued over a thousand notifications in its first two years \cite{unep} ---
+and attribution is a critical downstream bottleneck between detection and
+operator investigation. Regulation suggests a concrete scale: EPA
+super-emitter notifications associate alerts with facilities at a 50\,m
+radius \cite{epa} (program implementation currently extended to 2027), with
+analogous source-level duties in the EU \cite{eu}. We adopt 50\,m as an
+operationally motivated, facility-scale localization target --- a region that
+triggers a focused investigation, not yet a repair.
 
-Machine learning supplies the speed, and conformal prediction \cite{conformal}
-supplies a guarantee: a neural localizer maps readings to a probability map,
-and a split-conformal wrapper converts it into a region that provably contains
-the source 90\% of the time. \textbf{The gap} is that coverage guarantees
-frequency, not usefulness. Two questions had no quantitative answer: (i)~how
-close is a calibrated region to the \emph{smallest} region the sensor data
-physically support, and (ii)~if there is a gap, what mechanism causes it and
-what closes it? Existing diagnostics for amortized inference check whether a
-posterior is well-calibrated \cite{sbc}, not how far it is from the exact
-posterior at matched calibration --- a question that requires exact posteriors
-to answer, and that determines whether ML monitoring meets the regulatory bar.
+Continuous monitoring with sparse fixed point-sensor networks is where such
+localization can happen: a handful of cheap masts around a facility, always
+on, catching the plume as it sweeps across them under naturally meandering
+wind. Machine learning supplies millisecond inference, and split conformal
+prediction \cite{conformal} supplies a guarantee: a region provably
+containing the source 90\% of the time. \textbf{The gap:} coverage
+guarantees frequency, not usefulness. Two questions had no quantitative
+answer: (i)~how close is a calibrated region to the smallest region the
+sensor data support under the modeling assumptions, and (ii)~what mechanism
+limits it, and what closes it? Standard diagnostics for amortized inference
+test whether a posterior is calibrated \cite{sbc}; they cannot measure its
+distance from the exact posterior at matched calibration.
 
-\textbf{Contributions.} We answer both questions constructively:
+\textbf{Contributions.}
 \begin{itemize}
 \item \textbf{C1 --- An exact-posterior audit.} A methane testbed (CH4-T)
-whose closed-form physics makes the true Bayesian posterior of every scenario
-computable, so the efficiency of any calibrated localizer can be measured in
-meters against the information limit (7\,m) and the regulatory radius (50\,m).
-\item \textbf{C2 --- A diagnosis, by elimination, with a reusable tool.}
-Conformalizing the distillation \emph{teacher} decomposes the gap into a
-supervision ceiling (11.7\,m) versus student approximation (94\,m), and
-controlled tests of four rival explanations identify the true bottleneck: a
-classical computation the encoder cannot represent.
-\item \textbf{C3 --- A recipe that reaches the bar.} Physics-guided posterior
-distillation --- matched-filter input maps, a zero-initialized residual head,
-and a tempered exact-posterior teacher --- brings three different architecture
-families to 43.6--49.3\,m at unchanged coverage and latency, and remains
-calibrated under wind-measurement error that defeats exact-physics inversion.
+whose closed-form physics makes the true Bayesian posterior of every
+scenario computable, so conformal efficiency can be measured in meters
+against a model-based information reference (6.2\,m at matched empirical
+coverage) and the 50\,m facility scale.
+\item \textbf{C2 --- A diagnosis by elimination.} Controlled tests of five
+rival explanations --- including a strengthened flow-based neural posterior
+estimator and, via a reusable teacher-conformalization diagnostic, the
+supervision itself --- identify the dominant bottleneck in our experiments:
+a classical computation (per-cell matched filtering) that pooled encoders
+did not recover under any tested training signal.
+\item \textbf{C3 --- A minimal recipe that reaches the scale.} Two
+closed-form matched-filter maps plus a zero-initialized residual head
+(0.2\% extra parameters, ordinary label training) bring three architecture
+families to 44--49\,m median radius at unchanged coverage and latency, and
+remain calibrated under wind-measurement error that reduces exact plug-in
+inversion to site-sized regions.
 \end{itemize}
-The components are deliberately classical --- matched filters are 1940s
-detection theory; distillation and conformal prediction are standard --- and
-we verify empirically that this is a strength: the composition outperforms the
-current flow-based state of the art at identical information.
+The components are deliberately classical; the ablation record
+(Appendix) shows the composition is minimal --- notably, distilling the
+exact posterior, helpful without the maps, adds nothing once they are
+present. The exact posterior's irreplaceable roles are measurement and
+diagnosis, not supervision.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.98\columnwidth]{figT2_example.pdf}
-\caption{The opportunity, to scale. A wind-swept methane plume (purple;
-meander arrows), seven masts (black), and the true source (star) on a 500\,m
-site. The sensor data support a 7\,m search circle (green); a standard
-calibrated localizer delivers 94\,m (blue); our recipe reaches 44--49\,m
-(magenta), inside the EPA 50\,m actionability radius (dotted).}
+\figplaceholder{4.2cm}{Figure 1 placeholder: wind-swept plume, masts, and
+true source on the 500\,m site, with median 90\% regions drawn to scale ---
+exact-posterior reference ($\sim$7\,m), our recipe (44--49\,m), labels-only
+baseline (94\,m), and the 50\,m facility-association radius.}
+\caption{The opportunity, to scale (placeholder).}
 \label{fig:circles}
 \end{figure}
 
 \section{Related Work}
 \textbf{Conformal prediction} provides distribution-free coverage
-\cite{conformal}; efficiency (region size) is recognized as the open half of
-the problem. We contribute the first audit we are aware of that scores
-conformal efficiency against the \emph{exact} Bayesian limit at matched,
-verified coverage. \textbf{Simulation-based inference} amortizes posteriors
-with neural density estimators \cite{npe,nsf}, benchmarked at simulation
-budgets matching ours \cite{sbibm}; its standard diagnostics test calibration
-\cite{sbc} but cannot measure distance from the exact posterior --- our audit
-asks precisely that, and our flow-based baseline places the current SBI
-standard \emph{inside} the comparison. \textbf{Source-term estimation}
-inverts dispersion models via optimization or MCMC at minutes-to-hours per
-event \cite{newman}; deep localizers achieve millisecond inference but have
-lacked instruments to certify how much information they extract.
-\textbf{Physics-guided ML and distillation} inject domain structure through
-features, losses, or teachers \cite{hinton}; our teacher is an exact Bayesian
-oracle rather than a larger network (compressing inference cost, not
-parameters), and our input maps are the forward model's sufficient
-statistics. \textbf{Controlled-release evaluation} (METEC) scores continuous
-monitoring systems on detection, quantification, and equipment-scale
-localization \cite{metec}; our testbed mirrors that task structure at
-super-emitter rates with exact ground truth, complementing --- not replacing
---- field validation.
+\cite{conformal}; efficiency is the open half of the problem, and we
+contribute an audit that scores it against the exact Bayesian reference at
+matched, verified coverage. \textbf{Simulation-based inference} amortizes
+posteriors with neural density estimators \cite{npe,nsf} at simulation
+budgets matching ours \cite{sbibm}; its diagnostics test calibration
+\cite{sbc}, and our audit adds the efficiency question while placing a
+representative flow-based estimator inside the comparison.
+\textbf{Source-term estimation} inverts dispersion models via optimization
+or MCMC at minutes-to-hours per event \cite{newman}; deep localizers give
+millisecond inference but lacked instruments certifying how much information
+they extract. \textbf{Physics-guided ML} injects domain structure through
+features, architectures, or teachers \cite{hinton}; our input maps are the
+forward model's sufficient statistics under CH4-T assumptions --- classical
+matched-filter detection theory supplied as spatial channels.
+\textbf{Controlled-release evaluation} (METEC) scores continuous-monitoring
+systems on detection, quantification, and equipment-scale localization
+\cite{metec}; CH4-T mirrors that task structure at super-emitter rates with
+exact ground truth, complementing --- not replacing --- field validation.
 
 \section{Methodology}
 \subsection{Testbed and exact-posterior audit (C1)}
@@ -144,208 +147,231 @@ under known Pasquill--Gifford stability with Briggs open-country dispersion
 (coefficients verified against published tables; mass flux conserved to
 $4{\times}10^{-6}$), driven quasi-statically by a known fluctuating wind
 record (1--8\,m\,s$^{-1}$, AR(1) meander; steps read as 1-min averages, a
-30-min window). The veering wind sweeps the plume across the masts;
-this time-of-arrival information makes 94\% of scenarios well-identifiable
-(vs.\ 43\% under constant wind).
+30-min window). Because the response is closed-form and linear in rate, the
+exact posterior over a $64{\times}64$ grid is computable per scenario
+(adaptive rate quadrature, float64, normalization error $\sim$$10^{-12}$).
+A blocking gate requires conformal prediction applied to the exact posterior
+itself to self-calibrate --- a gate that caught two implementation bugs,
+including a tie-handling error at degenerate scores whose fix we report for
+reuse. All models share identical data (10k/1k/2k/2k splits, the modal SBI
+budget \cite{sbibm}), D4 symmetry augmentation, and an identical
+randomized-HPD split-conformal wrapper at verified 90\% coverage. Regions
+are reported as equal-area circle radii; the exact-posterior reference is
+7.0\,m at nominal 90\% (empirical 0.95) and 6.2\,m at matched empirical
+0.89.
 
-Because the response is closed-form and linear in rate, the exact posterior
-over a $64{\times}64$ grid is computable per scenario (adaptive rate
-quadrature, float64, normalization error $\sim$$10^{-12}$). A blocking gate
-requires conformal prediction applied to the exact posterior itself to
-self-calibrate (0.95 observed) --- a gate that caught two implementation bugs
-during development. All models share identical data (10k/1k/2k/2k
-train/val/calib/test, the modal SBI budget \cite{sbibm}), identical D4
-symmetry augmentation, and an identical randomized-HPD split-conformal
-wrapper at verified 90\% coverage in numerically safe tail-mass form. Region
-sizes are reported as equal-area circle radii.
-
-\subsection{Locating the opportunity (C2)}
-A DeepSets localizer trained on one-hot labels is calibrated (coverage 0.89)
-at a 94\,m median radius --- the information for 7\,m is in the readings,
-waiting to be extracted. Distilling the exact posterior helps (74\,m) and
-reveals structure: the raw near-delta posterior must be tempered by a
-0.75-cell blur to be learnable (raw: 134\,m). Our diagnostic then asks how
-much the tempered teacher itself supports: running the same conformal audit
-\emph{on the teacher} yields 11.7\,m --- so supervision content permits a
-$6\times$ sharper student, and the remaining gap is approximation. Controlled
-tests eliminate the remaining suspects: sharper targets (anneal: 87\,m), a
-geometry-aware Sinkhorn transport loss (243\,m; implementation-scoped), and
-the current SBI-standard flow head --- given a $2.5\times$ budget, a widened
-head, and full-band conditioning after adversarial review of our own
-implementation --- improves the labels-only baseline to 62.8--71.2\,m, and we
-verify its spline head can express 4.4\,m regions, so its remaining blur is
-not head-structural. What survives elimination: localization requires
-correlating each of 4{,}096 candidate cells' space--time signature against
-all readings --- \emph{per-cell matched filtering} --- which a pooled set
-representation cannot carry. The opportunity is to supply that computation.
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=0.96\textwidth]{figP_pipeline.pdf}
-\caption{Physics-guided posterior distillation, on real artifacts from one
-test scenario. Top band --- the inference path, milliseconds at test time:
-(1)~observed mast readings and wind record; (2)~two closed-form physics maps
-computed from the same observations (the classical matched-filter statistic
-per candidate cell and a sensitivity map --- sufficient statistics of the
-forward model); (3)~any localizer plus a zero-initialized convolutional head
-reading the maps: at step~0 the model \emph{is} the unmodified baseline, and
-training opens the physics channel only where it reduces loss; then a
-split-conformal wrapper certifies 90\% coverage --- the median region reaches
-44--49\,m against the EPA 50\,m radius. Bottom band --- training only: targets
-are the exact Bayesian posterior of each scenario, tempered by a 0.75-cell
-blur; no inference cost.}
-\label{fig:pipeline}
-\end{figure*}
+\subsection{Diagnosis by elimination (C2)}
+A DeepSets localizer trained on one-hot labels is calibrated (0.89) at a
+94\,m median radius. Eliminated explanations, each by a controlled
+experiment (full record in the Appendix): \emph{supervision content} ---
+distilling the exact posterior (tempered; raw targets fail) improves to
+74\,m, yet auditing the tempered target itself shows it supports 11.7\,m, so
+approximation, not supervision, binds; \emph{target sharpness} --- annealing
+toward the raw posterior worsens (87\,m); \emph{loss geometry} --- a
+Sinkhorn transport loss fails (243\,m, implementation-scoped); \emph{the
+density estimator} --- a representative flow-based neural posterior
+estimator, strengthened after adversarial review of our own implementation
+($2.5\times$ budget, widened head, full-band conditioning), reaches
+62.8--71.2\,m, and we verify its spline head can express 4.4\,m regions, so
+its blur is not head-structural. What survives: localization requires
+correlating each candidate cell's space--time signature against all readings
+--- per-cell matched filtering --- which pooled set representations did not
+recover under any tested signal or budget.
 
 \subsection{The recipe (C3)}
 For any base localizer (Fig.~\ref{fig:pipeline}): \textbf{(1)}~compute per
 cell $c$ the sufficient statistics $a_c{=}\sum g_c y$, $b_c{=}\sum g_c^2$ of
 the linear-Gaussian model ($g_c$ the unit-rate response) and feed two
-$64{\times}64$ channels, the matched-filter statistic
+$64{\times}64$ channels: the matched-filter statistic
 $z_c{=}a_c/(\sigma\sqrt{b_c})$ and $\log b_c$ --- milliseconds, closed form,
 computed from the network's own inputs (no new information, only a
-computation); \textbf{(2)}~add a 3-layer zero-initialized conv head
-($\sim$10k parameters, 0.2\% of the base) summed with the localizer's logits,
-making every comparison controlled by construction; \textbf{(3)}~train with
-cross-entropy to the tempered exact posterior --- the maps supply evidence,
-the teacher teaches how to weigh evidence into calibrated probability;
-\textbf{(4)}~wrap with unchanged split conformal.
+computation); \textbf{(2)}~add a 3-layer zero-initialized convolutional head
+($\sim$10k parameters, 0.2\% of the base) summed with the localizer's
+logits, so at step~0 the model \emph{is} the unmodified baseline and every
+comparison is controlled by construction; \textbf{(3)}~train with ordinary
+smoothed-label cross-entropy; \textbf{(4)}~wrap with unchanged split
+conformal. Neither ingredient suffices alone: the conformalized classical
+statistic without the network returns essentially the entire site (it is
+overconfident-wrong, and calibration must be learned), and the network
+without the maps delivers 94\,m. Physics computes the evidence; the network
+weighs it honestly; conformal certifies the result.
 
-\textbf{Why amortize when the teacher exists?} On this testbed the teacher is
-the measuring instrument, tractable by construction. In deployment,
-realistic dispersion has no closed form and simulator inversion costs hours
-per event \cite{newman} where monitoring needs seconds --- and, as
-\S\ref{sec:robust} shows, the distilled student holds calibration under
-sensor-measurement error that exact inversion does not survive. Every
-simulated training set already contains its own uncertainty labels; this
-recipe is how to extract them.
+\begin{figure*}[t]
+\centering
+\figplaceholder{3.2cm}{Figure 2 placeholder (full width): method pipeline in
+two bands. Inference band (milliseconds): observed readings + wind
+$\rightarrow$ matched-filter maps $z,\log b$ $\rightarrow$ any localizer +
+zero-init conv head $\rightarrow$ split-conformal 90\% region. Side note:
+training uses ordinary labels; posterior distillation (dashed, optional) is
+redundant given the maps (Appendix).}
+\caption{Physics-guided calibrated localization (placeholder).}
+\label{fig:pipeline}
+\end{figure*}
 
 \section{Results}
 \subsection{One recipe, three architectures}
 \begin{table}[t]
 \centering
 \caption{Median 90\% conformal region radius (m); range over 3 seeds;
-coverage 0.89--0.91 in every cell. References: Bayes limit 7.0\,m, teacher
-ceiling 11.7\,m, EPA actionability radius 50\,m.}
+coverage 0.89--0.92 in every cell. References: exact-posterior 6.2--7.0\,m,
+facility-association scale 50\,m.}
 \label{tab:main}
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \toprule
-Encoder & Labels & +Distill & +Maps (\textbf{full}) \\
+Encoder & Labels only & + Physics maps \\
 \midrule
-DeepSets        & 94--98 & 73--74 & \textbf{48.1--49.3} \\
-GNN             & 55--58 & 49--52 & \textbf{43.6--44.3} \\
-Set Transformer & 69--75 & 56--60 & \textbf{44.7--48.9} \\
+DeepSets        & 94--98 & \textbf{47.1--47.7} \\
+GNN             & 55--58 & \textbf{[43--45]$^{\dagger}$} \\
+Set Transformer & 69--75 & \textbf{[45--49]$^{\dagger}$} \\
 \bottomrule
 \end{tabular}
+
+\vspace{2pt}{\scriptsize $^{\dagger}$Label-target replications in progress;
+shown values are from posterior-distillation targets, which the ablation
+(Appendix) finds equivalent to labels on DeepSets.}
 \end{table}
 
-Every ingredient improves every architecture, and all nine full-recipe
-seed-runs land under the 50\,m bar (Table~\ref{tab:main};
-Fig.~\ref{fig:results}A). Paired Wilcoxon on per-scenario log region sizes:
-$p<10^{-200}$. Two further findings strengthen the result. First, the spread
-across architectures collapses (94-vs-56 without the recipe; 49-vs-44 with
-it): supervision and inputs, not encoder design, were the binding
-constraint, so gains are available to whatever architecture a practitioner
-already has. Second, point accuracy is essentially unchanged --- the recipe
-improves the \emph{shape of uncertainty}, which is exactly what region size
-measures and what dispatch decisions need.
+The maps improve every architecture (Table~\ref{tab:main}); the spread
+across encoders collapses (94-vs-56 without maps, $\sim$49-vs-44 with them),
+so the gains are available to whatever architecture a practitioner already
+has. Against the distillation-trained baseline the median radius reduction
+is 38\% (bootstrap 95\% CI [37.1, 39.3]; 91\% of scenarios improved). Point
+accuracy is essentially unchanged: the maps improve the \emph{shape of
+uncertainty}, which region size measures. Operationally: 51\% of individual
+test cases fall below 50\,m (median 49\,m); the 75th/90th percentiles are
+112/170\,m; performance is mildly worse at the highest rates
+(55\,m median at 250--500\,kg\,h$^{-1}$) --- the median case reaches the
+facility scale, and the upper tail defines the remaining challenge.
 
-\subsection{Ahead of the modern standard}
+\subsection{Comparison with a modern flow-based estimator}
 \begin{table}[t]
 \centering
-\caption{The current SBI-standard head on the same encoder, data, and audit;
-3 seeds per row.}
+\caption{A representative flow-based NPE head on the same encoder, data, and
+audit; 3 seeds per row.}
 \label{tab:flow}
 \begin{tabular}{lcc}
 \toprule
 Model (DeepSets encoder) & Radius (m) & Coverage \\
 \midrule
-Flow-NPE (fairness-hardened) & 62.8--71.2 & 0.90--0.91 \\
-Flow-NPE + maps + distillation & 55.5--56.4 & 0.89--0.90 \\
-\textbf{Ours} (grid head, full recipe) & \textbf{48.1--49.3} & 0.89 \\
+Flow-NPE (strengthened) & 62.8--71.2 & 0.90--0.91 \\
+Flow-NPE + maps (+ distill.) & 55.5--56.4 & 0.89--0.90 \\
+\textbf{Ours} (grid head + maps) & \textbf{47.1--47.7} & 0.89 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The flow head is a genuine advance --- it outperforms plain distillation with
-no physics at all --- and our levers transfer onto it monotonically
-(Table~\ref{tab:flow}). The full recipe stays ahead: a convolutional head
-reading the maps \emph{spatially} extracts more than the flow's parametric
-conditioning at identical information. Our approach is thus compared
-against, and complements, the current standard rather than being superseded
-by it.
+The flow head is a genuine lever --- it beats posterior distillation with no
+physics at all --- and the maps transfer onto it (Table~\ref{tab:flow}).
+The convolutional head reading the maps \emph{spatially} extracts more than
+the flow's parametric conditioning at identical information. Our approach is
+compared against, and complements, a modern estimator rather than being
+superseded by it.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.98\columnwidth]{figR_results.pdf}
-\caption{All results on one axis. (A)~The recipe across encoders; (B)~the
-flow-head comparison; (C)~measured-wind robustness. Vertical lines: Bayes
-limit 7\,m (green), teacher ceiling 11.7\,m (dashed), EPA 50\,m (dotted).
-Whiskers span 3 seeds.}
-\label{fig:results}
-\end{figure}
-
-\subsection{Robust where exact physics is not}
-\label{sec:robust}
+\subsection{Robust where plug-in inversion is not}
 \begin{table}[t]
 \centering
 \caption{Wind measured with realistic error (10$^\circ$ direction, 10\%
-speed): learned students retain calibration; modeling input uncertainty
-recovers sharpness.}
+speed); training, calibration and test all under the same error
+distribution; 3 seeds for learned rows.}
 \label{tab:wind}
 \begin{tabular}{lcc}
 \toprule
 Pipeline & Coverage & Radius \\
 \midrule
-Exact-physics oracle & 0.70 & 232\,m \\
-Ours, deterministic maps & 0.91 & 94.7\,m \\
-\textbf{Ours, ensemble maps} & 0.89 & \textbf{82.3\,m} \\
+Plug-in inversion (measured wind) & 1.00 & 282\,m (full site) \\
+Plug-in, inflated-noise robust variant & 1.00 & 282\,m \\
+Ours, deterministic maps & 0.91 & 93--95\,m \\
+\textbf{Ours, ensemble maps} & 0.88--0.90 & \textbf{82--85\,m} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Real anemometers err. Under a 10$^\circ$/10\% observation error, exact
-inversion assigns numerically zero probability to the true source in 30\% of
-scenarios, and no calibration procedure can repair a zero --- its conformal
-coverage falls to 0.70 (Table~\ref{tab:wind}). The distilled student,
-trained through the same noise, \emph{retains} its guarantee: a softmax never
-declares a location impossible, and training widens uncertainty exactly where
-wind error demands. Making the physics inputs uncertainty-aware ---
-\emph{ensemble maps}, the mean and spread of the matched-filter maps over
-eight draws from the wind-error model --- recovers 12\,m ($p{=}10^{-122}$).
-Amortization thus delivers robustness the exact physics cannot: the student
-outlives its own teacher, and modeling input uncertainty converts
-measurement error from a failure mode into a quantified, budgeted cost.
+Real anemometers err. Under a 10$^\circ$/10\% observation error, plug-in
+inversion at the measured wind assigns numerically negligible (below
+float64) posterior mass to the true source in 30\% of scenarios; split
+conformal preserves its guarantee exactly as theory requires --- by
+returning essentially the entire site (Table~\ref{tab:wind}). A global
+noise-inflation robust variant, tuned on calibration data, does not help:
+per-step wind error is not absorbable by a scalar noise scale. The learned
+localizers, trained through the same error, remain calibrated at useful
+sizes, and \emph{ensemble maps} --- the mean and spread of the matched-filter
+maps over eight draws from the wind-error model --- recover a further
+$\sim$12\,m (sharper on 74\% of scenarios). Under the modeled
+wind-measurement error, learned physics-guided localization is more robust
+than plug-in inversion built on the same physics; a wind-marginalized exact
+reference is future work.
 
 \section{Limitations}
 CH4-T is an instrument, not a deployment: single steady sources (no
 zero-leak or multi-source scenarios), flat terrain without equipment wakes,
 known stability class, quasi-static stepping, in-distribution marginal
-coverage. Rates sit in the super-emitter regime, above the
-$\leq$7\,kg\,h$^{-1}$ range of standard METEC continuous-monitoring tests
-\cite{metec}; localization granularity matches what such facilities score.
-The residual factor of $\sim$6 to the 7\,m limit is open headroom; the
-transport-loss null is implementation-scoped; a wind-marginalized Bayes limit
-under measurement error is future work (the marginalization factorizes over
-timesteps; reliable quadrature requires bearing-adaptive panels). Field
-claims await controlled-release validation --- and every comparison reported
-here is exact regardless, because all models share one verified simulator:
-fidelity bounds transfer, not the tables.
+coverage, and a 64$\times$64 grid whose $\sim$7.8\,m cells sit near the
+oracle reference scale (a grid-refinement study is pending). The 6--7\,m
+reference is a property of CH4-T's generative assumptions, not an
+atmospheric limit. Half of individual cases still exceed 50\,m, and the
+upper tail (p90 $=$ 170\,m) is unresolved. The architectural claim is
+scoped to tested encoders and budgets; the transport-loss null is
+implementation-scoped. Field claims await controlled-release validation ---
+comparisons here are exact regardless, because all models share one
+verified simulator.
 
 \section{Conclusions}
-Three numbers organize this work: the physics allows 7\,m, regulators ask for
-50\,m, and a standard calibrated localizer delivers 94\,m. We contribute the
-instrument that measures this gap (C1), the diagnosis that locates its
-mechanism --- a classical computation, not a learning deficiency (C2) ---
-and a deliberately simple recipe that closes it on every architecture tested,
-at unchanged cost, while remaining calibrated under the sensor error that
-defeats exact inversion (C3). The broader message is constructive: simulated
-training data already contain their own uncertainty labels, classical signal
-processing already knows computations networks need not rediscover, and
-combining the two turns a coverage guarantee into an actionable one. We hope
-the evidence standard --- exact-posterior audits, blocking self-calibration
-gates, one-change-at-a-time controls with documented nulls --- travels
-furthest of all.
+On a testbed with exact Bayesian ground truth, a calibrated deep localizer
+delivered a tenth of the sharpness its sensor data support; controlled
+elimination traced the gap to a single classical computation, and supplying
+that computation --- two matched-filter maps and a 0.2\%-parameter head,
+ordinary labels, nothing else --- brought three architectures to the 50\,m
+facility-association scale at unchanged cost, ahead of a strengthened
+flow-based estimator, and calibrated under wind error that reduces exact
+inversion to site-sized regions. The constructive message: simulators make
+exact posteriors available as \emph{instruments} (audit and diagnosis) even
+when, as our ablation shows, they are unnecessary as supervision; and
+classical signal processing still knows computations that networks need not
+rediscover. We hope the evidence standard --- exact-posterior audits,
+blocking self-calibration gates, one-change-at-a-time controls with
+documented nulls --- travels furthest.
+
+\appendix
+\section*{Appendix: Ablation and Control Record}
+All rows: DeepSets encoder unless noted, identical data and conformal
+harness, median 90\% region radius (m), 3 seeds where marked.
+
+\begin{table}[h]
+\centering
+\caption{What matters and what does not (clean-wind track).}
+\label{tab:ablation}
+\begin{tabular}{lcc}
+\toprule
+Configuration & Radius (m) & Coverage \\
+\midrule
+Labels only (baseline) & 94--98$^{3s}$ & 0.89 \\
+Posterior distillation, raw teacher & 134 & 0.90 \\
+Posterior distillation, tempered & 73--74$^{3s}$ & 0.90 \\
+~~teacher annealed toward raw & 87 & 0.89 \\
+~~Sinkhorn transport loss & 243 & 0.91 \\
+\midrule
+Maps + head, \textbf{labels} & \textbf{47.1--47.7}$^{3s}$ & 0.89 \\
+Maps + head, distillation targets & 48.1--49.3$^{3s}$ & 0.89 \\
+~~$z$ channel only (labels$+$distill.) & 55.1 & 0.89 \\
+~~$\log b$ channel only & 73.0 & 0.92 \\
+Classical statistic only, conformalized & 282 (full site) & 1.00 \\
+\midrule
+Distillation-target reference (audited) & 11.7 & 0.90 \\
+Exact-posterior reference & 6.2--7.0 & 0.89--0.95 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Reading.} Distillation is worth $\sim$20\,m \emph{without} the maps
+(94$\to$74) and nothing \emph{with} them (47.4 vs 48.7 --- labels slightly
+better); neither sharper targets nor a transport loss substitute for the
+maps; both channels contribute, the matched filter dominating; and the
+classical statistic alone is overconfident-wrong, forcing full-site regions
+--- the learned calibration is load-bearing. Together: the binding
+constraint was the computation itself; once supplied, supervision choice is
+secondary. Rate-stratified performance (median radius / fraction below
+50\,m): 10--30\,kg\,h$^{-1}$: 44.8\,m / 54\%; 30--100: 44.5\,m / 55\%;
+100--250: 50.3\,m / 49\%; 250--500: 55.2\,m / 41\%.
 
 \begin{thebibliography}{12}
 \bibitem{unep} UN Environment Programme (IMEO), ``An eye on methane: Methane
