@@ -1,0 +1,9 @@
+{
+  "flow_phys_seed1": {
+    "tag": "flow_phys_seed1",
+    "coverage": 0.9055,
+    "median_radius_m": 59.29995740880153,
+    "wilcoxon_p_sharper_than_recipe": 1.0,
+    "frac_sharper_than_recipe": 0.413
+  }
+}

@@ -101,7 +101,7 @@ def main():
     if args.teacher:
         P_tr = torch.tensor(np.load(dd / "ch4t_train_posterior.npz")
                             ["probs"].astype(np.float32))
-        teacher = blur_teacher(P_tr, N_GRID, 0.75, device=device)
+        teacher = blur_teacher(P_tr, N_GRID, 0.75, device=device).to(device)
     torch.manual_seed(6000 + args.seed + 900)
     rng = np.random.default_rng(args.seed)
     model = NPEFlowPhys(cfg).to(device)
