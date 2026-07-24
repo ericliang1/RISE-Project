@@ -71,5 +71,12 @@
     "median_radius_m": 84.95608740368904,
     "wilcoxon_p_vs_ref": 1.932233978912354e-86,
     "frac_sharper_than_ref": 0.739
+  },
+  "plugin_sigma_inflated": {
+    "tag": "plugin_sigma_inflated",
+    "c_star": 1.5,
+    "coverage": 1.0,
+    "median_radius_m": 282.0947917738781,
+    "frac_full_grid": 1.0
   }
 }

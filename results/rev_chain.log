@@ -1,0 +1,82 @@
+  suffstats ep 0 crit 5.89488
+  suffstats ep 1 crit 5.34251
+  suffstats ep 2 crit 5.19682
+  suffstats ep 3 crit 5.17789
+  suffstats ep 4 crit 5.12240
+  suffstats ep 20 crit 4.98744
+  suffstats ep 40 crit 5.04317
+  suffstats ep 60 crit 5.16774
+  suffstats ep 80 crit 5.28378
+  suffstats ep 100 crit 5.36218
+  suffstats ep 120 crit 5.43627
+  suffstats ep 140 crit 5.49115
+  suffstats ep 160 crit 5.53913
+  suffstats ep 180 crit 5.57266
+{"tag": "lever_suffstats_labels", "coverage": 0.8885, "median_radius_m": 47.676901700721324, "wilcoxon_p_vs_M1": 4.508550526944042e-289, "frac_sharper_than_M1": 0.9065}
+  suffstats ep 0 crit 5.96487
+  suffstats ep 1 crit 5.38611
+  suffstats ep 2 crit 5.20653
+  suffstats ep 3 crit 5.18261
+  suffstats ep 4 crit 5.15383
+  suffstats ep 20 crit 4.96545
+  suffstats ep 40 crit 4.99121
+  suffstats ep 60 crit 5.07832
+  suffstats ep 80 crit 5.20747
+  suffstats ep 100 crit 5.32331
+  suffstats ep 120 crit 5.38605
+  suffstats ep 140 crit 5.48186
+  suffstats ep 160 crit 5.53064
+  suffstats ep 180 crit 5.55548
+{"tag": "lever_suffstats_labels_seed2", "coverage": 0.89, "median_radius_m": 47.061690097815244, "wilcoxon_p_vs_M1": 6.45853538327382e-290, "frac_sharper_than_M1": 0.906}
+  suffstats ep 0 crit 5.96386
+  suffstats ep 1 crit 5.44772
+  suffstats ep 2 crit 5.25512
+  suffstats ep 3 crit 5.21593
+  suffstats ep 4 crit 5.13990
+  suffstats ep 20 crit 4.96611
+  suffstats ep 40 crit 4.99980
+  suffstats ep 60 crit 5.14170
+  suffstats ep 80 crit 5.23867
+  suffstats ep 100 crit 5.31458
+  suffstats ep 120 crit 5.43876
+  suffstats ep 140 crit 5.47131
+  suffstats ep 160 crit 5.53251
+  suffstats ep 180 crit 5.56118
+{"tag": "lever_suffstats_labels_seed3", "coverage": 0.8955, "median_radius_m": 47.472717029269525, "wilcoxon_p_vs_M1": 1.1687984813511532e-288, "frac_sharper_than_M1": 0.9085}
+  suffstats ep 0 crit 6.67793
+  suffstats ep 1 crit 6.45948
+  suffstats ep 2 crit 6.30877
+  suffstats ep 3 crit 6.23253
+  suffstats ep 4 crit 6.20657
+  suffstats ep 20 crit 5.93685
+  suffstats ep 40 crit 5.79422
+  suffstats ep 60 crit 5.77117
+  suffstats ep 80 crit 5.75030
+  suffstats ep 100 crit 5.78595
+  suffstats ep 120 crit 5.77169
+  suffstats ep 140 crit 5.78680
+  suffstats ep 160 crit 5.79422
+  suffstats ep 180 crit 5.80094
+{"tag": "lever_suffstats_zonly", "coverage": 0.887, "median_radius_m": 55.05254406207756, "wilcoxon_p_vs_M1": 6.588918517840813e-192, "frac_sharper_than_M1": 0.792}
+  suffstats ep 0 crit 8.23103
+  suffstats ep 1 crit 8.20485
+  suffstats ep 2 crit 8.17475
+  suffstats ep 3 crit 8.11200
+  suffstats ep 4 crit 8.10191
+  suffstats ep 20 crit 7.09511
+  suffstats ep 40 crit 6.74536
+  suffstats ep 60 crit 6.55211
+  suffstats ep 80 crit 6.46553
+  suffstats ep 100 crit 6.41655
+  suffstats ep 120 crit 6.38024
+  suffstats ep 140 crit 6.35444
+  suffstats ep 160 crit 6.34041
+  suffstats ep 180 crit 6.33911
+{"tag": "lever_suffstats_logbonly", "coverage": 0.9175, "median_radius_m": 72.96093240307708, "wilcoxon_p_vs_M1": 2.4757912071338303e-09, "frac_sharper_than_M1": 0.572}
+  c=1.5: calib-eval median 4096 cells, cov 1.000, p_true==0 frac 0.241
+  c=2.0: calib-eval median 4096 cells, cov 1.000, p_true==0 frac 0.207
+  c=3.0: calib-eval median 4096 cells, cov 1.000, p_true==0 frac 0.168
+  c=5.0: calib-eval median 4096 cells, cov 1.000, p_true==0 frac 0.114
+selected c* = 1.5
+{"tag": "plugin_sigma_inflated", "c_star": 1.5, "coverage": 1.0, "median_radius_m": 282.0947917738781, "frac_full_grid": 1.0}
+REVCHAIN DONE
