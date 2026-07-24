@@ -22,5 +22,21 @@
     "wilcoxon_p_vs_M1": 1.0,
     "frac_sharper_than_M1": 0.405,
     "norm_drift": 1.548864790201776e-06
+  },
+  "flow_npe_fair_seed1": {
+    "tag": "flow_npe_fair_seed1",
+    "coverage": 0.901,
+    "median_radius_m": 71.20907554390428,
+    "wilcoxon_p_vs_M1": 1.0519840455287528e-167,
+    "frac_sharper_than_M1": 0.7995,
+    "norm_drift": 2.9788685746989785e-06
+  },
+  "flow_npe_fair_seed2": {
+    "tag": "flow_npe_fair_seed2",
+    "coverage": 0.9015,
+    "median_radius_m": 62.80050165999407,
+    "wilcoxon_p_vs_M1": 9.486343452389364e-230,
+    "frac_sharper_than_M1": 0.8585,
+    "norm_drift": 2.0661185576864582e-06
   }
 }
