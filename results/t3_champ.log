@@ -17,3 +17,7 @@ NPEFlowPhys params: 0.85M
   ep 375 val_nll -1.9626
   ep 400 val_nll -1.9002
   ep 425 val_nll -1.8504
+  ep 450 val_nll -1.8700
+  ep 475 val_nll -1.8467
+{"tag": "flow_phys_teach_noisywind_seed1", "coverage": 0.9085, "median_radius_m": 90.97454528755163, "wilcoxon_p_sharper_than_recipe": 0.0009291955723618262, "frac_sharper_than_recipe": 0.5745}
+T3CHAMP DONE

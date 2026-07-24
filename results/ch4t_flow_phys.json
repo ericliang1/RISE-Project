@@ -40,5 +40,12 @@
     "median_radius_m": 55.49191690512106,
     "wilcoxon_p_sharper_than_recipe": 1.0,
     "frac_sharper_than_recipe": 0.249
+  },
+  "flow_phys_teach_noisywind_seed1": {
+    "tag": "flow_phys_teach_noisywind_seed1",
+    "coverage": 0.9085,
+    "median_radius_m": 90.97454528755163,
+    "wilcoxon_p_sharper_than_recipe": 0.0009291955723618262,
+    "frac_sharper_than_recipe": 0.5745
   }
 }

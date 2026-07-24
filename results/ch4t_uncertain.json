@@ -36,5 +36,12 @@
     "median_radius_m": 85.18446439475655,
     "wilcoxon_p_vs_ref": 1.1136787214739551e-83,
     "frac_sharper_than_ref": 0.725
+  },
+  "s_nomaps_det": {
+    "tag": "s_nomaps_det",
+    "coverage": 0.9055,
+    "median_radius_m": 114.43135546162745,
+    "wilcoxon_p_vs_ref": 1.0,
+    "frac_sharper_than_ref": 0.323
   }
 }
