@@ -78,5 +78,35 @@
     "coverage": 1.0,
     "median_radius_m": 282.0947917738781,
     "frac_full_grid": 1.0
+  },
+  "s_det_labels": {
+    "tag": "s_det_labels",
+    "coverage": 0.9085,
+    "median_radius_m": 81.69179986416707
+  },
+  "s_det_labels_seed2": {
+    "tag": "s_det_labels_seed2",
+    "coverage": 0.9155,
+    "median_radius_m": 84.89889716671047
+  },
+  "s_det_labels_seed3": {
+    "tag": "s_det_labels_seed3",
+    "coverage": 0.919,
+    "median_radius_m": 84.09415012145404
+  },
+  "s_ens_labels": {
+    "tag": "s_ens_labels",
+    "coverage": 0.8995,
+    "median_radius_m": 75.44820366496596
+  },
+  "s_ens_labels_seed2": {
+    "tag": "s_ens_labels_seed2",
+    "coverage": 0.903,
+    "median_radius_m": 75.12563611825402
+  },
+  "s_ens_labels_seed3": {
+    "tag": "s_ens_labels_seed3",
+    "coverage": 0.894,
+    "median_radius_m": 74.67170062637717
   }
 }
