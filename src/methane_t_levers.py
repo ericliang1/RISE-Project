@@ -30,6 +30,7 @@ from scipy.stats import wilcoxon
 
 from common import cell_centers, get_device, load_config, pos_to_cell, resolve
 from conformal import regions, tail_scores, tail_threshold
+from model import smoothed_targets
 from methane_t import (DeepSetsT, N_GRID, T, cell_responses_t, d4_augment_t,
                        stab_of, to_batch_t)
 from train import blur_teacher, d4_target_perms
@@ -225,7 +226,7 @@ DeepSetsTPhys = with_phys_head(DeepSetsT)
 
 # ------------------------------------------------------------------ trainer
 def train_lever(cfg, data, P_raw_train, P_raw_val, device, mode, stats=None,
-                seed=1, base_cls=None):
+                seed=1, base_cls=None, label_targets=False):
     """mode: 'anneal' (CE, blur 0.75->0.15), 'sinkhorn' (raw target),
     'suffstats' (CE, fixed 0.75 blur, stats input).  base_cls: any localizer
     class taking the batch dict (DeepSetsT, GNNT, SetTransformerT)."""
@@ -277,6 +278,12 @@ def train_lever(cfg, data, P_raw_train, P_raw_val, device, mode, stats=None,
             gather_idx = inv[codes]
             if mode == "sinkhorn":
                 tgt = Pt_raw[idx].gather(1, gather_idx)
+            elif label_targets:
+                tc = torch.tensor(pos_to_cell(xs, N_GRID))
+                m_ = cfg["model"]
+                tgt = smoothed_targets(tc, N_GRID,
+                                       m_["target_smooth_std_cells"],
+                                       m_["target_trunc_sigmas"], device)
             else:
                 tgt = teacher[idx].gather(1, gather_idx)
             if mode == "suffstats":
@@ -304,7 +311,9 @@ def train_lever(cfg, data, P_raw_train, P_raw_val, device, mode, stats=None,
                     f"not after the full run")
             opt.step()
         sched.step()
-        if mode == "suffstats":                     # matched to M1 convention
+        if mode == "suffstats" and label_targets:   # matched to M0 convention
+            crit = val_nll_true(model, d_val, device, stats["val"])
+        elif mode == "suffstats":                   # matched to M1 convention
             crit = teacher_ce_val(model, d_val, val_teacher, device,
                                   stats["val"])
         else:                                       # objective moves / not CE
@@ -334,6 +343,20 @@ def train_lever(cfg, data, P_raw_train, P_raw_val, device, mode, stats=None,
 
 
 @torch.no_grad()
+def val_nll_true(model, d, device, stats=None):
+    n, tot = len(d["ids"]), 0.0
+    for lo in range(0, n, 512):
+        idx = np.arange(lo, min(lo + 512, n))
+        b = to_batch_t(d, idx, device)
+        if stats is not None:
+            b["stats"] = stats[idx].to(device)
+        logp = torch.log_softmax(model(b).float(), -1)
+        tc = torch.tensor(d["true_cell"][idx], device=device)
+        tot += float(-logp.gather(1, tc[:, None]).sum())
+    return tot / n
+
+
+@torch.no_grad()
 def teacher_ce_val(model, d, P_val_teacher, device, stats=None):
     n, tot = len(d["ids"]), 0.0
     for lo in range(0, n, 512):
@@ -355,6 +378,13 @@ def main():
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--arch", choices=["deepsets", "gnn", "st"],
                     default="deepsets")
+    ap.add_argument("--targets", choices=["teacher", "labels"],
+                    default="teacher",
+                    help="suffstats ablation: labels = maps+head WITHOUT "
+                         "distillation (smoothed one-hot targets)")
+    ap.add_argument("--channels", choices=["both", "z", "logb"],
+                    default="both",
+                    help="suffstats ablation: zero out one map channel")
     args = ap.parse_args()
     cfg = load_config()
     device = get_device()
@@ -379,6 +409,10 @@ def main():
     if args.stage == "suffstats":
         stats = {s: stats_maps(dd, s, data[s])
                  for s in ("train", "val", "calib", "test")}
+        if args.channels != "both":
+            kill = 1 if args.channels == "z" else 0   # keep named channel
+            for s_ in stats:
+                stats[s_][:, kill, :] = 0.0
     if args.arch == "gnn":
         from methane_t_gnn import GNNT as base_cls
     elif args.arch == "st":
@@ -386,13 +420,16 @@ def main():
     else:
         base_cls = DeepSetsT
     model = train_lever(cfg, data, Pt_raw, Pv_raw, device, args.stage,
-                        stats=stats, seed=args.seed, base_cls=base_cls)
+                        stats=stats, seed=args.seed, base_cls=base_cls,
+                        label_targets=(args.targets == "labels"))
     Pc = probs_of(model, data["calib"], device,
                   stats["calib"] if stats else None)
     Pt = probs_of(model, data["test"], device,
                   stats["test"] if stats else None)
     tag = (f"lever_{args.stage}"
            + ("" if args.arch == "deepsets" else f"_{args.arch}")
+           + ("" if args.targets == "teacher" else "_labels")
+           + ("" if args.channels == "both" else f"_{args.channels}only")
            + ("" if args.seed == 1 else f"_seed{args.seed}"))
     audit(Pc, Pt, data, cfg, e_sizes, m1_sizes, tag, dd, rr)
 

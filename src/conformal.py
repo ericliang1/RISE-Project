@@ -54,7 +54,15 @@ def regions(P, t_hat, true_cells=None):
     order = np.argsort(P, axis=1, kind="stable")             # ascending
     Psort = np.take_along_axis(P, order, axis=1)
     cum = np.cumsum(Psort, axis=1)
-    n_excl = (cum <= t_hat).sum(axis=1)                      # excluded tail cells
+    # STRICT exclusion (cum < t_hat): a cell whose inclusion boundary sits
+    # exactly at t_hat must stay IN the region, matching the coverage rule
+    # "covered iff t >= t_hat" at equality.  With continuous scores the two
+    # rules agree almost surely; with a score atom (e.g. p_true underflows to
+    # 0 for a mass of scenarios, so t_hat lands exactly on the atom) the
+    # non-strict rule silently excluded boundary cells and broke the
+    # guarantee (observed: plug-in oracle under wind error at 0.70 instead
+    # of covering by returning the whole grid).
+    n_excl = (cum < t_hat).sum(axis=1)                       # excluded tail cells
     sizes = C - n_excl
     out = {"sizes": sizes}
     if true_cells is not None:
@@ -69,7 +77,7 @@ def region_mask(P_row, t_hat):
     """Boolean membership mask of the conformal region for one heatmap row."""
     order = np.argsort(P_row, kind="stable")
     cum = np.cumsum(P_row[order])
-    n_excl = int((cum <= t_hat).sum())
+    n_excl = int((cum < t_hat).sum())        # strict: see regions()
     mask = np.ones(len(P_row), dtype=bool)
     mask[order[:n_excl]] = False
     return mask
@@ -115,7 +123,7 @@ def nominal_sweep(P_test, true_cells_test, tails_calib, levels):
         Psort = np.take_along_axis(P_test, order, axis=1)
         cum = np.cumsum(Psort, axis=1)
         thr = np.maximum(row_tail_total - lev, 0.0)[:, None]
-        n_excl = (cum <= thr).sum(axis=1)
+        n_excl = (cum < thr).sum(axis=1)     # strict: see regions()
         ranks = np.empty_like(order)
         ranks[np.arange(S)[:, None], order] = np.arange(C)[None, :]
         pos = ranks[np.arange(S), true_cells_test]
