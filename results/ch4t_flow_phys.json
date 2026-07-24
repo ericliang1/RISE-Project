@@ -26,5 +26,19 @@
     "median_radius_m": 61.1547874294063,
     "wilcoxon_p_sharper_than_recipe": 1.0,
     "frac_sharper_than_recipe": 0.38
+  },
+  "flow_phys_teach_seed2": {
+    "tag": "flow_phys_teach_seed2",
+    "coverage": 0.8925,
+    "median_radius_m": 56.446499951902865,
+    "wilcoxon_p_sharper_than_recipe": 1.0,
+    "frac_sharper_than_recipe": 0.256
+  },
+  "flow_phys_teach_seed3": {
+    "tag": "flow_phys_teach_seed3",
+    "coverage": 0.8995,
+    "median_radius_m": 55.49191690512106,
+    "wilcoxon_p_sharper_than_recipe": 1.0,
+    "frac_sharper_than_recipe": 0.249
   }
 }

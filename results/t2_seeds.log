@@ -49,3 +49,41 @@ NPEFlowPhys params: 0.85M
   ep 75 val_nll -2.2462
   ep 100 val_nll -2.3708
   ep 125 val_nll -2.3954
+  ep 150 val_nll -2.4907
+  ep 175 val_nll -2.4862
+  ep 200 val_nll -2.5619
+  ep 225 val_nll -2.5885
+  ep 250 val_nll -2.6173
+  ep 275 val_nll -2.6400
+  ep 300 val_nll -2.6407
+  ep 325 val_nll -2.6563
+  ep 350 val_nll -2.7321
+  ep 375 val_nll -2.7433
+  ep 400 val_nll -2.7539
+  ep 425 val_nll -2.7436
+  ep 450 val_nll -2.7428
+  ep 475 val_nll -2.7265
+{"tag": "flow_phys_teach_seed2", "coverage": 0.8925, "median_radius_m": 56.446499951902865, "wilcoxon_p_sharper_than_recipe": 1.0, "frac_sharper_than_recipe": 0.256}
+NPEFlowPhys params: 0.85M
+  ep 0 val_nll -0.3226
+  ep 25 val_nll -1.3205
+  ep 50 val_nll -1.7829
+  ep 75 val_nll -1.9671
+  ep 100 val_nll -2.1376
+  ep 125 val_nll -2.2453
+  ep 150 val_nll -2.3227
+  ep 175 val_nll -2.4177
+  ep 200 val_nll -2.4911
+  ep 225 val_nll -2.5511
+  ep 250 val_nll -2.6092
+  ep 275 val_nll -2.6004
+  ep 300 val_nll -2.6091
+  ep 325 val_nll -2.6678
+  ep 350 val_nll -2.6641
+  ep 375 val_nll -2.6526
+  ep 400 val_nll -2.6788
+  ep 425 val_nll -2.6756
+  ep 450 val_nll -2.7002
+  ep 475 val_nll -2.7103
+{"tag": "flow_phys_teach_seed3", "coverage": 0.8995, "median_radius_m": 55.49191690512106, "wilcoxon_p_sharper_than_recipe": 1.0, "frac_sharper_than_recipe": 0.249}
+T2SEEDS DONE
