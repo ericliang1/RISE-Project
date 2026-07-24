@@ -18,3 +18,33 @@ waiting for GPU (factorial chain still active)
   train: marg draw 2/8
   train: marg draw 3/8
   train: marg draw 4/8
+  train: marg draw 5/8
+  train: marg draw 6/8
+  train: marg draw 7/8
+  train: marg draw 8/8
+  train: marginalized residual saved
+  val: marg draw 1/8
+  val: marg draw 2/8
+  val: marg draw 3/8
+  val: marg draw 4/8
+  val: marg draw 5/8
+  val: marg draw 6/8
+  val: marg draw 7/8
+  val: marg draw 8/8
+  val: marginalized residual saved
+  calib: marg draw 1/8
+  calib: marg draw 2/8
+  calib: marg draw 3/8
+  calib: marg draw 4/8
+  calib: marg draw 5/8
+  calib: marg draw 6/8
+  calib: marg draw 7/8
+  calib: marg draw 8/8
+  calib: marginalized residual saved
+  test: marg draw 1/8
+  test: marg draw 2/8
+  test: marg draw 3/8
+  test: marg draw 4/8
+  test: marg draw 5/8
+  test: marg draw 6/8
+  test: marg draw 7/8
