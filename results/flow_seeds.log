@@ -1,0 +1,27 @@
+NPEFlow params: 0.40M
+  ep 0 val_nll -0.0797
+  ep 20 val_nll -0.7911
+  ep 40 val_nll -1.0143
+  ep 60 val_nll -1.3034
+  ep 80 val_nll -1.4155
+  ep 100 val_nll -1.5168
+  ep 120 val_nll -1.6645
+  ep 140 val_nll -1.6722
+  ep 160 val_nll -1.7712
+  ep 180 val_nll -1.7927
+cell-mass normalization drift: 2.99e-06
+{"tag": "flow_npe_seed2", "coverage": 0.9045, "median_radius_m": 98.70759322378605, "wilcoxon_p_vs_M1": 1.0, "frac_sharper_than_M1": 0.3565, "norm_drift": 2.990648854561684e-06}
+NPEFlow params: 0.40M
+  ep 0 val_nll -0.2661
+  ep 20 val_nll -0.5882
+  ep 40 val_nll -1.0305
+  ep 60 val_nll -1.3280
+  ep 80 val_nll -1.5539
+  ep 100 val_nll -1.6166
+  ep 120 val_nll -1.7231
+  ep 140 val_nll -1.8016
+  ep 160 val_nll -1.8646
+  ep 180 val_nll -1.8940
+cell-mass normalization drift: 1.55e-06
+{"tag": "flow_npe_seed3", "coverage": 0.9045, "median_radius_m": 94.68930887099407, "wilcoxon_p_vs_M1": 1.0, "frac_sharper_than_M1": 0.405, "norm_drift": 1.548864790201776e-06}
+FLOWSEEDS DONE

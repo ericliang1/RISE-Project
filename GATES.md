@@ -349,3 +349,21 @@ Figs 1-14 regenerated on CH4 (src/methane_figures.py). GPU total ~3 h.
 5. H2 is a partial null: calibrated and strongly rank-correlated (ρ = 0.85)
    but ~5.6× the oracle area at the median.
 6. H3: correct direction on all three knobs, ~half the oracle's magnitude.
+
+## CH4-T-U2: exact wind-marginalized oracle — attempted, blocked, documented (2026-07-23)
+
+Goal: an uncertainty-NATIVE oracle p(y|c) = E_wind-error[likelihood], fixing the
+K=16 joint-MC teacher null. Established: (1) the marginalization FACTORIZES over
+timesteps (per-step errors independent; likelihood factors per step given q), so
+the 60-D integral reduces to thirty 2-D integrals — the key tractability result;
+(2) per-step validation (methane_t_u2.py --stage validate + node studies) shows
+the integrand is a near-delta in wind ANGLE for thin-plume steps: GH 3x3 errs by
+-303 nats, GL-in-angle 41x3 still +-0.6-2 nats on spiky steps; node placement,
+not node count, is the binding issue. Reliable accuracy needs per-cell
+bearing-aware adaptive panels (breaks shared-node vectorization; est. >>4h GPU).
+DECISION: not run. The student-side uncertainty mechanism (ensemble maps,
+82.3 m calibrated vs 94.7 deterministic) is the measured result; the exact
+uncertainty-native reference is documented future work with the factorization
+identity and quadrature study as the roadmap. The naive K=16 joint-MC
+"marginalized" oracle (cov 0.71) must NOT be cited as the Bayes limit under
+wind uncertainty — no valid such limit is currently computed.

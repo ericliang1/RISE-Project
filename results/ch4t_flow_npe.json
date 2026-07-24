@@ -6,5 +6,21 @@
     "wilcoxon_p_vs_M1": 9.511414373488454e-33,
     "frac_sharper_than_M1": 0.637,
     "norm_drift": 2.1732027675192e-06
+  },
+  "flow_npe_seed2": {
+    "tag": "flow_npe_seed2",
+    "coverage": 0.9045,
+    "median_radius_m": 98.70759322378605,
+    "wilcoxon_p_vs_M1": 1.0,
+    "frac_sharper_than_M1": 0.3565,
+    "norm_drift": 2.990648854561684e-06
+  },
+  "flow_npe_seed3": {
+    "tag": "flow_npe_seed3",
+    "coverage": 0.9045,
+    "median_radius_m": 94.68930887099407,
+    "wilcoxon_p_vs_M1": 1.0,
+    "frac_sharper_than_M1": 0.405,
+    "norm_drift": 1.548864790201776e-06
   }
 }
