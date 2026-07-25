@@ -375,7 +375,7 @@ def make_view(cfg, dd, name_data, view, maps="det"):
     return d, stats
 
 
-def stage_train(cfg, device, views, seed, maps="det"):
+def stage_train(cfg, device, views, seed, maps="det", arch="deepsets"):
     dd = resolve(cfg, "data_dir")
     rr = resolve(cfg, "results_dir")
     tr = cfg["training"]
@@ -396,7 +396,15 @@ def stage_train(cfg, device, views, seed, maps="det"):
     torch.manual_seed(6000 + seed + 1300)
     rng = np.random.default_rng(seed)
     n_ch = V["train"][view_list[0]][1].shape[1] if maps else 0
-    model = (PhysHeadNet(cfg, n_ch) if maps else DeepSetsT(cfg)).to(device)
+    if arch == "gnn":
+        from methane_t_gnn import GNNT as base_cls
+    elif arch == "st":
+        from methane_t_settransformer import SetTransformerT as base_cls
+    else:
+        base_cls = DeepSetsT
+    assert maps is None or arch == "deepsets", \
+        "arch variants are wired for the no-maps baseline only"
+    model = (PhysHeadNet(cfg, n_ch) if maps else base_cls(cfg)).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(
@@ -481,8 +489,10 @@ def stage_train(cfg, device, views, seed, maps="det"):
     mt = {"det": "", "ens": "_ens", "ensr": "_ensr", "smear": "_smear",
           "ensp": "_ensp", "full": "_full", "rand": "_rand",
           None: "_nomaps"}[maps]
-    tag = f"pw_{views}{mt}_seed{seed}"
-    out = {"tag": tag, "maps": maps or "off", "val_nll": float(best)}
+    at = "" if arch == "deepsets" else f"_{arch}"
+    tag = f"pw_{views}{mt}{at}_seed{seed}"
+    out = {"tag": tag, "maps": maps or "off", "arch": arch,
+           "val_nll": float(best)}
     for cond in conds:
         Pc = probs(A, "calib", cond)
         Pt = probs(A, "test", cond)
@@ -522,6 +532,8 @@ def main():
                          "+ marg-residual; ensp: ens + marg-posterior; "
                          "full: smear + spread + marg-posterior; off: plain "
                          "DeepSetsT")
+    ap.add_argument("--arch", choices=["deepsets", "gnn", "st"],
+                    default="deepsets")
     ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args()
     cfg = load_config()
@@ -541,7 +553,8 @@ def main():
     else:
         stage_train(cfg, device, args.views, args.seed,
                     maps={"on": "det", "off": None}.get(args.maps,
-                                                        args.maps))
+                                                        args.maps),
+                    arch=args.arch)
 
 
 if __name__ == "__main__":

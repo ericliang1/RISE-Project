@@ -1,0 +1,55 @@
+  ep 0 val_nll 7.9954
+  ep 25 val_nll 7.2903
+  ep 50 val_nll 6.1902
+  ep 75 val_nll 5.9406
+  ep 100 val_nll 5.8025
+  ep 125 val_nll 5.7572
+  ep 150 val_nll 5.7914
+  ep 175 val_nll 5.8371
+{"tag": "pw_clean_nomaps_gnn_seed1", "maps": "off", "arch": "gnn", "val_nll": 5.71775341796875, "clean": {"coverage": 0.904, "median_radius_m": 56.27414382450455, "frac_below_50m": 0.387}, "noisy": {"coverage": 0.9005, "median_radius_m": 65.96887883819926, "frac_below_50m": 0.1095}}
+  ep 0 val_nll 7.9843
+  ep 25 val_nll 7.2191
+  ep 50 val_nll 6.1644
+  ep 75 val_nll 5.9176
+  ep 100 val_nll 5.8722
+  ep 125 val_nll 5.8450
+  ep 150 val_nll 5.8668
+  ep 175 val_nll 5.9099
+{"tag": "pw_clean_nomaps_gnn_seed2", "maps": "off", "arch": "gnn", "val_nll": 5.771951904296875, "clean": {"coverage": 0.899, "median_radius_m": 56.446499951902865, "frac_below_50m": 0.366}, "noisy": {"coverage": 0.903, "median_radius_m": 65.22846393234533, "frac_below_50m": 0.078}}
+  ep 0 val_nll 7.9721
+  ep 25 val_nll 6.9003
+  ep 50 val_nll 6.2845
+  ep 75 val_nll 5.9255
+  ep 100 val_nll 5.8378
+  ep 125 val_nll 5.8554
+  ep 150 val_nll 5.8744
+  ep 175 val_nll 5.8671
+{"tag": "pw_clean_nomaps_gnn_seed3", "maps": "off", "arch": "gnn", "val_nll": 5.79409130859375, "clean": {"coverage": 0.881, "median_radius_m": 57.38520603635994, "frac_below_50m": 0.359}, "noisy": {"coverage": 0.889, "median_radius_m": 65.07937010554211, "frac_below_50m": 0.0945}}
+  ep 0 val_nll 7.9940
+  ep 25 val_nll 7.8231
+  ep 50 val_nll 6.6344
+  ep 75 val_nll 6.3101
+  ep 100 val_nll 6.1404
+  ep 125 val_nll 6.0653
+  ep 150 val_nll 6.0342
+  ep 175 val_nll 6.0170
+{"tag": "pw_clean_nomaps_st_seed1", "maps": "off", "arch": "st", "val_nll": 6.003328369140625, "clean": {"coverage": 0.8935, "median_radius_m": 70.79864517700902, "frac_below_50m": 0.1835}, "noisy": {"coverage": 0.899, "median_radius_m": 81.51323833947713, "frac_below_50m": 0.0875}}
+  ep 0 val_nll 7.9777
+  ep 25 val_nll 7.5073
+  ep 50 val_nll 6.5059
+  ep 75 val_nll 6.2350
+  ep 100 val_nll 6.0847
+  ep 125 val_nll 6.0243
+  ep 150 val_nll 5.9674
+  ep 175 val_nll 5.9721
+{"tag": "pw_clean_nomaps_st_seed2", "maps": "off", "arch": "st", "val_nll": 5.942418212890625, "clean": {"coverage": 0.89, "median_radius_m": 68.70972823634811, "frac_below_50m": 0.1935}, "noisy": {"coverage": 0.8945, "median_radius_m": 80.97519128234426, "frac_below_50m": 0.088}}
+  ep 0 val_nll 7.9858
+  ep 25 val_nll 7.5904
+  ep 50 val_nll 6.6613
+  ep 75 val_nll 6.3146
+  ep 100 val_nll 6.1821
+  ep 125 val_nll 6.0682
+  ep 150 val_nll 6.0064
+  ep 175 val_nll 5.9550
+{"tag": "pw_clean_nomaps_st_seed3", "maps": "off", "arch": "st", "val_nll": 5.93533154296875, "clean": {"coverage": 0.888, "median_radius_m": 69.13256132409862, "frac_below_50m": 0.215}, "noisy": {"coverage": 0.8995, "median_radius_m": 79.40035507416403, "frac_below_50m": 0.107}}
+BASE ARCH DONE

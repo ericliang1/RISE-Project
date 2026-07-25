@@ -429,3 +429,11 @@ ECDF). Claim narrowings applied. Consistency fix: recipe percentiles/frac<50
 now sourced from ch4t_audit_lever_suffstats_labels.npz (48/86/131 m, 52.4%)
 — revision_analyses recipe_operational was a different run; do not mix.
 Paper compiles at exactly 5 pages.
+
+## 2026-07-24 — Every table cell filled
+GNN/ST labels-only baselines rerun in the pw harness (--arch gnn|st, no-maps
+path, 3 seeds each, instrumented audits): GNN 56.3-57.4 m cov 0.881-0.904
+frac<50 36-39%; ST 68.7-70.8 m cov 0.888-0.894 frac<50 18-22% — consistent
+with Alex's originals (55.4-57.6 / 69.2-75.1). Appendix rows and main Table
+II now sourced from these runs; "not retained" footnote removed; zero empty
+cells remain. Every number in the paper traces to a per-scenario audit npz.

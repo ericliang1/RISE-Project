@@ -432,8 +432,8 @@ the scale, and the upper tail marks the clearest room for future work.
 Estimator & Without maps & With maps \\
 \midrule
 DeepSets        & 94--98 & \textbf{47.1--47.7} \\
-GNN             & 55--58 & \textbf{46.2--47.5} \\
-Set Transformer & 69--75 & \textbf{46.2--47.3} \\
+GNN             & 56--57 & \textbf{46.2--47.5} \\
+Set Transformer & 69--71 & \textbf{46.2--47.3} \\
 Flow-based estimator (strengthened) & 62.8--71.2 & 57.6--61.2 \\
 Classical score alone (no network) & --- & 282 (full site) \\
 \bottomrule
@@ -604,8 +604,8 @@ Configuration & Estimator & Coverage & Radius (m) & $<$50\,m \\
 \midrule
 Exact-model reference & --- & 0.89--0.95 & 6.2--7.0 & 72\% \\
 Labels only & DeepSets & 0.890 & 94--98 & 0\% \\
-Labels only & GNN & 0.893--0.896 & 55.4--57.6 & --- \\
-Labels only & Set Transformer & 0.889--0.902 & 69.2--75.1 & --- \\
+Labels only & GNN & 0.881--0.904 & 56.3--57.4 & 36--39\% \\
+Labels only & Set Transformer & 0.888--0.894 & 68.7--70.8 & 18--22\% \\
 + physics images & DeepSets & 0.888--0.895 & 47.1--47.7 & 52--53\% \\
 + physics images & GNN & 0.891--0.902 & 46.2--47.5 & 53--54\% \\
 + physics images & Set Transformer & 0.892--0.901 & 46.2--47.3 & 53--54\% \\
@@ -616,8 +616,6 @@ Classical score alone & no network & 1.00 & 282 (full site) & 0\% \\
 Channel ablation: evidence only & DeepSets & 0.88 & 65.0$^{1s}$ & 33\% \\
 Channel ablation: sensitivity only & DeepSets & 0.90 & 98.5$^{1s}$ & 0\% \\
 \bottomrule
-\multicolumn{5}{l}{\footnotesize --- : per-scenario audit file not
-retained for that run (summary statistics only).} \\
 \end{tabular}
 \end{table}
 
