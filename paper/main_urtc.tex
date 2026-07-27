@@ -111,15 +111,30 @@ from one shared, verified simulator with identical splits and
 calibration harness, and headline comparisons carry paired-bootstrap
 intervals over the same 2{,}000 test scenarios.
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.95\textwidth]{../figures/paper/fig_pipeline.pdf}
+\caption{The pipeline. The physics input processor turns raw sensor
+data and the wind sensor's stated error budget into four per-cell
+images (Eqs.~\ref{eq:zmap}--\ref{eq:resid}), which any set network
+reads through a small zero-initialized head joined at the logits
+(Eq.~\ref{eq:model}); split conformal calibration certifies the 90\%
+region under the deployment wind condition (Eq.~\ref{eq:region}). At
+$\varepsilon{=}0$ the images provably reduce to the classical
+matched-filter pair (Eq.~\ref{eq:reduction}).}
+\label{fig:pipeline}
+\end{figure*}
+
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.74\linewidth]{../figures/paper/fig_data_example.pdf}
-\caption{Representative exact-wind scenario: 90\% regions of the
+\includegraphics[width=0.7\linewidth]{../figures/paper/fig_data_example.pdf}
+\caption{Typical well-instrumented scenario: 90\% regions of the
 labels-only baseline and of our method (conformal masks), the
 exact-model reference (equal-area circle), the sensor masts, and the
-50\,m facility scale. Selection rule: the scenario jointly closest (log
-scale) to the median baseline radius and the median method radius, i.e.,
-typical difficulty with typical improvement, not a best case.}
+50\,m facility scale. Selection rule: within the 10--12-mast subgroup,
+the scenario jointly closest (log scale) to that subgroup's median
+baseline and median method radii, i.e., typical for well-instrumented
+sites, not a best case.}
 \label{fig:circles}
 \end{figure}
 
@@ -261,8 +276,9 @@ end-to-end do not efficiently reconstruct this computation across
 94--98\,m), while the computation by itself cannot judge how much to
 trust its own answer (calibrated alone, it returns the whole site). We
 therefore insert an \emph{input processor} between the raw data and the
-network: it evaluates the physics relationships explicitly, cell by
-cell, and presents the results as images aligned with the output grid,
+network (Fig.~\ref{fig:pipeline}): it evaluates the physics
+relationships explicitly, cell by cell, and presents the results as
+images aligned with the output grid,
 where a small convolutional head can read them spatially. This is the
 division of labor the paper centers on: physics supplies exact
 understanding of how a leak maps to readings, and the network supplies

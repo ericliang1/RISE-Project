@@ -76,8 +76,13 @@ def fig_example():
     rb, ro = rad(zb["sizes"].astype(float)), rad(zo["sizes"].astype(float))
     ex = rad(np.load(dd / "ch4t_audit_M0.npz")["exact_sizes"]
              .astype(float))
-    dist = (np.log(rb / np.median(rb)) ** 2
-            + np.log(ro / np.median(ro)) ** 2)
+    # typical case within the well-instrumented subgroup (10-12 masts):
+    # jointly closest (log scale) to that subgroup's median baseline and
+    # median method radii
+    grp = d["n_sensors"].astype(int) >= 10
+    dist = (np.log(rb / np.median(rb[grp])) ** 2
+            + np.log(ro / np.median(ro[grp])) ** 2)
+    dist[~grp] = np.inf
     i = int(np.argmin(dist))
     mb = np.unpackbits(zb["masks"][i])[:N_CELLS].reshape(64, 64)
     mo = np.unpackbits(zo["masks"][i])[:N_CELLS].reshape(64, 64)
@@ -123,10 +128,57 @@ def fig_example():
     ax.set_xticks([0, 250, 500]); ax.set_yticks([0, 250, 500])
     ax.set_xlabel("site coordinate (m)")
     despine(ax)
-    ax.set_title("Typical scenario (joint-median selection): "
-                 "90% regions, exact wind", fontsize=13,
+    ax.set_title("Typical well-instrumented scenario "
+                 f"({int(d['n_sensors'][i])} masts): 90% regions, "
+                 "exact wind", fontsize=13,
                  fontweight="bold", loc="left", pad=12)
     save(fig, "fig_data_example")
+
+
+# ------------------------------ Fig 0b: full-width pipeline (paper size)
+def fig_pipeline():
+    from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+    fig, ax = plt.subplots(figsize=(12.0, 2.05))
+    ax.set_xlim(0, 100); ax.set_ylim(0, 20); ax.axis("off")
+
+    def box(x, w, title, lines, accent=False):
+        ax.add_patch(FancyBboxPatch(
+            (x, 2.0), w, 16.0,
+            boxstyle="round,pad=0.5,rounding_size=1.0",
+            fc="#eef4fd" if accent else "#f9f9f7",
+            ec=BLUE if accent else BASE, lw=1.4))
+        ax.text(x + w / 2, 15.0, title, ha="center", fontsize=10.2,
+                color=INK, fontweight="bold")
+        for j, s in enumerate(lines):
+            ax.text(x + w / 2, 11.3 - 3.4 * j, s, ha="center",
+                    fontsize=8.6, color=INK2)
+
+    def arrow(x0, x1):
+        ax.add_patch(FancyArrowPatch((x0, 10), (x1, 10),
+                     arrowstyle="-|>", mutation_scale=13, color=INK2,
+                     lw=1.5))
+
+    box(0.5, 13.5, "sensor data",
+        ["readings $y$", "wind $\\hat w$,",
+         "budget $\\varepsilon$"])
+    arrow(14.3, 17.2)
+    box(17.6, 28.5, "physics input processor",
+        ["4 images per cell (Eqs. 6–9):",
+         "evidence $\\cdot$ variability $\\cdot$ sensitivity "
+         "$\\cdot$ fit quality",
+         "30 ms; $\\varepsilon{=}0 \\Rightarrow$ classical pair "
+         "(Eq. 10)"], accent=True)
+    arrow(46.4, 49.5)
+    box(49.9, 23.5, "network + zero-init head",
+        ["set network $f_\\theta$ + conv $h_\\phi$",
+         "joined at the logits (Eq. 11)",
+         "0.2% params, label training"])
+    arrow(73.7, 76.8)
+    box(77.2, 22.3, "guaranteed region",
+        ["split conformal (Eq. 14)",
+         "90% coverage, calibrated",
+         "under deployment wind"])
+    save(fig, "fig_pipeline")
 
 
 # --------------------------------------------- Fig 1: radius distributions
@@ -297,6 +349,7 @@ def fig_rates():
 
 if __name__ == "__main__":
     fig_example()
+    fig_pipeline()
     fig_ecdf()
     fig_scatter()
     fig_coverage()
