@@ -258,9 +258,9 @@ position, time, concentration, wind step) whose size varies from site to
 site, so the natural base learners are permutation-invariant set
 networks. We evaluate three families with different inductive biases,
 DeepSets (pooling), a graph neural network (relational structure between
-masts), and a Set Transformer (attention), plus a flow-based generative
-estimator, precisely so that the method's value is demonstrated
-independently of any one architecture choice.
+masts), and a Set Transformer (attention), precisely so that the
+method's value is demonstrated independently of any one architecture
+choice.
 
 \subsection{The physics input processor (C1)}
 \label{sec:maps}
@@ -447,7 +447,6 @@ Estimator & Without maps & With maps \\
 DeepSets        & 94--98 & \textbf{47.1--47.7} \\
 GNN             & 56--57 & \textbf{46.2--47.5} \\
 Set Transformer & 69--71 & \textbf{46.2--47.3} \\
-Flow-based estimator (strengthened) & 62.8--71.2 & 57.6--61.2 \\
 Classical score alone (no network) & --- & 282 (full site) \\
 \bottomrule
 \end{tabular}
@@ -457,14 +456,8 @@ Without the maps, the choice of network changes results by 40\,m; with
 them, all nine runs of three network families land inside a 1.5\,m band
 (Table~\ref{tab:est}). The gain is available to whatever architecture a
 practitioner already has, with ordinary training and near-zero added
-cost. The flow-based estimator is informative in both directions: it
-improves on the baseline with no physics at all, and since we verified
-that its output layer can express 4.4\,m regions, its remaining gap is
-not a matter of expressiveness; the images improve it as well
-(non-overlapping three-seed ranges), so the recipe composes with other
-estimators rather than competing with them.
-At the other extreme, the classical score alone identifies where the
-evidence lies but not how much to trust it, and pays for that
+cost. At the other extreme, the classical score alone identifies where
+the evidence lies but not how much to trust it, and pays for that
 overconfidence with full-site regions. Single-seed channel diagnostics point the same way: the evidence image
 alone reaches 65.0\,m, the sensitivity image alone 98.5\,m, both
 channels 47\,m.
