@@ -463,25 +463,6 @@ channels 47\,m.
 \label{sec:robust}
 \begin{table}[t]
 \centering
-\caption{Measured wind ($10^\circ$/10\% per-step anemometer error; no
-method observes the true wind; calibration under the deployment
-condition; DeepSets base; 3 seeds for learned rows).}
-\label{tab:wind}
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lccc}
-\toprule
-Pipeline & Cov. & Radius (m) & $<$50\,m \\
-\midrule
-Direct physics inversion & 1.00 & 282 (full site) & 0\% \\
-Network, no physics images & 0.90--0.91 & 107.9--110.5 & 0\% \\
-\textbf{Ours, uncertainty-aware images} & 0.90--0.92 & \textbf{70.1--72.9}
-& \textbf{24--27\%} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[t]
-\centering
 \caption{Each image component tightens the regions (DeepSets base,
 measured wind; 3 seeds; $\dagger$: random-image negative control,
 1 seed, diagnostic).}
@@ -497,6 +478,25 @@ single-wind evidence pair & 0.91--0.92 & 82.2--84.2 & 15--17\% \\
 + moment images & 0.89--0.91 & 74.7--76.3 & 20--21\% \\
 \textbf{+ fit-quality image} & 0.90--0.92 & \textbf{70.1--72.9} &
 \textbf{24--27\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Measured wind ($10^\circ$/10\% per-step anemometer error; no
+method observes the true wind; calibration under the deployment
+condition; DeepSets base; 3 seeds for learned rows).}
+\label{tab:wind}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccc}
+\toprule
+Pipeline & Cov. & Radius (m) & $<$50\,m \\
+\midrule
+Direct physics inversion & 1.00 & 282 (full site) & 0\% \\
+Network, no physics images & 0.90--0.91 & 107.9--110.5 & 0\% \\
+\textbf{Ours, uncertainty-aware images} & 0.90--0.92 & \textbf{70.1--72.9}
+& \textbf{24--27\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
