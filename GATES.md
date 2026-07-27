@@ -437,3 +437,10 @@ frac<50 36-39%; ST 68.7-70.8 m cov 0.888-0.894 frac<50 18-22% — consistent
 with Alex's originals (55.4-57.6 / 69.2-75.1). Appendix rows and main Table
 II now sourced from these runs; "not retained" footnote removed; zero empty
 cells remain. Every number in the paper traces to a per-scenario audit npz.
+
+## 2026-07-25 — Table III completed as true 4-image ladder
+Missing rung run: zdet (evidence image alone, measured wind, 3 seeds):
+87.7-88.5 m, cov 0.898-0.903, 12% <50 m. Ladder now none 108-110 -> +z
+87.7-88.5 -> +logb 82.2-84.2 -> +fragility 74.7-76.3 -> +fit 70.1-72.9.
+Random-control row removed from table per user (kept as prose sentence,
+107.5 m). Caption notes the fragility step also draw-averages z, logb.

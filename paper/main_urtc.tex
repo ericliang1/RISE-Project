@@ -501,8 +501,9 @@ Network, no physics images & 0.90--0.91 & 107.9--110.5 & 0\% \\
 \begin{table}[t]
 \centering
 \caption{Cumulative image ablation under measured wind (DeepSets base;
-3 seeds; $\dagger$: random-image negative control, 1 seed, diagnostic).
-Each image type is added on top of the previous ones.}
+3 seeds per row). Each of the four images is added on top of the
+previous ones; the fragility step also draw-averages the first two
+images (Eq.~\ref{eq:moments}).}
 \label{tab:comp}
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{lccc}
@@ -510,9 +511,9 @@ Each image type is added on top of the previous ones.}
 Input images & Cov. & Radius (m) & $<$50\,m \\
 \midrule
 none (input-only network) & 0.90--0.91 & 107.9--110.5 & 0\% \\
-~~random control$^{\dagger}$ & 0.89 & 107.5 & 0\% \\
-+ evidence pair ($\bar z_c$, $\overline{\log b_c}$) & 0.91--0.92 &
-82.2--84.2 & 15--17\% \\
++ evidence image ($\bar z_c$) & 0.90 & 87.7--88.5 & 12\% \\
++ sensitivity image ($\overline{\log b_c}$) & 0.91--0.92 & 82.2--84.2
+& 15--17\% \\
 + wind-fragility image ($v_c$) & 0.89--0.91 & 74.7--76.3 & 20--21\% \\
 \textbf{+ fit-quality image ($\bar R_c$)} & 0.90--0.92 &
 \textbf{70.1--72.9} & \textbf{24--27\%} \\
@@ -527,8 +528,7 @@ calibration wrapper must return essentially the entire site
 (Table~\ref{tab:wind}); allowing extra measurement noise, tuned on
 held-out data, does not change this. A negative control isolates the
 cause of our gains: feeding the identical head four \emph{random} images
-of the same shape and scale ($\dagger$ in Table~\ref{tab:comp})
-matches
+of the same shape and scale (one seed, diagnostic) matches
 the no-physics baseline (107.5\,m), so the improvement traces to the
 physics content of the images, not to added capacity or spatial
 regularization. The learned recipe behaves differently, and the pattern

@@ -398,5 +398,38 @@
       "median_radius_m": 79.40035507416403,
       "frac_below_50m": 0.107
     }
+  },
+  "pw_noisy_zdet_seed1": {
+    "tag": "pw_noisy_zdet_seed1",
+    "maps": "zdet",
+    "arch": "deepsets",
+    "val_nll": 6.263989501953125,
+    "noisy": {
+      "coverage": 0.8985,
+      "median_radius_m": 87.76809857756939,
+      "frac_below_50m": 0.1155
+    }
+  },
+  "pw_noisy_zdet_seed2": {
+    "tag": "pw_noisy_zdet_seed2",
+    "maps": "zdet",
+    "arch": "deepsets",
+    "val_nll": 6.26483349609375,
+    "noisy": {
+      "coverage": 0.898,
+      "median_radius_m": 87.7127418400677,
+      "frac_below_50m": 0.1205
+    }
+  },
+  "pw_noisy_zdet_seed3": {
+    "tag": "pw_noisy_zdet_seed3",
+    "maps": "zdet",
+    "arch": "deepsets",
+    "val_nll": 6.26034423828125,
+    "noisy": {
+      "coverage": 0.903,
+      "median_radius_m": 88.48458473980875,
+      "frac_below_50m": 0.117
+    }
   }
 }

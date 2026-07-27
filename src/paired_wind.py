@@ -46,7 +46,8 @@ N_CELLS = N_GRID * N_GRID
 R_MAX = 10.0
 K_MARG = 8       # wind draws for the marginalized residual (stream 93)
 # map kinds that only exist under the measured-wind condition
-NOISY_ONLY_MAPS = ("ens", "ensr", "smear", "ensp", "full", "rand")
+NOISY_ONLY_MAPS = ("ens", "ensr", "smear", "ensp", "full", "rand",
+                   "zdet")
 
 
 def rad_m(sizes):
@@ -339,6 +340,10 @@ def make_view(cfg, dd, name_data, view, maps="det"):
         if maps == "det":
             stats = torch.tensor(
                 np.load(dd / f"ch4tu_{split}_maps_det.npz")["maps"])
+        elif maps == "zdet":
+            # evidence image alone (first det channel)
+            stats = torch.tensor(
+                np.load(dd / f"ch4tu_{split}_maps_det.npz")["maps"][:, :1])
         elif maps == "rand":
             # negative control: 4 random channels, same shape/scale class
             # as the physics images, deterministic per split+scenario
@@ -488,6 +493,7 @@ def stage_train(cfg, device, views, seed, maps="det", arch="deepsets"):
     # dual-condition audit, condition-matched calibration
     mt = {"det": "", "ens": "_ens", "ensr": "_ensr", "smear": "_smear",
           "ensp": "_ensp", "full": "_full", "rand": "_rand",
+          "zdet": "_zdet",
           None: "_nomaps"}[maps]
     at = "" if arch == "deepsets" else f"_{arch}"
     tag = f"pw_{views}{mt}{at}_seed{seed}"
@@ -525,7 +531,8 @@ def main():
     ap.add_argument("--views", choices=["clean", "noisy", "paired"],
                     default="paired")
     ap.add_argument("--maps", choices=["on", "det", "smear", "ens", "ensr",
-                                       "ensp", "full", "rand", "off"],
+                                       "ensp", "full", "rand", "zdet",
+                                       "off"],
                     default="on",
                     help="det (=on): 2ch at u_obs; smear: 2ch analytically "
                          "wind-smeared; ens: 3ch over wind draws; ensr: ens "
