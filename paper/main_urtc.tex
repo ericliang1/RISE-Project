@@ -89,12 +89,11 @@ budget.} For every candidate cell, closed-form formulas produce four
 images: the evidence for a leak at that cell, the fragility of that
 evidence across the wind sensor's stated error range, the visibility of
 such a leak to the sensor layout, and the fit quality of the best leak
-rate at that cell. A zero-initialized head (0.2\% added parameters) joins
-the images to any base network at the logits; training is ordinary
-supervised learning; split conformal prediction supplies the guarantee.
-When the error budget is set to zero, the images provably reduce to the
-classical matched-filter pair, so one recipe covers exact and measured
-wind alike.
+rate at that cell. A zero-initialized head (0.2\% added parameters)
+joins the images to any base network; training is ordinary supervised
+learning; split conformal prediction supplies the guarantee. At zero
+error budget the images provably reduce to the classical matched-filter
+pair, so one recipe covers exact and measured wind alike.
 \item \textbf{C2: A measuring stick that quantifies the method's value.}
 A methane testbed (CH4-T) whose physics is exactly solvable, so the
 exact-model reference region is computable for every scenario and any
@@ -115,7 +114,7 @@ intervals over the same 2{,}000 test scenarios.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.54\linewidth]{../figures/paper/fig_data_example.pdf}
+\includegraphics[width=0.43\linewidth]{../figures/paper/fig_data_example.pdf}
 \caption{A well-instrumented test scenario (12 masts, measured wind):
 90\% regions of the no-images baseline and of our method (conformal
 masks), with the 50\,m facility scale. Selection rule: among scenarios
@@ -141,10 +140,9 @@ optimization or sampling at minutes to hours per event \cite{newman};
 learned localizers amortize that cost into a single bounded
 computation, and our audit adds the missing
 instrument for judging how much information they extract.
-\textbf{Controlled-release testing} (METEC) evaluates continuous
-monitoring systems in the field \cite{metec}; our testbed mirrors that
-task structure with exact ground truth, complementing rather than
-replacing field validation.
+\textbf{Controlled-release testing} (METEC) evaluates such systems in
+the field \cite{metec}; our testbed mirrors that task with exact ground
+truth, complementing field validation.
 
 \begin{figure*}[t]
 \centering
@@ -256,9 +254,8 @@ tie-handling correction that we report for reuse.
 \label{sec:models}
 
 \textbf{Base learners.}
-A monitoring system must answer in seconds, on whatever sensor layout
-a site has, under the wind it actually measured, while physics inversion
-takes minutes to hours per event and requires the wind to be known. A
+A monitoring system must answer within its observation window, on
+whatever layout a site has, under the wind it actually measured. A
 network trained once on simulated scenarios answers at negligible,
 bounded cost per scenario and,
 because it learns from examples, absorbs regularities with no closed
@@ -396,9 +393,9 @@ budget for this field \cite{sbibm}) and identical symmetry augmentation.
 \textbf{Scope of the guarantee.} The conformal guarantee
 \eqref{eq:region} is marginal over exchangeable scenarios drawn from the
 calibration distribution; it does not imply 90\% coverage for every
-individual scenario, leak-rate range, sensor layout, or wind condition
-(subgroup diagnostics are summarized in Limitations). Calibration is performed
-separately for each evaluated deployment condition. The exact-model
+individual scenario, leak-rate range, sensor layout, or wind
+condition. Calibration is performed separately for each evaluated
+deployment condition. The exact-model
 reference is used only to audit region efficiency under the synthetic
 testbed assumptions and is not part of the conformal guarantee.
 
@@ -422,10 +419,9 @@ physics evidence given the layout, leak rate, and wind at hand;
 (3)~calibrate with split conformal under the deployment condition
 \eqref{eq:region}. Performance improves for a simple reason: the
 network no longer has to rediscover the evidence computation from
-finite data. It starts from exact per-cell physics and spends its
+finite data: it starts from exact per-cell physics and spends its
 capacity on the corrections that have no closed form, which is why the
-same images help every architecture and why the gains grow as the
-images carry more of the wind-error structure.
+gains grow as the images carry more of the wind-error structure.
 
 
 \section{Results}
@@ -441,14 +437,11 @@ model on the same 2{,}000 paired scenarios, the images reduce the median
 radius by 46.1\,m (paired-bootstrap 95\% CI $[43.6, 48.1]$), produce
 smaller regions in 96.4\% of cases, and place 52.4\% of regions below
 the 50\,m facility scale (Clopper--Pearson 95\% CI $[50.2, 54.6]$\%);
-radius percentiles p50/p75/p90 are 48/86/131\,m. The median case reaches
-the scale, and the upper tail marks the clearest room for future work.
+radius percentiles p50/p75/p90 are 48/86/131\,m.
 
 The fix is architecture-independent: the same images move a GNN from
-56--57\,m to 46.2--47.5\,m and a Set Transformer from 69--71\,m to
-46.2--47.3\,m, so all nine runs of three network families land inside
-a 1.5\,m band, and the gain is available to whatever architecture a
-practitioner already has. The classical score alone, calibrated with no
+56--57\,m and a Set Transformer from 69--71\,m into the same band
+(46.2--47.5\,m), nine runs of three families within 1.5\,m. The classical score alone, calibrated with no
 network, identifies where the evidence lies but not how much to trust
 it, and pays for that overconfidence with full-site regions. All
 remaining results are reported under the simulator's native condition:
@@ -500,7 +493,17 @@ none (input-only network) & 0.90--0.91 & 107.9--110.5 & 0\% \\
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.96\linewidth]{../figures/paper/fig_data_dist.pdf}
+\includegraphics[width=0.74\linewidth]{../figures/paper/fig_data_masts.pdf}
+\caption{Sensor-count ablation (measured wind, seed-1 diagnostic;
+prespecified bands of $n{=}690/635/675$ scenarios). More masts shrink
+the guaranteed regions and raise the share at the facility scale; the
+conformal guarantee remains marginal over the full distribution.}
+\label{tab:masts}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.73\linewidth]{../figures/paper/fig_data_dist.pdf}
 \caption{Region-radius distributions over all 2{,}000 test scenarios
 under measured wind. The annotated points show how the headline
 statistics coexist: 27\% of scenarios fall below the 50\,m facility
