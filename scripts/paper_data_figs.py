@@ -313,43 +313,21 @@ def fig_masts():
     zo = np.load(dd / "pw_audit_pw_noisy_ensr_seed1_noisy.npz")
     zb = np.load(dd / "pw_audit_pw_noisy_nomaps_seed1_noisy.npz")
     ro, rb = rad(zo["sizes"].astype(float)), rad(zb["sizes"].astype(float))
-    bands = [(4, 6), (7, 9), (10, 12)]
-    xs = np.arange(len(bands))
-    mb, mo, f50 = [], [], []
-    for lo, hi in bands:
-        m = (ns >= lo) & (ns <= hi)
-        mb.append(np.median(rb[m]))
-        mo.append(np.median(ro[m]))
-        f50.append((ro[m] < 50).mean() * 100)
+    counts = np.arange(4, 13)
+    mb = [np.median(rb[ns == c]) for c in counts]
+    mo = [np.median(ro[ns == c]) for c in counts]
     fig, ax = plt.subplots(figsize=(6.4, 4.0))
     ax.axhline(50, color=MUTED, lw=1.4, ls=(0, (4, 3)), zorder=2)
-    ax.annotate("50 m facility scale", xy=(0.28, 50), va="bottom",
-                ha="center", fontsize=9.6, color=MUTED)
-    ax.plot(xs, mb, color=ORANGE, lw=2.4, marker="o", ms=10, mec=SURF,
-            mew=2, zorder=3, label="no physics images")
-    ax.plot(xs, mo, color=BLUE_D, lw=2.4, marker="o", ms=10, mec=SURF,
-            mew=2, zorder=4, label="ours (full images)")
-    for k, (x, m, f) in enumerate(zip(xs, mo, f50)):
-        bb = dict(boxstyle="round,pad=0.22", fc=SURF, ec="none",
-                  alpha=0.95)
-        if k < 2:
-            ax.annotate(f"{m:.0f} m, {f:.0f}% $<$ 50 m", xy=(x, m),
-                        xytext=(x + 0.1, m - 9), fontsize=9.8,
-                        color=INK, va="top", ha="left", bbox=bb, zorder=6)
-        else:
-            ax.annotate(f"{m:.0f} m, {f:.0f}% $<$ 50 m", xy=(x, m),
-                        xytext=(x - 0.1, m - 9), fontsize=9.8,
-                        color=INK, va="top", ha="right", bbox=bb,
-                        zorder=6)
-    for x, m in zip(xs, mb):
-        ax.annotate(f"{m:.0f} m", xy=(x, m), xytext=(x + 0.07, m + 6),
-                    fontsize=9.8, color=INK2)
-    ax.set_xticks(xs)
-    ax.set_xticklabels(["4\u20136", "7\u20139", "10\u201312"],
-                       fontsize=11.5)
+    ax.annotate("50 m facility scale", xy=(4.15, 50), va="bottom",
+                ha="left", fontsize=9.6, color=MUTED)
+    ax.plot(counts, mb, color=ORANGE, lw=2.2, marker="o", ms=8,
+            mec=SURF, mew=1.6, zorder=3, label="no physics images")
+    ax.plot(counts, mo, color=BLUE_D, lw=2.2, marker="o", ms=8,
+            mec=SURF, mew=1.6, zorder=4, label="ours (full images)")
+    ax.set_xticks(counts)
     ax.set_xlabel("number of sensor masts")
     ax.set_ylabel("median 90% region radius (m)")
-    ax.set_xlim(-0.28, 2.5); ax.set_ylim(34, 155)
+    ax.set_xlim(3.6, 12.4); ax.set_ylim(38, 170)
     ax.yaxis.grid(True, color=GRID, lw=0.8); ax.set_axisbelow(True)
     despine(ax)
     ax.legend(loc="upper right", frameon=False, fontsize=10.5)
