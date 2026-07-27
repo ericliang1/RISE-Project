@@ -64,13 +64,17 @@ def sizes(f, key="sizes"):
 
 
 # ------------------------------- Fig 0: representative example (masks)
-def pick_scenario(n_masts=8):
+def pick_scenario(n_masts=8, cond="clean"):
     """Stated rule: among scenarios with exactly n_masts sensors, the one
     jointly closest (log scale) to that subgroup's median baseline and
     median method radii -- typical, not a best case."""
     d = dict(np.load(dd / "ch4t_test.npz", allow_pickle=True))
-    zb = np.load(dd / "pw_audit_pw_clean_nomaps_seed1_clean.npz")
-    zo = np.load(dd / "pw_audit_pw_clean_seed1_clean.npz")
+    if cond == "noisy":
+        zb = np.load(dd / "pw_audit_pw_noisy_nomaps_seed1_noisy.npz")
+        zo = np.load(dd / "pw_audit_pw_noisy_ensr_seed1_noisy.npz")
+    else:
+        zb = np.load(dd / "pw_audit_pw_clean_nomaps_seed1_clean.npz")
+        zo = np.load(dd / "pw_audit_pw_clean_seed1_clean.npz")
     rb, ro = rad(zb["sizes"].astype(float)), rad(zo["sizes"].astype(float))
     grp = d["n_sensors"].astype(int) == n_masts
     dist = (np.log(rb / np.median(rb[grp])) ** 2
@@ -81,9 +85,7 @@ def pick_scenario(n_masts=8):
 
 
 def fig_example():
-    i, d, zb, zo, rb, ro = pick_scenario(8)
-    ex = rad(np.load(dd / "ch4t_audit_M0.npz")["exact_sizes"]
-             .astype(float))
+    i, d, zb, zo, rb, ro = pick_scenario(8, cond="noisy")
     mb = np.unpackbits(zb["masks"][i])[:N_CELLS].reshape(64, 64)
     mo = np.unpackbits(zo["masks"][i])[:N_CELLS].reshape(64, 64)
     ns = int(d["n_sensors"][i])
@@ -108,18 +110,17 @@ def fig_example():
     from matplotlib.patches import Circle
     ax.add_patch(Circle(tx, 50, ec=MUTED, fc="none", lw=1.6,
                         ls=(0, (4, 3)), zorder=5))
-    ax.add_patch(Circle(tx, ex[i], ec=INK, fc=INK, lw=1.5, zorder=6))
     ax.scatter(sx[:, 0], sx[:, 1], s=52, c=INK, edgecolors=SURF,
                linewidths=1.6, zorder=7)
-    ax.plot(*tx, marker="+", color=SURF, ms=7, mew=1.5, zorder=8)
+    ax.plot(*tx, marker="+", color=INK, ms=9, mew=2.0, zorder=8)
     h = [plt.Line2D([], [], color=ORANGE, lw=2.2,
-                    label=f"baseline ({rb[i]:.0f} m)"),
+                    label=f"no images ({rb[i]:.0f} m)"),
          plt.Line2D([], [], color=BLUE, lw=2.2,
                     label=f"ours ({ro[i]:.0f} m)"),
          plt.Line2D([], [], color=MUTED, lw=1.6, ls=(0, (4, 3)),
                     label="50 m scale"),
-         plt.Line2D([], [], color=INK, marker="o", lw=0, ms=8,
-                    label=f"exact ref. ({ex[i]:.0f} m)"),
+         plt.Line2D([], [], color=INK, marker="+", lw=0, ms=9, mew=2,
+                    label="true source"),
          plt.Line2D([], [], color=INK, marker="o", lw=0, ms=7,
                     mec=SURF, label="masts")]
     ax.legend(handles=h, loc="upper center", bbox_to_anchor=(0.5, -0.10),

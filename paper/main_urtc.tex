@@ -116,12 +116,11 @@ intervals over the same 2{,}000 test scenarios.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.54\linewidth]{../figures/paper/fig_data_example.pdf}
-\caption{One test scenario (8 masts, exact wind): 90\% regions of
-the labels-only baseline and of our method (conformal masks), the
-exact-model reference (equal-area circle), and the 50\,m facility
-scale. Selection rule: among 8-mast scenarios, the one jointly closest
-(log scale) to that subgroup's median baseline and method radii, i.e.,
-a typical case, not a best case.}
+\caption{One test scenario (8 masts, measured wind): 90\% regions of
+the no-images baseline and of our method (conformal masks), with the
+50\,m facility scale. Selection rule: among 8-mast scenarios, the one
+jointly closest (log scale) to that subgroup's median baseline and
+method radii, i.e., a typical case, not a best case.}
 \label{fig:circles}
 \end{figure}
 
@@ -429,7 +428,8 @@ images carry more of the wind-error structure.
 
 
 \section{Results}
-\subsection{The audit: a guarantee is not yet a useful region}
+\subsection{The audit, in the laboratory limit}
+\label{sec:est}
 Both learned pipelines pass every standard calibration check (coverage
 0.89 at nominal 90\%); only the audit reveals what calibration alone
 cannot. The labels-only baseline delivers 94--98\,m where the
@@ -443,38 +443,17 @@ the 50\,m facility scale (Clopper--Pearson 95\% CI $[50.2, 54.6]$\%);
 radius percentiles p50/p75/p90 are 48/86/131\,m. The median case reaches
 the scale, and the upper tail marks the clearest room for future work.
 
-\subsection{The same fix works on every architecture}
-\label{sec:est}
-\begin{table}[t]
-\centering
-\caption{The physics images shrink guaranteed regions for every
-architecture (median radius in m; exact wind; 3 seeds per cell;
-coverage 0.88--0.92 throughout).}
-\label{tab:est}
-\begin{tabular}{lcc}
-\toprule
-Base network & Without images & With images \\
-\midrule
-DeepSets        & 94--98 & \textbf{47.1--47.7} \\
-GNN             & 56--57 & \textbf{46.2--47.5} \\
-Set Transformer & 69--71 & \textbf{46.2--47.3} \\
-\bottomrule
-\end{tabular}
-\end{table}
+The fix is architecture-independent: the same images move a GNN from
+56--57\,m to 46.2--47.5\,m and a Set Transformer from 69--71\,m to
+46.2--47.3\,m, so all nine runs of three network families land inside
+a 1.5\,m band, and the gain is available to whatever architecture a
+practitioner already has. The classical score alone, calibrated with no
+network, identifies where the evidence lies but not how much to trust
+it, and pays for that overconfidence with full-site regions. All
+remaining results are reported under the simulator's native condition:
+measured wind.
 
-Without the maps, the choice of network changes results by 40\,m; with
-them, all nine runs of three network families land inside a 1.5\,m band
-(Table~\ref{tab:est}). The gain is available to whatever architecture a
-practitioner already has, with ordinary training and near-zero added
-cost. Single-seed channel diagnostics locate the gain: under exact
-wind the evidence image alone reaches 65.0\,m, the sensitivity image
-alone 98.5\,m, and both together 47\,m, so the correlation computation
-is the operative ingredient. At the other extreme, the classical score
-alone
-identifies where the evidence lies but not how much to trust it, and
-pays for that overconfidence with full-site regions.
-
-\subsection{Measured wind: the main result}
+\subsection{Measured wind: the main results}
 \label{sec:robust}
 \begin{table}[t]
 \centering
@@ -555,7 +534,8 @@ reference is a property of the testbed's assumptions, exists only under
 known wind (the measured-wind analogue is not computable, so 70--73\,m
 is reported against the 50\,m operational scale), and the wind error
 range is taken as known from the instrument specification; quantifying
-sensitivity to a misspecified range is a natural next step. With exact wind, roughly half of individual cases still exceed
+sensitivity to a misspecified range is a natural next step. In the laboratory limit, roughly half of individual cases still
+exceed
 50\,m (p90\,$=$\,131\,m); prespecified subgroup diagnostics show no
 collapsing group, with mild under-coverage for sparse-mast scenarios as
 the one consistent pattern (coverage 0.865--0.867 at 4--6 masts,

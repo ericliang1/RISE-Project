@@ -444,3 +444,11 @@ Missing rung run: zdet (evidence image alone, measured wind, 3 seeds):
 87.7-88.5 -> +logb 82.2-84.2 -> +fragility 74.7-76.3 -> +fit 70.1-72.9.
 Random-control row removed from table per user (kept as prose sentence,
 107.5 m). Caption notes the fragility step also draw-averages z, logb.
+
+## 2026-07-25 — Focused single-condition structure (user decision)
+Paper now lives natively under measured wind: exact-wind material condensed
+to one "audit, in the laboratory limit" prose subsection (reference 6.2-7.0,
+labels-only 94-98, ours 47, arch band as a sentence; Table I env removed);
+results tables = measured-wind headline + 4-image ladder only; example
+figure switched to measured wind (8-mast typical case: no-images 104 m vs
+ours 62 m). Archival appendix retains all exact-wind tables.
