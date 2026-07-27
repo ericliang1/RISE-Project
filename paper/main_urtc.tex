@@ -163,19 +163,16 @@ $\varepsilon{=}0$ the images reduce to the classical pair
 \end{figure*}
 
 \section{Methodology}
-Our methodology has three layers, and each exists for a reason. A
-simulation system makes the truth knowable, so that every claim in this
-paper can be measured rather than assumed. Machine-learning localizers
-make inference fast and generalizable, answering within any
-observation window on
-whatever sensor layout a site has. Between the two we insert a physics
-input processor, which computes the physical relationships the network
-would otherwise have to rediscover from data and presents them as
-inputs. Physics contributes exact understanding; learning contributes
-calibration and generalization; the sections below construct each layer
-in turn and state why it is built the way it is.
+Our methodology has two parts. A \emph{physics simulator} makes the
+truth knowable, so that every claim in this paper can be measured
+rather than assumed, and records only the measured wind, so that the
+evaluation matches deployment. The \emph{physics models and the
+input-image method} then turn that setting into guaranteed regions:
+base networks supply calibration and generalization, closed-form
+physics images supply the evidence they cannot efficiently rediscover,
+and split conformal prediction certifies the result.
 
-\subsection{The simulation system: making the truth knowable (C2)}
+\subsection{The physics simulator (C2)}
 \label{sec:forward}
 \textbf{CH4-T} places one source of unknown grid cell
 $c^\ast \in \{1,\dots,64^2\}$ and rate $q$
@@ -255,7 +252,10 @@ exact map to reproduce its own guarantee before any experiment
 proceeds; this check caught two real implementation bugs, including a
 tie-handling correction that we report for reuse.
 
-\subsection{Base learners: why machine learning, and which networks}
+\subsection{The physics models and the input-image method (C1)}
+\label{sec:models}
+
+\textbf{Base learners.}
 A monitoring system must answer in seconds, on whatever sensor layout
 a site has, under the wind it actually measured, while physics inversion
 takes minutes to hours per event and requires the wind to be known. A
@@ -271,9 +271,7 @@ masts), and a Set Transformer (attention), precisely so that the
 method's value is demonstrated independently of any one architecture
 choice.
 
-\subsection{The physics input processor (C1)}
-\label{sec:maps}
-The plume model \eqref{eq:plume}--\eqref{eq:readings} fixes an exact
+\textbf{The physics input images.}\label{sec:maps} The plume model \eqref{eq:plume}--\eqref{eq:readings} fixes an exact
 relationship between any hypothesized leak and the readings it should
 produce, so testing a hypothesis is a correlation computation. The
 controlled comparisons of \S\ref{sec:est} show that networks trained
@@ -348,9 +346,8 @@ carry exactly the information of the classical pair $(z_c, \log b_c)$:
 one recipe covers both settings, and the exact-wind results below are its
 zero-budget instantiation.
 
-\subsection{Training, the guarantee, and the division of labor}
-\label{sec:conf}
-The input processor attaches to any base learner $f_\theta$ over the
+\textbf{Training and the guarantee.}\label{sec:conf} The input
+processor attaches to any base learner $f_\theta$ over the
 token set $x$ through a three-layer convolutional head $h_\phi$
 ($\sim$10k parameters, 0.2\% of the model) that reads the map stack
 $M(x)$, joined at the output logits:
