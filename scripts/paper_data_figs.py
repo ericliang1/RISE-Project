@@ -64,26 +64,26 @@ def sizes(f, key="sizes"):
 
 
 # ------------------------------- Fig 0: representative example (masks)
-def fig_example():
-    """Exact-wind example chosen by a stated rule: the scenario jointly
-    closest (log scale) to the median baseline radius AND the median
-    method radius -- typical difficulty with typical improvement, not a
-    best case.  Regions from the saved conformal masks; exact-model
-    reference drawn as its equal-area circle."""
+def pick_scenario(n_masts=8):
+    """Stated rule: among scenarios with exactly n_masts sensors, the one
+    jointly closest (log scale) to that subgroup's median baseline and
+    median method radii -- typical, not a best case."""
     d = dict(np.load(dd / "ch4t_test.npz", allow_pickle=True))
     zb = np.load(dd / "pw_audit_pw_clean_nomaps_seed1_clean.npz")
     zo = np.load(dd / "pw_audit_pw_clean_seed1_clean.npz")
     rb, ro = rad(zb["sizes"].astype(float)), rad(zo["sizes"].astype(float))
-    ex = rad(np.load(dd / "ch4t_audit_M0.npz")["exact_sizes"]
-             .astype(float))
-    # typical case within the well-instrumented subgroup (10-12 masts):
-    # jointly closest (log scale) to that subgroup's median baseline and
-    # median method radii
-    grp = d["n_sensors"].astype(int) >= 10
+    grp = d["n_sensors"].astype(int) == n_masts
     dist = (np.log(rb / np.median(rb[grp])) ** 2
             + np.log(ro / np.median(ro[grp])) ** 2)
     dist[~grp] = np.inf
     i = int(np.argmin(dist))
+    return i, d, zb, zo, rb, ro
+
+
+def fig_example():
+    i, d, zb, zo, rb, ro = pick_scenario(8)
+    ex = rad(np.load(dd / "ch4t_audit_M0.npz")["exact_sizes"]
+             .astype(float))
     mb = np.unpackbits(zb["masks"][i])[:N_CELLS].reshape(64, 64)
     mo = np.unpackbits(zo["masks"][i])[:N_CELLS].reshape(64, 64)
     ns = int(d["n_sensors"][i])
@@ -91,7 +91,7 @@ def fig_example():
     tc = int(d["true_cell"][i])
     tx = ((tc % 64 + 0.5) / 64 * 500, (tc // 64 + 0.5) / 64 * 500)
 
-    fig, ax = plt.subplots(figsize=(6.8, 6.4))
+    fig, ax = plt.subplots(figsize=(6.6, 6.9))
     ext = [0, 500, 0, 500]
     ax.imshow(np.where(mb, 1.0, np.nan), origin="lower", extent=ext,
               cmap=LinearSegmentedColormap.from_list("ob", ["#fbe0d5",
@@ -113,72 +113,192 @@ def fig_example():
                linewidths=1.6, zorder=7)
     ax.plot(*tx, marker="+", color=SURF, ms=7, mew=1.5, zorder=8)
     h = [plt.Line2D([], [], color=ORANGE, lw=2.2,
-                    label=f"baseline region ({rb[i]:.0f} m)"),
+                    label=f"baseline ({rb[i]:.0f} m)"),
          plt.Line2D([], [], color=BLUE, lw=2.2,
-                    label=f"our region ({ro[i]:.0f} m)"),
+                    label=f"ours ({ro[i]:.0f} m)"),
          plt.Line2D([], [], color=MUTED, lw=1.6, ls=(0, (4, 3)),
-                    label="50 m facility scale"),
+                    label="50 m scale"),
          plt.Line2D([], [], color=INK, marker="o", lw=0, ms=8,
-                    label=f"exact-model reference ({ex[i]:.0f} m)"),
+                    label=f"exact ref. ({ex[i]:.0f} m)"),
          plt.Line2D([], [], color=INK, marker="o", lw=0, ms=7,
-                    mec=SURF, label="sensor masts")]
-    ax.legend(handles=h, loc="upper left", frameon=True, fontsize=10.5,
-              facecolor=SURF, edgecolor=BASE)
+                    mec=SURF, label="masts")]
+    ax.legend(handles=h, loc="upper center", bbox_to_anchor=(0.5, -0.10),
+              ncol=3, frameon=False, fontsize=10.5,
+              handletextpad=0.5, columnspacing=1.1)
     ax.set_xlim(0, 500); ax.set_ylim(0, 500); ax.set_aspect("equal")
     ax.set_xticks([0, 250, 500]); ax.set_yticks([0, 250, 500])
     ax.set_xlabel("site coordinate (m)")
     despine(ax)
-    ax.set_title("Typical well-instrumented scenario "
-                 f"({int(d['n_sensors'][i])} masts): 90% regions, "
-                 "exact wind", fontsize=13,
-                 fontweight="bold", loc="left", pad=12)
     save(fig, "fig_data_example")
 
 
 # ------------------------------ Fig 0b: full-width pipeline (paper size)
 def fig_pipeline():
-    from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
-    fig, ax = plt.subplots(figsize=(12.0, 2.05))
-    ax.set_xlim(0, 100); ax.set_ylim(0, 20); ax.axis("off")
+    """Visual pipeline: the SAME scenario flows left to right -- raw site
+    data, the four computed physics images, the network join, and the
+    resulting guaranteed region.  Minimal text."""
+    from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch
+    i, d, zb, zo, rb, ro = pick_scenario(8)
+    ns = int(d["n_sensors"][i])
+    sx = d["sensors"][i, :ns]
+    tc = int(d["true_cell"][i])
+    txn = ((tc % 64 + 0.5) / 64, (tc // 64 + 0.5) / 64)
+    um = d["u_mean"][i] / (np.linalg.norm(d["u_mean"][i]) + 1e-9)
+    ens = np.load(dd / "ch4tu_test_maps_ens.npz")["maps"][i]
+    rm = np.load(dd / "pw_test_resid_marg.npz")["noisy"][i].astype(float)
+    zon = np.load(dd / "pw_audit_pw_noisy_ensr_seed1_noisy.npz")
+    mo = np.unpackbits(zon["masks"][i])[:N_CELLS].reshape(64, 64)
+    CMB = LinearSegmentedColormap.from_list("b", ["#fcfcfb", "#cde2fb",
+        "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#104281"])
+    CMO = LinearSegmentedColormap.from_list("o", ["#fcfcfb", "#fbe0d5",
+        "#f6b899", "#eb6834", "#a03c14"])
 
-    def box(x, w, title, lines, accent=False):
-        ax.add_patch(FancyBboxPatch(
-            (x, 2.0), w, 16.0,
+    fig = plt.figure(figsize=(12.4, 2.9))
+    ax = fig.add_axes([0, 0, 1, 1]); ax.set_xlim(0, 100)
+    ax.set_ylim(0, 24); ax.axis("off")
+
+    def frame(x, w, title, accent=False):
+        ax.add_patch(FancyBboxPatch((x, 1.6), w, 20.2,
             boxstyle="round,pad=0.5,rounding_size=1.0",
             fc="#eef4fd" if accent else "#f9f9f7",
             ec=BLUE if accent else BASE, lw=1.4))
-        ax.text(x + w / 2, 15.0, title, ha="center", fontsize=10.2,
+        ax.text(x + w / 2, 20.0, title, ha="center", fontsize=10.4,
                 color=INK, fontweight="bold")
-        for j, s in enumerate(lines):
-            ax.text(x + w / 2, 11.3 - 3.4 * j, s, ha="center",
-                    fontsize=8.6, color=INK2)
 
-    def arrow(x0, x1):
-        ax.add_patch(FancyArrowPatch((x0, 10), (x1, 10),
+    def arrow(x0, x1, lab=None):
+        ax.add_patch(FancyArrowPatch((x0, 11.5), (x1, 11.5),
                      arrowstyle="-|>", mutation_scale=13, color=INK2,
-                     lw=1.5))
+                     lw=1.6))
+        if lab:
+            ax.text((x0 + x1) / 2, 14.0, lab, ha="center", fontsize=7.8,
+                    color=MUTED)
 
-    box(0.5, 13.5, "sensor data",
-        ["readings $y$", "wind $\\hat w$,",
-         "budget $\\varepsilon$"])
-    arrow(14.3, 17.2)
-    box(17.6, 28.5, "physics input processor",
-        ["4 images per cell (Eqs. 6–9):",
-         "evidence $\\cdot$ variability $\\cdot$ sensitivity "
-         "$\\cdot$ fit quality",
-         "30 ms; $\\varepsilon{=}0 \\Rightarrow$ classical pair "
-         "(Eq. 10)"], accent=True)
-    arrow(46.4, 49.5)
-    box(49.9, 23.5, "network + zero-init head",
-        ["set network $f_\\theta$ + conv $h_\\phi$",
-         "joined at the logits (Eq. 11)",
-         "0.2% params, label training"])
-    arrow(73.7, 76.8)
-    box(77.2, 22.3, "guaranteed region",
-        ["split conformal (Eq. 14)",
-         "90% coverage, calibrated",
-         "under deployment wind"])
+    def inset(x, y, w, h):
+        # convert data coords (100 x 24) to figure fraction
+        return fig.add_axes([x / 100, y / 24, w / 100, h / 24])
+
+    # --- box 1: the site ---
+    frame(1.0, 14.5, "sensor data")
+    a1 = inset(3.2, 4.3, 10.0, 12.6)
+    a1.scatter(sx[:, 0], sx[:, 1], s=16, c=INK, edgecolors=SURF,
+               linewidths=0.8, zorder=4)
+    a1.annotate("", xy=(0.72 + um[0] * 0.22, 0.9 + um[1] * 0.04),
+                xytext=(0.72 - um[0] * 0.22, 0.9 - um[1] * 0.04),
+                arrowprops=dict(arrowstyle="-|>", color=MUTED, lw=1.4))
+    a1.set_xlim(0, 1); a1.set_ylim(0, 1)
+    a1.set_xticks([]); a1.set_yticks([])
+    for s in a1.spines.values():
+        s.set_color(BASE)
+    ax.text(8.25, 2.9, "readings $y$ \u00b7 wind $\\hat w$ \u00b7 "
+            "budget $\\varepsilon$", ha="center", fontsize=8.0,
+            color=INK2)
+
+    # --- box 2: the four physics images ---
+    frame(18.6, 40.0, "physics input processor", accent=True)
+    panels = [("evidence", ens[0].reshape(64, 64), CMB),
+              ("fragility", ens[1].reshape(64, 64), CMO),
+              ("sensitivity", ens[2].reshape(64, 64), CMB),
+              ("fit quality", (10 - rm).reshape(64, 64), CMB)]
+    for k, (lab, img, cm) in enumerate(panels):
+        akk = inset(20.4 + 9.35 * k, 5.6, 8.1, 12.0)
+        lo, hi = np.percentile(img, [2, 99])
+        akk.imshow(np.clip(img, lo, hi), origin="lower", cmap=cm,
+                   interpolation="nearest")
+        akk.set_xticks([]); akk.set_yticks([])
+        for s in akk.spines.values():
+            s.set_color(BASE)
+        ax.text(20.4 + 9.35 * k + 4.05, 3.6, lab, ha="center",
+                fontsize=8.2, color=INK2)
+    ax.text(38.6, 1.9, "closed form, one image set per scenario",
+            ha="center", fontsize=7.6, color=MUTED)
+
+    # --- box 3: network join ---
+    frame(62.7, 15.5, "network + head")
+    for k in range(3):
+        ax.add_patch(FancyBboxPatch((65.5 + k * 1.1, 8.2 - k * 1.1),
+            6.5, 6.5, boxstyle="round,pad=0.3,rounding_size=0.6",
+            fc="#ffffff", ec=BASE, lw=1.1, zorder=3 + k))
+    ax.text(69.7, 10.0, "$f_\\theta$", ha="center", fontsize=11,
+            color=INK, zorder=8)
+    ax.text(70.5, 5.0, "$+\\;h_\\phi$ (0.2%)", ha="center",
+            fontsize=8.4, color=INK2)
+    ax.text(70.45, 2.6, "label training only", ha="center", fontsize=7.6,
+            color=MUTED)
+
+    # --- box 4: guaranteed region ---
+    frame(81.4, 17.6, "90% region")
+    a4 = inset(84.4, 4.3, 10.4, 12.6)
+    a4.imshow(np.where(mo, 1.0, np.nan), origin="lower",
+              cmap=LinearSegmentedColormap.from_list("bb", ["#9ec5f4",
+                                                            "#9ec5f4"]),
+              interpolation="nearest", extent=[0, 1, 0, 1])
+    a4.contour(mo.astype(float), levels=[0.5], colors=[BLUE],
+               linewidths=1.6, extent=[0, 1, 0, 1])
+    a4.scatter(sx[:, 0], sx[:, 1], s=12, c=INK, edgecolors=SURF,
+               linewidths=0.7, zorder=4)
+    a4.add_patch(Circle(txn, 0.028, fc="none", ec=INK, lw=1.3, zorder=5))
+    a4.set_xlim(0, 1); a4.set_ylim(0, 1)
+    a4.set_xticks([]); a4.set_yticks([])
+    for s in a4.spines.values():
+        s.set_color(BASE)
+    ax.text(90.2, 2.9, "guaranteed 90% coverage", ha="center",
+            fontsize=8.0, color=INK2)
+
+    arrow(15.9, 18.2)
+    arrow(59.1, 62.3)
+    arrow(78.6, 81.0, )
     save(fig, "fig_pipeline")
+
+
+# ------------------------- Fig 1b: grouped method comparison (main text)
+def fig_compare():
+    rows = [  # label, lo, hi, color, note, group
+        ("exact-model reference", 6.2, 7.0, INK, "oracle", 0),
+        ("baseline network", 94, 98, ORANGE, "0% $<$ 50 m", 0),
+        ("ours", 46.2, 47.7, BLUE, "52–54% $<$ 50 m,\n9 runs, 3 architectures", 0),
+        ("direct physics inversion", 282, 282, AQUA, "", 1),
+        ("baseline network", 107.9, 110.5, ORANGE, "0% $<$ 50 m", 1),
+        ("ours (full images)", 70.1, 72.9, BLUE_D, "24–27% $<$ 50 m", 1),
+    ]
+    fig, ax = plt.subplots(figsize=(8.6, 3.9))
+    ys = []
+    y = 0
+    for k, (lab, lo, hi, c, note, grp) in enumerate(rows):
+        if k in (0, 3):
+            y -= 0.75
+            ax.text(4.3, y + 0.62,
+                    ["EXACT WIND", "MEASURED WIND (10\u00b0/10% error)"][grp],
+                    fontsize=10, color=INK, fontweight="bold", va="center")
+        ys.append(y)
+        mid = np.sqrt(lo * hi)
+        ax.plot([lo, hi], [y, y], color=c, lw=6, solid_capstyle="round",
+                zorder=3)
+        ax.plot(mid, y, "o", color=c, ms=10, mec=SURF, mew=2, zorder=4)
+        txt = f"{lo:.0f}–{hi:.0f} m" if hi > lo + 0.5 else \
+            (f"{lo:.0f} m (full site)" if lo > 200 else f"{lo:.1f}–{hi:.1f} m")
+        ax.annotate(f"{txt}   {note}".replace("\\n", "\n"),
+                    xy=(hi * 1.09, y), va="center", fontsize=9.6,
+                    color=INK2, linespacing=1.15)
+        ax.annotate(lab, xy=(lo / 1.09, y), va="center", ha="right",
+                    fontsize=10.6, color=INK)
+        y -= 1
+    ax.axvline(50, color=MUTED, lw=1.4, ls=(0, (4, 3)), zorder=2)
+    ax.annotate("50 m facility scale", xy=(50, y - 0.05), ha="center",
+                fontsize=9.4, color=MUTED,
+                bbox=dict(boxstyle="round,pad=0.2", fc=SURF, ec="none"))
+    ax.set_xscale("log")
+    ax.set_xlim(1.55, 1000)
+    ax.set_ylim(y - 0.45, 0.75)
+    ax.set_xticks([5, 10, 20, 50, 100, 200, 400])
+    ax.set_xticklabels(["5", "10", "20", "50", "100", "200", "400"])
+    ax.set_yticks([])
+    ax.set_xlabel("median 90% region radius (m), log scale; "
+                  "bars span 3 training seeds")
+    ax.xaxis.grid(True, color=GRID, lw=0.8)
+    ax.set_axisbelow(True)
+    for s in ("top", "right", "left"):
+        ax.spines[s].set_visible(False)
+    save(fig, "fig_data_compare")
 
 
 # --------------------------------------------- Fig 1: radius distributions

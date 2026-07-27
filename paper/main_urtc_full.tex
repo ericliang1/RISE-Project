@@ -54,11 +54,10 @@ years and fades from the atmosphere within about a decade, so stopping
 large leaks quickly is one of the highest-leverage climate actions
 available today. A large share of oil-and-gas methane comes from a small
 number of large point sources, known as super-emitters and defined by the
-U.S. EPA as events of 100\,kg\,h$^{-1}$ or more \cite{epa}. Detection
-technology has advanced rapidly; UNEP's satellite alert system issued over
-a thousand notifications in its first two years \cite{unep}. The
-bottleneck is what happens next: connecting an alert to a specific place
-that a crew can inspect. EPA's Super-Emitter Program (implementation
+U.S. EPA as events of 100\,kg\,h$^{-1}$ or more \cite{epa}. Detection has advanced
+rapidly: UNEP's satellite system issued over a thousand alerts in two
+years \cite{unep}. The bottleneck is what happens next: connecting an
+alert to a specific place that a crew can inspect. EPA's Super-Emitter Program (implementation
 extended to January 2027) asks notifications to identify any facility
 within \textbf{50\,m} of the estimated leak location \cite{epa}, and the
 EU imposes analogous source-level duties \cite{eu}. We therefore adopt
@@ -114,27 +113,25 @@ intervals over the same 2{,}000 test scenarios.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.95\textwidth]{../figures/paper/fig_pipeline.pdf}
-\caption{The pipeline. The physics input processor turns raw sensor
-data and the wind sensor's stated error budget into four per-cell
-images (Eqs.~\ref{eq:zmap}--\ref{eq:resid}), which any set network
-reads through a small zero-initialized head joined at the logits
-(Eq.~\ref{eq:model}); split conformal calibration certifies the 90\%
-region under the deployment wind condition (Eq.~\ref{eq:region}). At
-$\varepsilon{=}0$ the images provably reduce to the classical
-matched-filter pair (Eq.~\ref{eq:reduction}).}
+\caption{One scenario flowing through the pipeline: sensor data
+$\to$ the four computed physics images
+(Eqs.~\ref{eq:zmap}--\ref{eq:resid}) $\to$ any set network with the
+zero-initialized head (Eq.~\ref{eq:model}) $\to$ the guaranteed 90\%
+region (Eq.~\ref{eq:region}), calibrated under the deployment wind. At
+$\varepsilon{=}0$ the images reduce to the classical pair
+(Eq.~\ref{eq:reduction}).}
 \label{fig:pipeline}
 \end{figure*}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.7\linewidth]{../figures/paper/fig_data_example.pdf}
-\caption{Typical well-instrumented scenario: 90\% regions of the
-labels-only baseline and of our method (conformal masks), the
-exact-model reference (equal-area circle), the sensor masts, and the
-50\,m facility scale. Selection rule: within the 10--12-mast subgroup,
-the scenario jointly closest (log scale) to that subgroup's median
-baseline and median method radii, i.e., typical for well-instrumented
-sites, not a best case.}
+\includegraphics[width=0.58\linewidth]{../figures/paper/fig_data_example.pdf}
+\caption{One test scenario (8 masts, exact wind): 90\% regions of
+the labels-only baseline and of our method (conformal masks), the
+exact-model reference (equal-area circle), and the 50\,m facility
+scale. Selection rule: among 8-mast scenarios, the one jointly closest
+(log scale) to that subgroup's median baseline and method radii, i.e.,
+a typical case, not a best case.}
 \label{fig:circles}
 \end{figure}
 
@@ -529,12 +526,12 @@ $108{\to}71$\,m, the value of physics in the inputs at this setting.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.93\linewidth]{../figures/paper/fig_data_ecdf.pdf}
-\caption{Region-radius distributions over all 2{,}000 test scenarios
-(dashed: exact wind; solid: measured wind). The curves give medians,
-tails, and the fraction below the 50\,m line in one view; our
-measured-wind distribution dominates the baseline's exact-wind
-distribution over most of its range.}
+\includegraphics[width=0.9\linewidth]{../figures/paper/fig_data_compare.pdf}
+\caption{The study in one view: median 90\% region radius by method
+and wind condition (log scale; bars span 3 training seeds; fractions
+below the 50\,m facility scale annotated). Physics images halve the
+exact-wind regions; under measured wind, direct inversion returns the
+full site while the learned recipe holds 70--73\,m.}
 \label{fig:ladder}
 \end{figure}
 
