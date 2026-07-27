@@ -414,11 +414,22 @@ histories and learns how much to trust each cell's evidence, knowledge
 with no closed form; conformal calibration \eqref{eq:region} certifies
 the result.
 
-\textbf{Why not invert the physics directly?} On this testbed one
-can; that is our exact-model reference \eqref{eq:posterior}. Deployed
-dispersion models have no exact solution, inversion takes minutes to
-hours per event \cite{newman}, and \S\ref{sec:robust} shows the
-evaluated inversion baselines are uninformative under measured wind.
+\textbf{The pipeline, end to end.} For each scenario:
+(1)~from the measured wind and its stated error budget, draw $K$
+plausible winds and compute the four images
+\eqref{eq:zmap}--\eqref{eq:resid}, closed-form summaries of what the
+physics says about every candidate cell; (2)~feed the images, alongside
+the raw sensor tokens, to the base network through the zero-initialized
+head \eqref{eq:model}, so training starts from the unmodified baseline
+and the network learns from labels alone how much to trust each cell's
+physics evidence given the layout, leak rate, and wind at hand;
+(3)~calibrate with split conformal under the deployment condition
+\eqref{eq:region}. Performance improves for a simple reason: the
+network no longer has to rediscover the evidence computation from
+finite data. It starts from exact per-cell physics and spends its
+capacity on the corrections that have no closed form, which is why the
+same images help every architecture and why the gains grow as the
+images carry more of the wind-error structure.
 
 
 \section{Results}
