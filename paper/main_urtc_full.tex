@@ -27,7 +27,7 @@ method is a set of \emph{physics input images}: for every cell of a site
 map, closed-form formulas score how strongly the sensor readings point to
 a leak at that cell, how visible such a leak would be to the sensor
 layout, and how well the best-fitting leak rate at that cell explains the
-readings. Computed in milliseconds, these images are supplied to a
+readings. Computed in closed form, these images are supplied to a
 standard neural network as additional input channels through a small
 zero-initialized head (0.2\% added parameters), trained with ordinary
 labels, and calibrated with split conformal prediction. When the wind is
@@ -155,7 +155,8 @@ measured-wind design addresses exactly that setting by building the wind
 sensor's declared error range into the network's inputs. Our maps are hand-derived statistics, complementing learned summaries.
 \textbf{Source-term estimation} inverts dispersion physics with
 optimization or sampling at minutes to hours per event \cite{newman};
-learned localizers answer in milliseconds, and our audit adds the missing
+learned localizers amortize that cost into a single bounded
+computation, and our audit adds the missing
 instrument for judging how much information they extract.
 \textbf{Controlled-release testing} (METEC) evaluates continuous
 monitoring systems in the field \cite{metec}; our testbed mirrors that
@@ -166,7 +167,8 @@ replacing field validation.
 Our methodology has three layers, and each exists for a reason. A
 simulation system makes the truth knowable, so that every claim in this
 paper can be measured rather than assumed. Machine-learning localizers
-make inference fast and generalizable, answering in milliseconds on
+make inference fast and generalizable, answering within any
+observation window on
 whatever sensor layout a site has. Between the two we insert a physics
 input processor, which computes the physical relationships the network
 would otherwise have to rediscover from data and presents them as
@@ -258,7 +260,8 @@ tie-handling correction that we report for reuse.
 A monitoring system must answer in seconds, on whatever sensor layout
 a site has, under the wind it actually measured, while physics inversion
 takes minutes to hours per event and requires the wind to be known. A
-network trained once on simulated scenarios answers in milliseconds and,
+network trained once on simulated scenarios answers at negligible,
+bounded cost per scenario and,
 because it learns from examples, absorbs regularities with no closed
 form, such as how anemometer error distorts the evidence. The readings form a \emph{set} of tokens (mast
 position, time, concentration, wind step) whose size varies from site to
@@ -322,13 +325,16 @@ R_c^{(k)} \;=\; \rho \;-\; 2\hat q_c a_c^{(k)} \;+\; \hat q_c^2 b_c^{(k)},
 normalized per scenario (shifted to minimum zero, scaled by the median,
 clipped) so that all leak rates share one scale. Every image is
 closed-form linear algebra computed from the network's own inputs.
-Measured at batch size one over test scenarios after warm-up,
-transfers included: on an NVIDIA L40S the pipeline takes 30.4\,ms
-median end to end (preprocessing 29.6, forward pass 0.8); on a single
-commodity CPU process it takes 0.49\,s median (0.95\,s p95). Since one
-scenario consumes a 30-minute observation window, even CPU-only
-deployment leaves more than three orders of magnitude of headroom, and
-no site GPU is required. We verified \eqref{eq:resid} against direct
+The full pipeline is a bounded, non-iterative computation whose cost
+is countable from the formulas: the images require
+$K \cdot |\mathcal{C}| \cdot S \cdot T$ closed-form plume evaluations
+plus small inner products, on the order of $10^8$ floating-point
+operations per scenario at the tested configuration, and inference is
+one forward pass of a 4.9M-parameter network. One scenario consumes a
+30-minute observation window, so this workload sits orders of magnitude
+below the per-second throughput of any commodity processor: deployment
+requires neither a GPU nor per-event optimization, in contrast to
+sampling-based inversion at minutes to hours per event \cite{newman}. We verified \eqref{eq:resid} against direct
 reconstruction to relative error $10^{-7}$.
 
 \textbf{Zero-budget reduction.} With $\varepsilon = 0$ there is a single
@@ -555,15 +561,15 @@ Supplying one classical computation as input images brought three
 network families to 46--48\,m at the 50\,m facility-association scale,
 and the same recipe, carrying the wind sensor's stated error range in
 its inputs, retained its guarantee at 70--73\,m at the evaluated
-anemometer-error setting, at 30\,ms per scenario with 0.2\% added
-parameters.
+anemometer-error setting, at a bounded, non-iterative computational
+cost with 0.2\% added parameters.
 
 The research impact is a transferable evidence standard: exactly
 solvable testbeds as measuring instruments for learned inference,
 self-checking calibration gates, and one-change-at-a-time controls,
 applicable wherever guaranteed regions are produced. The social impact
-is practical: regions small enough to act on, produced in about 30\,ms
-from inexpensive hardware, with stated guarantees and the wind sensor's
+is practical: regions small enough to act on, produced well within
+each observation window on commodity hardware, with stated guarantees and the wind sensor's
 imperfection budgeted honestly. This provides a controlled step toward
 converting methane detections into calibrated inspection regions.
 
@@ -703,7 +709,7 @@ Leak rate & log-uniform 10--500\,kg\,h$^{-1}$ & Residual normalization & min-shi
 Wind & speed log-unif.\ 1--8\,m\,s$^{-1}$; AR(1) $\rho{=}0.7$ & Parameters & 4.88\,M total; head 10{,}721 (0.22\%) \\
 Meander & 20--40$^\circ$ dir., 10--30\% speed & Seeds & fixed data root; training 1--3; fixed score seed \\
 Stability & PG classes A--F, uniform & Hardware & NVIDIA L40S \\
-Wind error & $10^\circ$ dir., 10\% speed, per step & Timing (batch 1) & GPU 30.4\,ms med; CPU 0.49\,s med \\
+Wind error & $10^\circ$ dir., 10\% speed, per step & Timing (measured, our hw) & GPU 30.4\,ms; CPU 0.49\,s med \\
 \bottomrule
 \end{tabular}
 \end{table}
