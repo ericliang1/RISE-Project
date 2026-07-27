@@ -7,6 +7,10 @@
 \usepackage{xcolor}
 \usepackage{hyperref}
 
+% ---- figure placeholder box ----
+\newcommand{\figplaceholder}[2]{%
+\fbox{\parbox[c][#1][c]{0.95\linewidth}{\centering\small\textit{#2}}}}
+
 \begin{document}
 
 \title{Physics-Guided Calibrated Localization\\ of Methane Sources}
@@ -112,7 +116,10 @@ intervals over the same 2{,}000 test scenarios.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.95\textwidth]{../figures/paper/fig_pipeline.pdf}
+\figplaceholder{3.2cm}{Pipeline figure placeholder: one scenario flowing
+left to right -- site sketch (masts, wind) $\rightarrow$ the four
+computed physics images $\rightarrow$ set network + zero-initialized
+head $\rightarrow$ the guaranteed 90\% region.}
 \caption{One scenario flowing through the pipeline: sensor data
 $\to$ the four computed physics images
 (Eqs.~\ref{eq:zmap}--\ref{eq:resid}) $\to$ any set network with the
@@ -516,17 +523,6 @@ training gives the network thousands of examples from which to learn how
 the error behaves and how much to trust each cell's evidence. In summary: $94{\to}47$\,m from supplying a missing
 computation; $47{\to}71$\,m, the measured cost of imperfect wind;
 $108{\to}71$\,m, the value of physics in the inputs at this setting.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.9\linewidth]{../figures/paper/fig_data_compare.pdf}
-\caption{The study in one view: median 90\% region radius by method
-and wind condition (log scale; bars span 3 training seeds; fractions
-below the 50\,m facility scale annotated). Physics images halve the
-exact-wind regions; under measured wind, direct inversion returns the
-full site while the learned recipe holds 70--73\,m.}
-\label{fig:ladder}
-\end{figure}
 
 \section{Limitations}
 CH4-T is a measuring instrument, not a deployment: single steady
