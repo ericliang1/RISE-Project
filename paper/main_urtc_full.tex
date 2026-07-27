@@ -113,22 +113,6 @@ from one shared, verified simulator with identical splits and
 calibration harness, and headline comparisons carry paired-bootstrap
 intervals over the same 2{,}000 test scenarios.
 
-\begin{figure*}[t]
-\centering
-\figplaceholder{3.2cm}{Pipeline figure placeholder: one scenario flowing
-left to right -- site sketch (masts, wind) $\rightarrow$ the four
-computed physics images $\rightarrow$ set network + zero-initialized
-head $\rightarrow$ the guaranteed 90\% region.}
-\caption{One scenario flowing through the pipeline: sensor data
-$\to$ the four computed physics images
-(Eqs.~\ref{eq:zmap}--\ref{eq:resid}) $\to$ any set network with the
-zero-initialized head (Eq.~\ref{eq:model}) $\to$ the guaranteed 90\%
-region (Eq.~\ref{eq:region}), calibrated under the deployment wind. At
-$\varepsilon{=}0$ the images reduce to the classical pair
-(Eq.~\ref{eq:reduction}).}
-\label{fig:pipeline}
-\end{figure*}
-
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.54\linewidth]{../figures/paper/fig_data_example.pdf}
@@ -161,6 +145,22 @@ instrument for judging how much information they extract.
 monitoring systems in the field \cite{metec}; our testbed mirrors that
 task structure with exact ground truth, complementing rather than
 replacing field validation.
+
+\begin{figure*}[t]
+\centering
+\figplaceholder{3.2cm}{Pipeline figure placeholder: one scenario flowing
+left to right -- site sketch (masts, wind) $\rightarrow$ the four
+computed physics images $\rightarrow$ set network + zero-initialized
+head $\rightarrow$ the guaranteed 90\% region.}
+\caption{One scenario flowing through the pipeline: sensor data
+$\to$ the four computed physics images
+(Eqs.~\ref{eq:zmap}--\ref{eq:resid}) $\to$ any set network with the
+zero-initialized head (Eq.~\ref{eq:model}) $\to$ the guaranteed 90\%
+region (Eq.~\ref{eq:region}), calibrated under the deployment wind. At
+$\varepsilon{=}0$ the images reduce to the classical pair
+(Eq.~\ref{eq:reduction}).}
+\label{fig:pipeline}
+\end{figure*}
 
 \section{Methodology}
 Our methodology has three layers, and each exists for a reason. A
