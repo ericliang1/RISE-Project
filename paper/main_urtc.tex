@@ -414,26 +414,12 @@ evaluated inversion baselines are uninformative under measured wind.
 
 \section{Results}
 \subsection{The audit: a guarantee is not yet a useful region}
-\begin{table}[t]
-\centering
-\caption{The audit with exact wind: median 90\% region radius against the
-exact-model reference region; 2{,}000 test scenarios.}
-\label{tab:audit}
-\begin{tabular}{lcc}
-\toprule
-Method & Coverage & Radius (m) \\
-\midrule
-Exact-model reference region & 0.89--0.95 & \textbf{6.2--7.0} \\
-Deep localizer, labels only & 0.89 & 94--98 \\
-\textbf{Ours} (zero-budget setting) & 0.89 & \textbf{47.1--47.7} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Both learned rows pass every standard calibration check; only the audit
-reveals that one of them delivers regions more than ten times larger
-than the exact-model reference (Table~\ref{tab:audit}). Two input images
-and a small head close half of the distance. Relative to the labels-only
+Both learned pipelines pass every standard calibration check (coverage
+0.89 at nominal 90\%); only the audit reveals what calibration alone
+cannot. The labels-only baseline delivers 94--98\,m where the
+exact-model reference is 6.2--7.0\,m, more than ten times the
+reference; two input images and a small head close half of the
+distance, to 47.1--47.7\,m. Relative to the labels-only
 model on the same 2{,}000 paired scenarios, the images reduce the median
 radius by 46.1\,m (paired-bootstrap 95\% CI $[43.6, 48.1]$), produce
 smaller regions in 96.4\% of cases, and place 52.4\% of regions below
@@ -441,20 +427,21 @@ the 50\,m facility scale (Clopper--Pearson 95\% CI $[50.2, 54.6]$\%);
 radius percentiles p50/p75/p90 are 48/86/131\,m. The median case reaches
 the scale, and the upper tail marks the clearest room for future work.
 
-\subsection{The same fix works on every estimator we tested}
+\subsection{The same fix works on every architecture}
 \label{sec:est}
 \begin{table}[t]
 \centering
-\caption{Exact wind; 3 seeds per cell; coverage 0.88--0.92 throughout.}
+\caption{The physics images shrink guaranteed regions for every
+architecture (median radius in m; exact wind; 3 seeds per cell;
+coverage 0.88--0.92 throughout).}
 \label{tab:est}
 \begin{tabular}{lcc}
 \toprule
-Estimator & Without maps & With maps \\
+Base network & Without images & With images \\
 \midrule
 DeepSets        & 94--98 & \textbf{47.1--47.7} \\
 GNN             & 56--57 & \textbf{46.2--47.5} \\
 Set Transformer & 69--71 & \textbf{46.2--47.3} \\
-Classical score alone (no network) & --- & 282 (full site) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -473,24 +460,39 @@ channels 47\,m.
 \label{sec:robust}
 \begin{table}[t]
 \centering
-\caption{Measured wind (10$^\circ$/10\% per-step error; no method sees
-the true wind; calibration under the deployment condition; 3 seeds for
-learned rows). Middle rows use progressively less of the error-range
-information.}
+\caption{Measured wind ($10^\circ$/10\% per-step anemometer error; no
+method observes the true wind; calibration under the deployment
+condition; DeepSets base; 3 seeds for learned rows).}
 \label{tab:wind}
 \setlength{\tabcolsep}{4pt}
-% dagger: diagnostic negative control, 1 seed
 \begin{tabular}{lccc}
 \toprule
 Pipeline & Cov. & Radius (m) & $<$50\,m \\
 \midrule
 Direct physics inversion & 1.00 & 282 (full site) & 0\% \\
-~~tuned extra noise allowance & 1.00 & 282 (full site) & 0\% \\
 Network, no physics images & 0.90--0.91 & 107.9--110.5 & 0\% \\
-~~random images, same head$^{\dagger}$ & 0.89 & 107.5 & 0\% \\
-Ours, single-wind images & 0.91--0.92 & 82.2--84.2 & 15--17\% \\
-Ours, + avg.\ and variability & 0.89--0.91 & 74.7--76.3 & 20--21\% \\
-\textbf{Ours, + fit quality} & 0.90--0.92 & \textbf{70.1--72.9} &
+\textbf{Ours, uncertainty-aware images} & 0.90--0.92 & \textbf{70.1--72.9}
+& \textbf{24--27\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Each image component tightens the regions (DeepSets base,
+measured wind; 3 seeds; $\dagger$: random-image negative control,
+1 seed, diagnostic).}
+\label{tab:comp}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccc}
+\toprule
+Input images & Cov. & Radius (m) & $<$50\,m \\
+\midrule
+none & 0.90--0.91 & 107.9--110.5 & 0\% \\
+~~random control$^{\dagger}$ & 0.89 & 107.5 & 0\% \\
+single-wind evidence pair & 0.91--0.92 & 82.2--84.2 & 15--17\% \\
++ moment images & 0.89--0.91 & 74.7--76.3 & 20--21\% \\
+\textbf{+ fit-quality image} & 0.90--0.92 & \textbf{70.1--72.9} &
 \textbf{24--27\%} \\
 \bottomrule
 \end{tabular}
@@ -509,9 +511,10 @@ physics content of the images, not to added capacity or spatial
 regularization. The learned recipe behaves differently, and the pattern
 is clean: the more of the wind sensor's
 error-range information the input images carry, the smaller the
-guaranteed regions become, from 82--84\,m using the measured wind alone,
-to 74--76\,m after adding the moment images \eqref{eq:moments}, to
-\textbf{70--73\,m} after adding the fit-quality image \eqref{eq:resid}.
+guaranteed regions become (Table~\ref{tab:comp}): from 82--84\,m using
+the measured wind alone, to 74--76\,m after adding the moment images
+\eqref{eq:moments}, to \textbf{70--73\,m} after adding the fit-quality
+image \eqref{eq:resid}.
 Relative to the no-physics model on the same 2{,}000 paired scenarios,
 the full method reduces the median radius by 39.4\,m (paired-bootstrap
 95\% CI $[37.3, 41.9]$), produces smaller regions in 96.2\% of cases,
