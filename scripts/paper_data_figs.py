@@ -85,7 +85,11 @@ def pick_scenario(n_masts=8, cond="clean"):
 
 
 def fig_example():
-    i, d, zb, zo, rb, ro = pick_scenario(8, cond="noisy")
+    _, d, zb, zo, rb, ro = pick_scenario(8, cond="noisy")
+    grp = (d["n_sensors"].astype(int) >= 10) & (ro < 50)
+    med = np.median(ro[grp])
+    dist = np.where(grp, np.abs(ro - med), np.inf)
+    i = int(np.argmin(dist))
     mb = np.unpackbits(zb["masks"][i])[:N_CELLS].reshape(64, 64)
     mo = np.unpackbits(zo["masks"][i])[:N_CELLS].reshape(64, 64)
     ns = int(d["n_sensors"][i])
@@ -300,6 +304,52 @@ def fig_compare():
     for s in ("top", "right", "left"):
         ax.spines[s].set_visible(False)
     save(fig, "fig_data_compare")
+
+
+# ------------- Fig 1d: measured-wind region-size distributions, annotated
+def fig_dist():
+    base = sizes("pw_audit_pw_noisy_nomaps_lam0.0_seed1_noisy.npz")
+    ours = sizes("pw_audit_pw_noisy_ensr_lam0.0_seed1_noisy.npz")
+    fig, ax = plt.subplots(figsize=(8.6, 4.0))
+    for r, c, lab in ((base, ORANGE, "no physics images"),
+                      (ours, BLUE_D, "ours (full images)")):
+        x = np.sort(r)
+        yv = np.arange(1, len(x) + 1) / len(x)
+        ax.plot(x, yv, color=c, lw=2.4, label=lab, solid_capstyle="round")
+    f50 = float((ours < 50).mean())
+    med = float(np.median(ours))
+    ax.axvline(50, color=MUTED, lw=1.4, ls=(0, (4, 3)))
+    # annotation: fraction below the 50 m scale
+    ax.plot([21, 50], [f50, f50], color=BLUE_D, lw=1.1, ls=(0, (2, 2)))
+    ax.plot(50, f50, "o", color=BLUE_D, ms=8, mec=SURF, mew=1.5)
+    ax.annotate(f"{f50*100:.0f}% of scenarios\nreach the 50 m scale",
+                xy=(50, f50), xytext=(23.5, f50 + 0.30), fontsize=10.5,
+                color=INK,
+                bbox=dict(boxstyle="round,pad=0.25", fc=SURF, ec="none",
+                          alpha=0.95),
+                arrowprops=dict(arrowstyle="-", color=INK2, lw=1.1,
+                                shrinkB=6))
+    # annotation: the median
+    ax.plot([21, med], [0.5, 0.5], color=BLUE_D, lw=1.1, ls=(0, (2, 2)))
+    ax.plot(med, 0.5, "o", color=BLUE_D, ms=8, mec=SURF, mew=1.5)
+    ax.annotate(f"median {med:.0f} m", xy=(med, 0.5),
+                xytext=(med + 26, 0.40), fontsize=10.5, color=INK,
+                bbox=dict(boxstyle="round,pad=0.25", fc=SURF, ec="none",
+                          alpha=0.95),
+                arrowprops=dict(arrowstyle="-", color=INK2, lw=1.1,
+                                shrinkB=6))
+    ax.annotate("EPA 50 m", xy=(50, 1.015), ha="center", fontsize=10,
+                color=MUTED, annotation_clip=False)
+    ax.set_xscale("log")
+    ax.set_xlim(21, 320); ax.set_ylim(0, 1.0)
+    ax.set_xticks([25, 50, 100, 200, 300])
+    ax.set_xticklabels(["25", "50", "100", "200", "300"])
+    ax.set_xlabel("90% region radius (m), log scale; measured wind")
+    ax.set_ylabel("fraction of scenarios at or below")
+    ax.yaxis.grid(True, color=GRID, lw=0.8); ax.set_axisbelow(True)
+    despine(ax)
+    ax.legend(loc="lower right", frameon=False, fontsize=10.5)
+    save(fig, "fig_data_dist")
 
 
 # ---------------------- Fig 1c: component build-up with map thumbnails

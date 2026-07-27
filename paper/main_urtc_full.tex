@@ -116,11 +116,12 @@ intervals over the same 2{,}000 test scenarios.
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.54\linewidth]{../figures/paper/fig_data_example.pdf}
-\caption{One test scenario (8 masts, measured wind): 90\% regions of
-the no-images baseline and of our method (conformal masks), with the
-50\,m facility scale. Selection rule: among 8-mast scenarios, the one
-jointly closest (log scale) to that subgroup's median baseline and
-method radii, i.e., a typical case, not a best case.}
+\caption{A well-instrumented test scenario (12 masts, measured wind):
+90\% regions of the no-images baseline and of our method (conformal
+masks), with the 50\,m facility scale. Selection rule: among scenarios
+with $\ge$10 masts whose region meets the 50\,m scale, the one at that
+subset's median radius, i.e., representative of the quarter of cases
+that reach the scale (Fig.~\ref{fig:dist}), not a best case.}
 \label{fig:circles}
 \end{figure}
 
@@ -496,6 +497,17 @@ none (input-only network) & 0.90--0.91 & 107.9--110.5 & 0\% \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.96\linewidth]{../figures/paper/fig_data_dist.pdf}
+\caption{Region-radius distributions over all 2{,}000 test scenarios
+under measured wind. The annotated points show how the headline
+statistics coexist: 27\% of scenarios fall below the 50\,m facility
+scale while the median sits at 71\,m; the no-images distribution never
+reaches the scale.}
+\label{fig:dist}
+\end{figure}
 
 Real anemometers have error, and the effect on direct physics inversion
 is dramatic. Trusting the measured wind exactly, it concentrates its
