@@ -322,10 +322,13 @@ R_c^{(k)} \;=\; \rho \;-\; 2\hat q_c a_c^{(k)} \;+\; \hat q_c^2 b_c^{(k)},
 normalized per scenario (shifted to minimum zero, scaled by the median,
 clipped) so that all leak rates share one scale. Every image is
 closed-form linear algebra computed from the network's own inputs.
-Measured on an NVIDIA L40S at batch size one over 500 test scenarios
-after warm-up, host--device transfers included: preprocessing takes
-29.6\,ms median (31\,ms p95) and the network forward pass 0.8\,ms, for
-30.4\,ms median end to end. We verified \eqref{eq:resid} against direct
+Measured at batch size one over test scenarios after warm-up,
+transfers included: on an NVIDIA L40S the pipeline takes 30.4\,ms
+median end to end (preprocessing 29.6, forward pass 0.8); on a single
+commodity CPU process it takes 0.49\,s median (0.95\,s p95). Since one
+scenario consumes a 30-minute observation window, even CPU-only
+deployment leaves more than three orders of magnitude of headroom, and
+no site GPU is required. We verified \eqref{eq:resid} against direct
 reconstruction to relative error $10^{-7}$.
 
 \textbf{Zero-budget reduction.} With $\varepsilon = 0$ there is a single
@@ -700,7 +703,7 @@ Leak rate & log-uniform 10--500\,kg\,h$^{-1}$ & Residual normalization & min-shi
 Wind & speed log-unif.\ 1--8\,m\,s$^{-1}$; AR(1) $\rho{=}0.7$ & Parameters & 4.88\,M total; head 10{,}721 (0.22\%) \\
 Meander & 20--40$^\circ$ dir., 10--30\% speed & Seeds & fixed data root; training 1--3; fixed score seed \\
 Stability & PG classes A--F, uniform & Hardware & NVIDIA L40S \\
-Wind error & $10^\circ$ dir., 10\% speed, per step & Timing (batch 1) & maps 29.6\,ms, net 0.8\,ms; 30.4 med, 31.7 p95 \\
+Wind error & $10^\circ$ dir., 10\% speed, per step & Timing (batch 1) & GPU 30.4\,ms med; CPU 0.49\,s med \\
 \bottomrule
 \end{tabular}
 \end{table}

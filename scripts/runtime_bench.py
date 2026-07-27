@@ -27,9 +27,10 @@ N_CELLS = N_GRID * N_GRID
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=500)
+    ap.add_argument("--device", choices=["auto", "cpu"], default="auto")
     args = ap.parse_args()
     cfg = load_config()
-    device = get_device()
+    device = torch.device("cpu") if args.device == "cpu" else get_device()
     dd = resolve(cfg, "data_dir")
     rr = resolve(cfg, "results_dir")
     root = cfg["seeds"]["root_entropy"]
@@ -71,23 +72,25 @@ def main():
     idx = np.arange(min(args.n + 20, len(d["ids"])))
     map_ms, net_ms = [], []
     for j, i in enumerate(idx):
-        torch.cuda.synchronize()
+        torch.cuda.synchronize() if device.type == 'cuda' else None
         t0 = time.perf_counter()
         st = maps_one(int(i))
-        torch.cuda.synchronize()
+        torch.cuda.synchronize() if device.type == 'cuda' else None
         t1 = time.perf_counter()
         b = to_batch_t(dn, np.array([i]), device)
         b["stats"] = st
         with torch.no_grad():
             _ = torch.softmax(model(b).float(), -1)
-        torch.cuda.synchronize()
+        torch.cuda.synchronize() if device.type == 'cuda' else None
         t2 = time.perf_counter()
         if j >= 20:                      # warm-up excluded
             map_ms.append((t1 - t0) * 1e3)
             net_ms.append((t2 - t1) * 1e3)
     map_ms, net_ms = np.array(map_ms), np.array(net_ms)
     tot = map_ms + net_ms
-    out = {"n": len(map_ms), "hardware": torch.cuda.get_device_name(0),
+    hw = (torch.cuda.get_device_name(0) if device.type == "cuda"
+          else "CPU (single process)")
+    out = {"n": len(map_ms), "hardware": hw,
            "map_ms_median": float(np.median(map_ms)),
            "map_ms_p95": float(np.percentile(map_ms, 95)),
            "net_ms_median": float(np.median(net_ms)),
@@ -95,7 +98,9 @@ def main():
            "total_ms_median": float(np.median(tot)),
            "total_ms_p95": float(np.percentile(tot, 95)),
            "note": "batch 1, K=8 ensr preprocessing, transfers included"}
-    with open(rr / "runtime_bench.json", "w") as f:
+    fn = "runtime_bench.json" if device.type == "cuda" else \
+        "runtime_bench_cpu.json"
+    with open(rr / fn, "w") as f:
         json.dump(out, f, indent=2)
     print(json.dumps(out), flush=True)
 
