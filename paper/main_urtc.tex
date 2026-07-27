@@ -82,8 +82,7 @@ plume physics directly requires the wind to be known exactly, while every
 real site has only a wind \emph{measurement}; how each approach behaves
 under that everyday mismatch had not been carefully quantified.
 
-\textbf{Contributions.} The paper centers on a single method and the
-evidence for it.
+\textbf{Contributions.}
 \begin{itemize}
 \item \textbf{C1: Physics input images that carry their wind-error
 budget.} For every candidate cell, closed-form formulas produce four
@@ -132,7 +131,7 @@ $\varepsilon{=}0$ the images reduce to the classical pair
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.58\linewidth]{../figures/paper/fig_data_example.pdf}
+\includegraphics[width=0.54\linewidth]{../figures/paper/fig_data_example.pdf}
 \caption{One test scenario (8 masts, exact wind): 90\% regions of
 the labels-only baseline and of our method (conformal masks), the
 exact-model reference (equal-area circle), and the 50\,m facility
@@ -466,39 +465,40 @@ Set Transformer & 69--71 & \textbf{46.2--47.3} \\
 \end{tabular}
 \end{table}
 
-Without the maps, the choice of network changes results by 40\,m; with
-them, all nine runs of three network families land inside a 1.5\,m band
-(Table~\ref{tab:est}). The gain is available to whatever architecture a
-practitioner already has, with ordinary training and near-zero added
-cost. At the other extreme, the classical score alone identifies where
-the evidence lies but not how much to trust it, and pays for that
-overconfidence with full-site regions. Single-seed channel diagnostics point the same way: the evidence image
-alone reaches 65.0\,m, the sensitivity image alone 98.5\,m, both
-channels 47\,m.
-
-\subsection{Measured wind: the main result}
-\label{sec:robust}
 \begin{table}[t]
 \centering
-\caption{Each image component tightens the regions (DeepSets base,
-measured wind; 3 seeds; $\dagger$: random-image negative control,
-1 seed, diagnostic).}
+\caption{Cumulative image ablation on the DeepSets base (exact wind,
+where the four images provably reduce to the evidence--sensitivity
+pair, Eq.~\ref{eq:reduction}); $^{1s}$: single seed. The sensitivity
+image without the evidence image leaves the baseline unchanged
+(98.5\,m$^{1s}$), so the correlation computation is the operative
+ingredient.}
 \label{tab:comp}
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{lccc}
 \toprule
 Input images & Cov. & Radius (m) & $<$50\,m \\
 \midrule
-none & 0.90--0.91 & 107.9--110.5 & 0\% \\
-~~random control$^{\dagger}$ & 0.89 & 107.5 & 0\% \\
-single-wind evidence pair & 0.91--0.92 & 82.2--84.2 & 15--17\% \\
-+ moment images & 0.89--0.91 & 74.7--76.3 & 20--21\% \\
-\textbf{+ fit-quality image} & 0.90--0.92 & \textbf{70.1--72.9} &
-\textbf{24--27\%} \\
+none (input-only network) & 0.89 & 94--98 & 0\% \\
++ evidence image ($z_c$) & 0.88 & 65.0$^{1s}$ & 33\% \\
+\textbf{+ sensitivity image ($\log b_c$)} & 0.89 &
+\textbf{47.1--47.7} & \textbf{52--53\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+Without the maps, the choice of network changes results by 40\,m; with
+them, all nine runs of three network families land inside a 1.5\,m band
+(Table~\ref{tab:est}). The gain is available to whatever architecture a
+practitioner already has, with ordinary training and near-zero added
+cost. Table~\ref{tab:comp} ablates the images cumulatively: the
+evidence image alone recovers most of the gain and the sensitivity
+image completes it. At the other extreme, the classical score alone
+identifies where the evidence lies but not how much to trust it, and
+pays for that overconfidence with full-site regions.
+
+\subsection{Measured wind: the main result}
+\label{sec:robust}
 \begin{table}[t]
 \centering
 \caption{Measured wind ($10^\circ$/10\% per-step anemometer error; no
@@ -525,13 +525,13 @@ calibration wrapper must return essentially the entire site
 (Table~\ref{tab:wind}); allowing extra measurement noise, tuned on
 held-out data, does not change this. A negative control isolates the
 cause of our gains: feeding the identical head four \emph{random} images
-of the same shape and scale ($\dagger$, one seed, diagnostic) matches
+of the same shape and scale (one seed, diagnostic) matches
 the no-physics baseline (107.5\,m), so the improvement traces to the
 physics content of the images, not to added capacity or spatial
 regularization. The learned recipe behaves differently, and the pattern
 is clean: the more of the wind sensor's
 error-range information the input images carry, the smaller the
-guaranteed regions become (Table~\ref{tab:comp}): from 82--84\,m using
+guaranteed regions become: from 82--84\,m using
 the measured wind alone, to 74--76\,m after adding the moment images
 \eqref{eq:moments}, to \textbf{70--73\,m} after adding the fit-quality
 image \eqref{eq:resid}.
