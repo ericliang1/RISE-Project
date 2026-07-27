@@ -301,6 +301,72 @@ def fig_compare():
     save(fig, "fig_data_compare")
 
 
+# ---------------------- Fig 1c: component build-up with map thumbnails
+def fig_components():
+    """Measured wind, DeepSets base: input-only network, then each physics
+    image added cumulatively; the added map(s) are shown beside each row."""
+    i, d, zb, zo, rb, ro = pick_scenario(8)
+    det = np.load(dd / "ch4tu_test_maps_det.npz")["maps"][i]
+    ens = np.load(dd / "ch4tu_test_maps_ens.npz")["maps"][i]
+    rm = np.load(dd / "pw_test_resid_marg.npz")["noisy"][i].astype(float)
+    CMB = LinearSegmentedColormap.from_list("b", ["#fcfcfb", "#cde2fb",
+        "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#104281"])
+    CMO = LinearSegmentedColormap.from_list("o", ["#fcfcfb", "#fbe0d5",
+        "#f6b899", "#eb6834", "#a03c14"])
+    rows = [  # label, lo, hi, color, frac, thumbs [(img, cmap), ...]
+        ("input-only network", 107.9, 110.5, ORANGE, "0%", []),
+        ("+ evidence pair", 82.2, 84.2, "#6da7ec", "15–17%",
+         [(det[0].reshape(64, 64), CMB), (det[1].reshape(64, 64), CMB)]),
+        ("+ wind-fragility image", 74.7, 76.3, "#3987e5", "20–21%",
+         [(ens[1].reshape(64, 64), CMO)]),
+        ("+ fit-quality image", 70.1, 72.9, BLUE_D, "24–27%",
+         [((10 - rm).reshape(64, 64), CMB)]),
+    ]
+    fig, ax = plt.subplots(figsize=(8.8, 4.3))
+    fig.subplots_adjust(left=0.30, right=0.97, top=0.96, bottom=0.15)
+    n = len(rows)
+    for k, (lab, lo, hi, c, frac, thumbs) in enumerate(rows):
+        y = n - 1 - k
+        mid = (lo + hi) / 2
+        ax.plot([lo, hi], [y, y], color=c, lw=6, solid_capstyle="round",
+                zorder=3)
+        ax.plot(mid, y, "o", color=c, ms=10, mec=SURF, mew=2, zorder=4)
+        ax.annotate(f"{lo:.0f}–{hi:.0f} m    <50 m: {frac}",
+                    xy=(hi + 2.5, y), va="center", fontsize=10,
+                    color=INK2)
+        if k > 0:
+            pm = (rows[k - 1][1] + rows[k - 1][2]) / 2
+            ax.annotate("", xy=(mid, y + 0.18), xytext=(pm, y + 0.82),
+                        arrowprops=dict(arrowstyle="-|>", color=BASE,
+                                        lw=1.6, shrinkA=2, shrinkB=2))
+            ax.annotate(f"$-${pm - mid:.0f} m",
+                        xy=((mid + pm) / 2 + 2.5, y + 0.5), fontsize=9.5,
+                        color=INK, va="center")
+        # thumbnails beside the row label (figure coordinates)
+        for j, (img, cm) in enumerate(thumbs):
+            axk = fig.add_axes([0.015 + 0.055 * j,
+                                0.15 + 0.81 * (y + 0.18) / n, 0.05,
+                                0.81 * 0.64 / n])
+            lo2, hi2 = np.percentile(img, [2, 99])
+            axk.imshow(np.clip(img, lo2, hi2), origin="lower", cmap=cm,
+                       interpolation="nearest")
+            axk.set_xticks([]); axk.set_yticks([])
+            for s in axk.spines.values():
+                s.set_color(BASE)
+    ax.axvline(50, color=MUTED, lw=1.4, ls=(0, (4, 3)), zorder=2)
+    ax.annotate("50 m facility scale", xy=(50, len(rows) - 0.52),
+                ha="center", fontsize=9.4, color=MUTED,
+                bbox=dict(boxstyle="round,pad=0.2", fc=SURF, ec="none"))
+    ax.set_yticks(range(n))
+    ax.set_yticklabels([r[0] for r in rows][::-1], fontsize=11)
+    ax.set_xlim(40, 135); ax.set_ylim(-0.55, n - 0.35)
+    ax.set_xlabel("median 90% region radius (m), measured wind, "
+                  "3-seed range")
+    ax.xaxis.grid(True, color=GRID, lw=0.8); ax.set_axisbelow(True)
+    despine(ax)
+    save(fig, "fig_data_components")
+
+
 # --------------------------------------------- Fig 1: radius distributions
 def fig_ecdf():
     curves = [  # label, radii, color, linestyle
