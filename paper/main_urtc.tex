@@ -63,17 +63,15 @@ rapidly: UNEP's satellite system issued over a thousand alerts in two
 years \cite{unep}. The bottleneck is what happens next: connecting an
 alert to a specific place that a crew can inspect. EPA's Super-Emitter Program (implementation
 extended to January 2027) asks notifications to identify any facility
-within \textbf{50\,m} of the estimated leak location \cite{epa}, and the
-EU imposes analogous source-level duties \cite{eu}. We therefore adopt
+within \textbf{50\,m} of the estimated leak location \cite{epa}. We therefore adopt
 50\,m as an operationally motivated target: a region small enough to
 trigger a focused inspection.
 
-Continuous monitoring networks, in which a small number of inexpensive
-sensor masts capture the plume as the wind sweeps it across the site, are
-where this localization can happen. Machine learning provides instant
-estimates, and a standard statistical wrapper called split conformal
-prediction \cite{conformal} adds a guarantee: a region that provably
-contains the true source 90\% of the time. The gap we address is twofold.
+Continuous monitoring networks, in which a few inexpensive masts
+capture the plume as the wind sweeps it across the site, are where this
+localization can happen. Machine learning provides instant estimates,
+and split conformal prediction \cite{conformal} adds a guarantee: a
+region that provably contains the true source 90\% of the time. The gap we address is twofold.
 First, the guarantee speaks only to how \emph{often} the region contains
 the source, not to how \emph{small} the region is, and there was
 previously no practical way to measure how much smaller a guaranteed
@@ -114,21 +112,21 @@ intervals over the same 2{,}000 test scenarios.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.43\linewidth]{../figures/paper/fig_data_example.pdf}
+\includegraphics[width=0.4\linewidth]{../figures/paper/fig_data_example.pdf}
 \caption{A well-instrumented test scenario (12 masts, measured wind):
 90\% regions of the no-images baseline and of our method (conformal
-masks), with the 50\,m facility scale. Selection rule: among scenarios
-with $\ge$10 masts whose region meets the 50\,m scale, the one at that
-subset's median radius, i.e., representative of the quarter of cases
+masks), with the 50\,m facility scale. Selection rule: among
+$\ge$10-mast scenarios whose region meets the 50\,m scale, the one at
+that subset's median radius: representative of the quarter of cases
 that reach the scale (Fig.~\ref{fig:dist}), not a best case.}
 \label{fig:circles}
 \end{figure}
 
 \section{Related Work}
-\textbf{Conformal prediction} gives distribution-free coverage guarantees
-\cite{conformal}; how small the guaranteed sets are is the open half of
-the problem, and our audit scores it directly against the exact
-probability map at matched, verified coverage. \textbf{Simulation-based
+\textbf{Conformal prediction} gives distribution-free coverage
+guarantees \cite{conformal}; how small the sets are is the open half of
+the problem, and our audit scores it against the exact map at matched
+coverage. \textbf{Simulation-based
 inference} trains neural networks to approximate probability maps from
 simulated data \cite{npe,sbibm}; its standard diagnostics check
 calibration \cite{sbc}, and recent work examines what happens when the
@@ -146,7 +144,7 @@ truth, complementing field validation.
 
 \begin{figure*}[t]
 \centering
-\figplaceholder{3.2cm}{Pipeline figure placeholder: one scenario flowing
+\figplaceholder{2.4cm}{Pipeline figure placeholder: one scenario flowing
 left to right -- site sketch (masts, wind) $\rightarrow$ the four
 computed physics images $\rightarrow$ set network + zero-initialized
 head $\rightarrow$ the guaranteed 90\% region.}
@@ -395,9 +393,8 @@ budget for this field \cite{sbibm}) and identical symmetry augmentation.
 calibration distribution; it does not imply 90\% coverage for every
 individual scenario, leak-rate range, sensor layout, or wind
 condition. Calibration is performed separately for each evaluated
-deployment condition. The exact-model
-reference is used only to audit region efficiency under the synthetic
-testbed assumptions and is not part of the conformal guarantee.
+deployment condition. The exact-model reference only audits efficiency under the testbed
+assumptions and is not part of the guarantee.
 
 \textbf{Division of labor.} The physics computes exact per-cell
 evidence through \eqref{eq:zmap}--\eqref{eq:resid}, knowledge a network
@@ -439,11 +436,28 @@ smaller regions in 96.4\% of cases, and place 52.4\% of regions below
 the 50\,m facility scale (Clopper--Pearson 95\% CI $[50.2, 54.6]$\%);
 radius percentiles p50/p75/p90 are 48/86/131\,m.
 
-The fix is architecture-independent: the same images move a GNN from
-56--57\,m and a Set Transformer from 69--71\,m into the same band
-(46.2--47.5\,m), nine runs of three families within 1.5\,m. The classical score alone, calibrated with no
-network, identifies where the evidence lies but not how much to trust
-it, and pays for that overconfidence with full-site regions. All
+The fix is architecture-independent (Table~\ref{tab:est}): three
+network families with a 40\,m baseline spread land inside a 1.5\,m
+band once the images are supplied, so the gain is available to whatever
+architecture a practitioner already has.
+
+\begin{table}[t]
+\centering
+\caption{The physics images help every model (median 90\% region
+radius in m; laboratory limit; 3 seeds per cell; coverage 0.88--0.92
+throughout).}
+\label{tab:est}
+\begin{tabular}{lcc}
+\toprule
+Base network & Without images & With images \\
+\midrule
+DeepSets        & 94--98 & \textbf{47.1--47.7} \\
+GNN             & 56--57 & \textbf{46.2--47.5} \\
+Set Transformer & 69--71 & \textbf{46.2--47.3} \\
+\bottomrule
+\end{tabular}
+\end{table} The classical score alone, calibrated with no network, is
+overconfident-wrong and returns essentially the full site. All
 remaining results are reported under the simulator's native condition:
 measured wind.
 
@@ -493,7 +507,7 @@ none (input-only network) & 0.90--0.91 & 107.9--110.5 & 0\% \\
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.74\linewidth]{../figures/paper/fig_data_masts.pdf}
+\includegraphics[width=0.7\linewidth]{../figures/paper/fig_data_masts.pdf}
 \caption{Sensor-count ablation (measured wind, seed-1 diagnostic;
 $\approx$210--240 test scenarios per mast count). More masts shrink the
 guaranteed regions toward the facility scale; the conformal guarantee
@@ -503,11 +517,10 @@ remains marginal over the full distribution.}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.73\linewidth]{../figures/paper/fig_data_dist.pdf}
+\includegraphics[width=0.68\linewidth]{../figures/paper/fig_data_dist.pdf}
 \caption{Region-radius distributions over all 2{,}000 test scenarios
-under measured wind. The annotated points show how the headline
-statistics coexist: 27\% of scenarios fall below the 50\,m facility
-scale while the median sits at 71\,m; the no-images distribution never
+under measured wind: 27\% of our regions fall below the 50\,m scale
+while the median sits at 71\,m; the no-images distribution never
 reaches the scale.}
 \label{fig:dist}
 \end{figure}
@@ -581,13 +594,11 @@ converting methane detections into calibrated inspection regions.
 
 {\footnotesize
 \begin{thebibliography}{12}
-\bibitem{unep} UN Environment Programme (IMEO), ``An eye on methane:
-Methane Alert and Response System annual report,'' 2024.
+\bibitem{unep} UN Environment Programme (IMEO), ``An Eye on
+Methane,'' 2024.
 \bibitem{epa} U.S. EPA, ``Standards of performance for GHG emissions:
 NSPS OOOOb/EG OOOOc and the Super-Emitter Program,'' 89 FR 16820, 2024;
 implementation timing per the 2025 Interim Final Rule.
-\bibitem{eu} European Union, ``Regulation (EU) 2024/1787 on methane
-emissions reductions in the energy sector,'' OJ L, 2024.
 \bibitem{conformal} A.~N. Angelopoulos and S.~Bates, ``Conformal
 prediction: A gentle introduction,'' \emph{Found. Trends Mach. Learn.},
 16(4), 2023.
@@ -598,9 +609,9 @@ inference of simulation models with Bayesian conditional density
 estimation,'' \emph{NeurIPS}, 2016.
 \bibitem{sbibm} J.-M. Lueckmann \emph{et al.}, ``Benchmarking
 simulation-based inference,'' \emph{AISTATS}, 2021.
-\bibitem{robsbi} P.~Cannon, D.~Ward, and S.~M. Schmon, ``Investigating
-the impact of model misspecification in neural simulation-based
-inference,'' arXiv:2209.01845, 2022.
+\bibitem{robsbi} P.~Cannon, D.~Ward, and S.~M. Schmon, ``Model
+misspecification in neural simulation-based inference,''
+arXiv:2209.01845, 2022.
 \bibitem{newman} T.~Newman \emph{et al.}, ``Probabilistic inversion
 modeling of gas emissions,'' arXiv:2408.01298, 2024.
 \bibitem{metec} C.~Ilonze \emph{et al.}, ``Assessing continuous
