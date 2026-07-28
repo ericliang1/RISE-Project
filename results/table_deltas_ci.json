@@ -1,0 +1,59 @@
+{
+  "note": "paired bootstrap over same 2000 scenarios, seed 1, 10000 draws",
+  "per_model_radius_delta_m": {
+    "DeepSets": [
+      -39.4,
+      -41.9,
+      -37.2
+    ],
+    "GNN": [
+      -0.1,
+      -2.2,
+      1.5
+    ],
+    "SetTransformer": [
+      -11.0,
+      -12.9,
+      -9.1
+    ]
+  },
+  "per_model_frac50_delta_pts": {
+    "DeepSets": [
+      26.6,
+      24.6,
+      28.5
+    ],
+    "GNN": [
+      24.7,
+      22.8,
+      26.6
+    ],
+    "SetTransformer": [
+      15.7,
+      13.8,
+      17.6
+    ]
+  },
+  "rung_deltas_deepsets_m": {
+    "+evidence": [
+      -22.3,
+      -25.7,
+      -19.6
+    ],
+    "+sensitivity": [
+      -5.5,
+      -7.0,
+      -3.5
+    ],
+    "+fragility": [
+      -7.6,
+      -9.7,
+      -5.5
+    ],
+    "+fit_quality": [
+      -4.0,
+      -5.6,
+      -2.7
+    ]
+  }
+}
