@@ -97,7 +97,9 @@ def fig_example():
     tc = int(d["true_cell"][i])
     tx = ((tc % 64 + 0.5) / 64 * 500, (tc // 64 + 0.5) / 64 * 500)
 
-    fig, ax = plt.subplots(figsize=(6.6, 6.9))
+    fig, ax = plt.subplots(figsize=(6.6, 6.6))
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("white")
     ext = [0, 500, 0, 500]
     ax.imshow(np.where(mb, 1.0, np.nan), origin="lower", extent=ext,
               cmap=LinearSegmentedColormap.from_list("ob", ["#fbe0d5",
@@ -114,7 +116,7 @@ def fig_example():
     from matplotlib.patches import Circle
     ax.add_patch(Circle(tx, 50, ec=MUTED, fc="none", lw=1.6,
                         ls=(0, (4, 3)), zorder=5))
-    ax.scatter(sx[:, 0], sx[:, 1], s=52, c=INK, edgecolors=SURF,
+    ax.scatter(sx[:, 0], sx[:, 1], s=52, c=INK, edgecolors="white",
                linewidths=1.6, zorder=7)
     ax.plot(*tx, marker="+", color=INK, ms=9, mew=2.0, zorder=8)
     h = [plt.Line2D([], [], color=ORANGE, lw=2.2,
@@ -126,15 +128,19 @@ def fig_example():
          plt.Line2D([], [], color=INK, marker="+", lw=0, ms=9, mew=2,
                     label="true source"),
          plt.Line2D([], [], color=INK, marker="o", lw=0, ms=7,
-                    mec=SURF, label="masts")]
-    ax.legend(handles=h, loc="upper center", bbox_to_anchor=(0.5, -0.10),
-              ncol=3, frameon=False, fontsize=10.5,
-              handletextpad=0.5, columnspacing=1.1)
+                    mec="white", label="masts")]
+    leg = ax.legend(handles=h, loc="lower right", ncol=1, frameon=True,
+                    fontsize=10.5, handletextpad=0.5, borderpad=0.7,
+                    borderaxespad=0.6, framealpha=1.0)
+    leg.get_frame().set_facecolor("white")
+    leg.get_frame().set_edgecolor(BASE)
+    leg.set_zorder(10)
     ax.set_xlim(0, 500); ax.set_ylim(0, 500); ax.set_aspect("equal")
     ax.set_xticks([0, 250, 500]); ax.set_yticks([0, 250, 500])
     ax.set_xlabel("site coordinate (m)")
     despine(ax)
-    save(fig, "fig_data_example")
+    with matplotlib.rc_context({"savefig.facecolor": "white"}):
+        save(fig, "fig_data_example")
 
 
 # ------------------------------ Fig 0b: full-width pipeline (paper size)
