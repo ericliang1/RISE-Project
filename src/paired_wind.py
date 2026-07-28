@@ -29,6 +29,7 @@ import json
 
 import numpy as np
 import torch
+import torch.nn as nn
 
 from common import cell_centers, get_device, load_config, pos_to_cell, resolve
 from conformal import region_mask, regions, tail_scores, tail_threshold
@@ -48,6 +49,27 @@ K_MARG = 8       # wind draws for the marginalized residual (stream 93)
 # map kinds that only exist under the measured-wind condition
 NOISY_ONLY_MAPS = ("ens", "ensr", "smear", "ensp", "full", "rand",
                    "zdet")
+
+
+def phys_head_on(base_cls, n_ch):
+    """Zero-init conv head over n_ch physics images, on any base
+    localizer whose forward takes the batch dict (mirrors PhysHeadNet)."""
+
+    class WithPhys(base_cls):
+        def __init__(self, cfg):
+            super().__init__(cfg)
+            self.phys = nn.Sequential(
+                nn.Conv2d(n_ch, 32, 3, padding=1), nn.GELU(),
+                nn.Conv2d(32, 32, 3, padding=1), nn.GELU(),
+                nn.Conv2d(32, 1, 3, padding=1))
+            nn.init.zeros_(self.phys[-1].weight)
+            nn.init.zeros_(self.phys[-1].bias)
+
+        def forward(self, b):
+            return super().forward(b) + self.phys(b["stats"]).flatten(1)
+
+    WithPhys.__name__ = f"{base_cls.__name__}Phys{n_ch}"
+    return WithPhys
 
 
 def rad_m(sizes):
@@ -407,9 +429,12 @@ def stage_train(cfg, device, views, seed, maps="det", arch="deepsets"):
         from methane_t_settransformer import SetTransformerT as base_cls
     else:
         base_cls = DeepSetsT
-    assert maps is None or arch == "deepsets", \
-        "arch variants are wired for the no-maps baseline only"
-    model = (PhysHeadNet(cfg, n_ch) if maps else base_cls(cfg)).to(device)
+    if not maps:
+        model = base_cls(cfg).to(device)
+    elif arch == "deepsets":
+        model = PhysHeadNet(cfg, n_ch).to(device)
+    else:
+        model = phys_head_on(base_cls, n_ch)(cfg).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=tr["lr"],
                             weight_decay=tr["weight_decay"])
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(

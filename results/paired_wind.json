@@ -431,5 +431,167 @@
       "median_radius_m": 88.48458473980875,
       "frac_below_50m": 0.117
     }
+  },
+  "pw_noisy_nomaps_gnn_seed1": {
+    "tag": "pw_noisy_nomaps_gnn_seed1",
+    "maps": "off",
+    "arch": "gnn",
+    "val_nll": 6.129553955078125,
+    "clean": {
+      "coverage": 0.8965,
+      "median_radius_m": 66.40916545241669,
+      "frac_below_50m": 0.073
+    },
+    "noisy": {
+      "coverage": 0.8965,
+      "median_radius_m": 69.3430110082406,
+      "frac_below_50m": 0.024
+    }
+  },
+  "pw_noisy_ensr_gnn_seed1": {
+    "tag": "pw_noisy_ensr_gnn_seed1",
+    "maps": "ensr",
+    "arch": "gnn",
+    "val_nll": 5.624338134765625,
+    "noisy": {
+      "coverage": 0.9135,
+      "median_radius_m": 69.27293215152224,
+      "frac_below_50m": 0.271
+    }
+  },
+  "pw_noisy_nomaps_gnn_seed2": {
+    "tag": "pw_noisy_nomaps_gnn_seed2",
+    "maps": "off",
+    "arch": "gnn",
+    "val_nll": 6.17762548828125,
+    "clean": {
+      "coverage": 0.8985,
+      "median_radius_m": 66.48226306998002,
+      "frac_below_50m": 0.0285
+    },
+    "noisy": {
+      "coverage": 0.9065,
+      "median_radius_m": 71.34536098063148,
+      "frac_below_50m": 0.0125
+    }
+  },
+  "pw_noisy_ensr_gnn_seed2": {
+    "tag": "pw_noisy_ensr_gnn_seed2",
+    "maps": "ensr",
+    "arch": "gnn",
+    "val_nll": 5.625995849609375,
+    "noisy": {
+      "coverage": 0.9075,
+      "median_radius_m": 68.56820444399625,
+      "frac_below_50m": 0.2825
+    }
+  },
+  "pw_noisy_nomaps_gnn_seed3": {
+    "tag": "pw_noisy_nomaps_gnn_seed3",
+    "maps": "off",
+    "arch": "gnn",
+    "val_nll": 6.127185546875,
+    "clean": {
+      "coverage": 0.8975,
+      "median_radius_m": 64.92993392646402,
+      "frac_below_50m": 0.1455
+    },
+    "noisy": {
+      "coverage": 0.901,
+      "median_radius_m": 69.20278232881846,
+      "frac_below_50m": 0.048
+    }
+  },
+  "pw_noisy_ensr_gnn_seed3": {
+    "tag": "pw_noisy_ensr_gnn_seed3",
+    "maps": "ensr",
+    "arch": "gnn",
+    "val_nll": 5.618496337890625,
+    "noisy": {
+      "coverage": 0.913,
+      "median_radius_m": 68.35536935907044,
+      "frac_below_50m": 0.2905
+    }
+  },
+  "pw_noisy_nomaps_st_seed1": {
+    "tag": "pw_noisy_nomaps_st_seed1",
+    "maps": "off",
+    "arch": "st",
+    "val_nll": 6.20543505859375,
+    "clean": {
+      "coverage": 0.8905,
+      "median_radius_m": 75.83347359304877,
+      "frac_below_50m": 0.154
+    },
+    "noisy": {
+      "coverage": 0.894,
+      "median_radius_m": 80.37313689919353,
+      "frac_below_50m": 0.108
+    }
+  },
+  "pw_noisy_ensr_st_seed1": {
+    "tag": "pw_noisy_ensr_st_seed1",
+    "maps": "ensr",
+    "arch": "st",
+    "val_nll": 5.634796142578125,
+    "noisy": {
+      "coverage": 0.908,
+      "median_radius_m": 69.41301911391372,
+      "frac_below_50m": 0.2645
+    }
+  },
+  "pw_noisy_nomaps_st_seed2": {
+    "tag": "pw_noisy_nomaps_st_seed2",
+    "maps": "off",
+    "arch": "st",
+    "val_nll": 6.291290771484375,
+    "clean": {
+      "coverage": 0.891,
+      "median_radius_m": 78.53928781463003,
+      "frac_below_50m": 0.0995
+    },
+    "noisy": {
+      "coverage": 0.8915,
+      "median_radius_m": 82.34321271399627,
+      "frac_below_50m": 0.0715
+    }
+  },
+  "pw_noisy_ensr_st_seed2": {
+    "tag": "pw_noisy_ensr_st_seed2",
+    "maps": "ensr",
+    "arch": "st",
+    "val_nll": 5.630815185546875,
+    "noisy": {
+      "coverage": 0.9075,
+      "median_radius_m": 69.76200582413337,
+      "frac_below_50m": 0.2615
+    }
+  },
+  "pw_noisy_nomaps_st_seed3": {
+    "tag": "pw_noisy_nomaps_st_seed3",
+    "maps": "off",
+    "arch": "st",
+    "val_nll": 6.241963623046875,
+    "clean": {
+      "coverage": 0.8955,
+      "median_radius_m": 77.41813022591651,
+      "frac_below_50m": 0.166
+    },
+    "noisy": {
+      "coverage": 0.892,
+      "median_radius_m": 81.03515070654102,
+      "frac_below_50m": 0.123
+    }
+  },
+  "pw_noisy_ensr_st_seed3": {
+    "tag": "pw_noisy_ensr_st_seed3",
+    "maps": "ensr",
+    "arch": "st",
+    "val_nll": 5.635380859375,
+    "noisy": {
+      "coverage": 0.913,
+      "median_radius_m": 70.31678200232864,
+      "frac_below_50m": 0.262
+    }
   }
 }

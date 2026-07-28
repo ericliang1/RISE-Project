@@ -42,7 +42,8 @@ notifications use to associate a leak with a facility. At a
 representative 10$^\circ$/10\% anemometer-error setting, where the
 evaluated measured-wind inversion baselines produce operationally
 uninformative calibrated regions, the method retains its guarantee at
-\textbf{70--73\,m}, with a quarter of cases below 50\,m. All results are
+\textbf{68--73\,m across the same three network families}, with about
+a quarter of cases below 50\,m. All results are
 verified against exact references and reported over multiple training
 seeds.
 \end{abstract}
@@ -102,8 +103,9 @@ images close half of that gap on all three network families we tested
 \item \textbf{C3: Robustness under measured wind.} At the evaluated
 10$^\circ$/10\% anemometer-error setting, the measured-wind inversion
 baselines produce operationally uninformative calibrated regions
-(essentially the whole site), while the method degrades gracefully, and
-each added image tightens the guaranteed regions further, to 70--73\,m.
+(essentially the whole site), while the method degrades gracefully:
+each added image tightens the regions further, and all three network
+families land at 68--73\,m.
 \end{itemize}
 Every component is standard and auditable, every number below comes
 from one shared, verified simulator with identical splits and
@@ -433,8 +435,7 @@ distance, to 47.1--47.7\,m. Relative to the labels-only
 model on the same 2{,}000 paired scenarios, the images reduce the median
 radius by 46.1\,m (paired-bootstrap 95\% CI $[43.6, 48.1]$), produce
 smaller regions in 96.4\% of cases, and place 52.4\% of regions below
-the 50\,m facility scale (Clopper--Pearson 95\% CI $[50.2, 54.6]$\%);
-radius percentiles p50/p75/p90 are 48/86/131\,m.
+the 50\,m scale (Clopper--Pearson 95\% CI $[50.2, 54.6]$\%).
 
 The fix is architecture-independent (Table~\ref{tab:est}): three
 network families with a 40\,m baseline spread land inside a 1.5\,m
@@ -465,19 +466,22 @@ measured wind.
 \label{sec:robust}
 \begin{table}[t]
 \centering
-\caption{Measured wind ($10^\circ$/10\% per-step anemometer error; no
-method observes the true wind; calibration under the deployment
-condition; DeepSets base; 3 seeds for learned rows).}
+\caption{The physics images help every model under measured wind
+($10^\circ$/10\% per-step anemometer error; 3 seeds per cell; coverage
+0.89--0.92 with images. For reference, direct physics inversion retains
+its guarantee only at coverage 1.00, returning the full site, 282\,m.)}
 \label{tab:wind}
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lccc}
+\setlength{\tabcolsep}{3.5pt}
+\footnotesize
+\begin{tabular}{lcccc}
 \toprule
-Pipeline & Cov. & Radius (m) & $<$50\,m \\
+ & \multicolumn{2}{c}{Without images} &
+\multicolumn{2}{c}{With images} \\
+Base network & Radius (m) & $<$50\,m & Radius (m) & $<$50\,m \\
 \midrule
-Direct physics inversion & 1.00 & 282 (full site) & 0\% \\
-Network, no physics images & 0.90--0.91 & 107.9--110.5 & 0\% \\
-\textbf{Ours, uncertainty-aware images} & 0.90--0.92 & \textbf{70.1--72.9}
-& \textbf{24--27\%} \\
+DeepSets & 107.9--110.5 & 0\% & \textbf{70.1--72.9} & 24--27\% \\
+GNN & 69.2--71.3 & 1--5\% & \textbf{68.4--69.3} & 27--29\% \\
+Set Transformer & 80.4--82.3 & 7--12\% & \textbf{69.4--70.3} & 26\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -529,7 +533,7 @@ Real anemometers have error, and the effect on direct physics inversion
 is dramatic. Trusting the measured wind exactly, it concentrates its
 probability so far from the true source that, to keep its guarantee, the
 calibration wrapper must return essentially the entire site
-(Table~\ref{tab:wind}); allowing extra measurement noise, tuned on
+(282\,m at coverage 1.00); allowing extra measurement noise, tuned on
 held-out data, does not change this. A negative control isolates the
 cause of our gains: feeding the identical head four \emph{random} images
 of the same shape and scale (one seed, diagnostic) matches

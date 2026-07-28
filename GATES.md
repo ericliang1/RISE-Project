@@ -452,3 +452,12 @@ labels-only 94-98, ours 47, arch band as a sentence; Table I env removed);
 results tables = measured-wind headline + 4-image ladder only; example
 figure switched to measured wind (8-mast typical case: no-images 104 m vs
 ours 62 m). Archival appendix retains all exact-wind tables.
+
+## 2026-07-28 — Per-model wind-uncertainty table (12 new runs)
+GNN/ST trained under measured wind via phys_head_on(base_cls, n_ch)
+factory (zero-init head, any base): GNN nomaps 69.2-71.3 (<50: 1-5%) vs
+ensr 68.4-69.3 (27-29%); ST nomaps 80.4-82.3 (7-12%) vs ensr 69.4-70.3
+(26%). Architecture-independence holds under measured wind: all three
+families converge to 68-73 m / 24-29% <50 m; for stronger baselines the
+gain concentrates in the lower tail (GNN median ~flat, <50m share 10x).
+Table II now per-model; abstract/C3 updated to 68-73 across families.
