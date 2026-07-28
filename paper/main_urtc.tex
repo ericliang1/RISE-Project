@@ -467,21 +467,25 @@ measured wind.
 \begin{table}[t]
 \centering
 \caption{The physics images help every model under measured wind
-($10^\circ$/10\% per-step anemometer error; 3 seeds per cell; coverage
-0.89--0.92 with images. For reference, direct physics inversion retains
-its guarantee only at coverage 1.00, returning the full site, 282\,m.)}
+($10^\circ$/10\% per-step anemometer error; radii in m; 3 seeds per
+cell. For reference, direct physics inversion retains its guarantee
+only at coverage 1.00, returning the full site, 282\,m.)}
 \label{tab:wind}
-\setlength{\tabcolsep}{3.5pt}
+\setlength{\tabcolsep}{2.2pt}
 \footnotesize
-\begin{tabular}{lcccc}
+\begin{tabular}{lcccccc}
 \toprule
- & \multicolumn{2}{c}{Without images} &
-\multicolumn{2}{c}{With images} \\
-Base network & Radius (m) & $<$50\,m & Radius (m) & $<$50\,m \\
+ & \multicolumn{3}{c}{Without images} &
+\multicolumn{3}{c}{With images} \\
+Base network & Cov. & Radius & $<$50\,m & Cov. & Radius &
+$<$50\,m \\
 \midrule
-DeepSets & 107.9--110.5 & 0\% & \textbf{70.1--72.9} & 24--27\% \\
-GNN & 69.2--71.3 & 1--5\% & \textbf{68.4--69.3} & 27--29\% \\
-Set Transformer & 80.4--82.3 & 7--12\% & \textbf{69.4--70.3} & 26\% \\
+DeepSets & 0.90--0.91 & 108--110 & 0\% & 0.90--0.92 &
+\textbf{70--73} & 24--27\% \\
+GNN & 0.90--0.91 & 69--71 & 1--5\% & 0.91 &
+\textbf{68--69} & 27--29\% \\
+Set Transformer & 0.89 & 80--82 & 7--12\% & 0.91 &
+\textbf{69--70} & 26\% \\
 \bottomrule
 \end{tabular}
 \end{table}
