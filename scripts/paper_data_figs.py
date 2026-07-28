@@ -310,73 +310,67 @@ def fig_compare():
 def fig_masts():
     d = dict(np.load(dd / "ch4t_test.npz", allow_pickle=True))
     ns = d["n_sensors"].astype(int)
-    zo = np.load(dd / "pw_audit_pw_noisy_ensr_seed1_noisy.npz")
-    zb = np.load(dd / "pw_audit_pw_noisy_nomaps_seed1_noisy.npz")
-    ro, rb = rad(zo["sizes"].astype(float)), rad(zb["sizes"].astype(float))
+    nets = [("DeepSets", "", BLUE), ("GNN", "_gnn", ORANGE),
+            ("Set Transf.", "_st", AQUA)]
     counts = np.arange(4, 13)
-    mb = [np.median(rb[ns == c]) for c in counts]
-    mo = [np.median(ro[ns == c]) for c in counts]
-    fig, ax = plt.subplots(figsize=(6.4, 4.0))
+    fig, ax = plt.subplots(figsize=(6.6, 4.2))
     ax.axhline(50, color=MUTED, lw=1.4, ls=(0, (4, 3)), zorder=2)
-    ax.annotate("50 m facility scale", xy=(4.15, 50), va="bottom",
-                ha="left", fontsize=9.6, color=MUTED)
-    ax.plot(counts, mb, color=ORANGE, lw=2.2, marker="o", ms=8,
-            mec=SURF, mew=1.6, zorder=3, label="no physics images")
-    ax.plot(counts, mo, color=BLUE_D, lw=2.2, marker="o", ms=8,
-            mec=SURF, mew=1.6, zorder=4, label="ours (full images)")
+    ax.annotate("50 m facility scale", xy=(4.1, 50), va="bottom",
+                ha="left", fontsize=9.4, color=MUTED)
+    for lab, sfx, c in nets:
+        rb = rad(np.load(dd / f"pw_audit_pw_noisy_nomaps{sfx}_seed1_noisy"
+                         ".npz")["sizes"].astype(float))
+        ro = rad(np.load(dd / f"pw_audit_pw_noisy_ensr{sfx}_seed1_noisy"
+                         ".npz")["sizes"].astype(float))
+        mb = [np.median(rb[ns == k]) for k in counts]
+        mo = [np.median(ro[ns == k]) for k in counts]
+        ax.plot(counts, mb, color=c, lw=1.8, ls=(0, (4, 2)), marker="o",
+                ms=5.5, mec=SURF, mew=1.2, alpha=0.75, zorder=3)
+        ax.plot(counts, mo, color=c, lw=2.4, marker="o", ms=8, mec=SURF,
+                mew=1.6, zorder=4, label=lab)
     ax.set_xticks(counts)
     ax.set_xlabel("number of sensor masts")
     ax.set_ylabel("median 90% region radius (m)")
-    ax.set_xlim(3.6, 12.4); ax.set_ylim(38, 170)
+    ax.set_xlim(3.6, 12.4); ax.set_ylim(38, 175)
     ax.yaxis.grid(True, color=GRID, lw=0.8); ax.set_axisbelow(True)
     despine(ax)
-    ax.legend(loc="upper right", frameon=False, fontsize=10.5)
+    leg = ax.legend(loc="upper right", frameon=False, fontsize=10.5,
+                    title="solid: with images   dashed: without")
+    leg.get_title().set_fontsize(9.5)
+    leg.get_title().set_color(INK2)
     save(fig, "fig_data_masts")
 
 
 # ------------- Fig 1d: measured-wind region-size distributions, annotated
 def fig_dist():
-    base = sizes("pw_audit_pw_noisy_nomaps_lam0.0_seed1_noisy.npz")
-    ours = sizes("pw_audit_pw_noisy_ensr_lam0.0_seed1_noisy.npz")
+    nets = [("DeepSets", "", BLUE), ("GNN", "_gnn", ORANGE),
+            ("Set Transf.", "_st", AQUA)]
     fig, ax = plt.subplots(figsize=(8.6, 4.0))
-    for r, c, lab in ((base, ORANGE, "no physics images"),
-                      (ours, BLUE_D, "ours (full images)")):
-        x = np.sort(r)
-        yv = np.arange(1, len(x) + 1) / len(x)
-        ax.plot(x, yv, color=c, lw=2.4, label=lab, solid_capstyle="round")
-    f50 = float((ours < 50).mean())
-    med = float(np.median(ours))
+    for lab, sfx, c in nets:
+        for kind, ls, lw, al in (("nomaps", (0, (4, 2)), 1.7, 0.75),
+                                 ("ensr", "-", 2.4, 1.0)):
+            r = rad(np.load(dd / f"pw_audit_pw_noisy_{kind}{sfx}_seed1"
+                            "_noisy.npz")["sizes"].astype(float))
+            x = np.sort(r)
+            yv = np.arange(1, len(x) + 1) / len(x)
+            ax.plot(x, yv, color=c, ls=ls, lw=lw, alpha=al,
+                    label=(lab if kind == "ensr" else None),
+                    solid_capstyle="round")
     ax.axvline(50, color=MUTED, lw=1.4, ls=(0, (4, 3)))
-    # annotation: fraction below the 50 m scale
-    ax.plot([21, 50], [f50, f50], color=BLUE_D, lw=1.1, ls=(0, (2, 2)))
-    ax.plot(50, f50, "o", color=BLUE_D, ms=8, mec=SURF, mew=1.5)
-    ax.annotate(f"{f50*100:.0f}% of scenarios\nreach the 50 m scale",
-                xy=(50, f50), xytext=(23.5, f50 + 0.30), fontsize=10.5,
-                color=INK,
-                bbox=dict(boxstyle="round,pad=0.25", fc=SURF, ec="none",
-                          alpha=0.95),
-                arrowprops=dict(arrowstyle="-", color=INK2, lw=1.1,
-                                shrinkB=6))
-    # annotation: the median
-    ax.plot([21, med], [0.5, 0.5], color=BLUE_D, lw=1.1, ls=(0, (2, 2)))
-    ax.plot(med, 0.5, "o", color=BLUE_D, ms=8, mec=SURF, mew=1.5)
-    ax.annotate(f"median {med:.0f} m", xy=(med, 0.5),
-                xytext=(med + 26, 0.40), fontsize=10.5, color=INK,
-                bbox=dict(boxstyle="round,pad=0.25", fc=SURF, ec="none",
-                          alpha=0.95),
-                arrowprops=dict(arrowstyle="-", color=INK2, lw=1.1,
-                                shrinkB=6))
     ax.annotate("EPA 50 m", xy=(50, 1.015), ha="center", fontsize=10,
                 color=MUTED, annotation_clip=False)
     ax.set_xscale("log")
-    ax.set_xlim(21, 320); ax.set_ylim(0, 1.0)
-    ax.set_xticks([25, 50, 100, 200, 300])
-    ax.set_xticklabels(["25", "50", "100", "200", "300"])
+    ax.set_xlim(18, 320); ax.set_ylim(0, 1.0)
+    ax.set_xticks([20, 50, 100, 200, 300])
+    ax.set_xticklabels(["20", "50", "100", "200", "300"])
     ax.set_xlabel("90% region radius (m), log scale; measured wind")
     ax.set_ylabel("fraction of scenarios at or below")
     ax.yaxis.grid(True, color=GRID, lw=0.8); ax.set_axisbelow(True)
     despine(ax)
-    ax.legend(loc="lower right", frameon=False, fontsize=10.5)
+    leg = ax.legend(loc="lower right", frameon=False, fontsize=10.5,
+                    title="solid: with images   dashed: without")
+    leg.get_title().set_fontsize(9.5)
+    leg.get_title().set_color(INK2)
     save(fig, "fig_data_dist")
 
 

@@ -114,7 +114,7 @@ intervals over the same 2{,}000 test scenarios.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.4\linewidth]{../figures/paper/fig_data_example.pdf}
+\includegraphics[width=0.37\linewidth]{../figures/paper/fig_data_example.pdf}
 \caption{A well-instrumented test scenario (12 masts, measured wind):
 90\% regions of the no-images baseline and of our method (conformal
 masks), with the 50\,m facility scale. Selection rule: among
@@ -515,21 +515,25 @@ none (input-only network) & 0.90--0.91 & 107.9--110.5 & 0\% \\
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.7\linewidth]{../figures/paper/fig_data_masts.pdf}
-\caption{Sensor-count ablation (measured wind, seed-1 diagnostic;
-$\approx$210--240 test scenarios per mast count). More masts shrink the
-guaranteed regions toward the facility scale; the conformal guarantee
-remains marginal over the full distribution.}
+\includegraphics[width=0.64\linewidth]{../figures/paper/fig_data_masts.pdf}
+\caption{Sensor-count ablation for all three base networks (measured
+wind, seed-1 diagnostic; $\approx$210--240 test scenarios per mast
+count; solid: with images, dashed: without). With the images, the three
+networks track a single curve that approaches the facility scale as
+masts are added; the conformal guarantee remains marginal over the full
+distribution.}
 \label{tab:masts}
 \end{figure}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.68\linewidth]{../figures/paper/fig_data_dist.pdf}
+\includegraphics[width=0.64\linewidth]{../figures/paper/fig_data_dist.pdf}
 \caption{Region-radius distributions over all 2{,}000 test scenarios
-under measured wind: 27\% of our regions fall below the 50\,m scale
-while the median sits at 71\,m; the no-images distribution never
-reaches the scale.}
+under measured wind, for all three base networks (seed 1; solid: with
+images, dashed: without). The three with-images distributions are
+nearly indistinguishable: the physics images, not the architecture, set
+the achievable precision; about a quarter of regions fall below the
+50\,m scale.}
 \label{fig:dist}
 \end{figure}
 
@@ -538,12 +542,10 @@ is dramatic. Trusting the measured wind exactly, it concentrates its
 probability so far from the true source that, to keep its guarantee, the
 calibration wrapper must return essentially the entire site
 (282\,m at coverage 1.00); allowing extra measurement noise, tuned on
-held-out data, does not change this. A negative control isolates the
-cause of our gains: feeding the identical head four \emph{random} images
-of the same shape and scale (one seed, diagnostic) matches
-the no-physics baseline (107.5\,m), so the improvement traces to the
-physics content of the images, not to added capacity or spatial
-regularization. The learned recipe behaves differently, and the pattern
+held-out data, does not change this. A negative control isolates the cause: four \emph{random} images
+through the identical head (one seed, diagnostic) match the no-physics
+baseline (107.5\,m), so the improvement traces to the physics content
+of the images, not added capacity. The learned recipe behaves differently, and the pattern
 is clean: the more of the wind sensor's
 error-range information the input images carry, the smaller the
 guaranteed regions become (Table~\ref{tab:comp}): from 82--84\,m using
@@ -616,7 +618,7 @@ algorithms with simulation-based calibration,'' arXiv:1804.06788, 2018.
 inference of simulation models with Bayesian conditional density
 estimation,'' \emph{NeurIPS}, 2016.
 \bibitem{sbibm} J.-M. Lueckmann \emph{et al.}, ``Benchmarking
-simulation-based inference,'' \emph{AISTATS}, 2021.
+simulation-based inference,'' AISTATS, 2021.
 \bibitem{robsbi} P.~Cannon, D.~Ward, and S.~M. Schmon, ``Model
 misspecification in neural simulation-based inference,''
 arXiv:2209.01845, 2022.
