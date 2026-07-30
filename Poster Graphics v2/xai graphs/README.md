@@ -27,11 +27,11 @@ Training log: `retrain_ensr_seed1.log`.
 
 | File | What it is |
 |---|---|
-| `fig1_physics_to_region.{pdf,png}` | hero panel: the four input maps + the model's softmax with the calibrated 90% region, masts, true source, argmax, scale bar |
-| `fig2_embedding_umap.{pdf,png}` | UMAP of the decoder-input embedding, coloured by radius / masts / stability, with evidence-map thumbnails on the extremes |
-| `fig2_embedding_pca.{pdf,png}` | same three panels for the PCA projection |
+| `fig1_physics_to_region.{pdf,png,svg}` | hero panel: the four input maps + the model's softmax with the calibrated 90% region, masts, true source, argmax, scale bar |
+| `fig2_embedding_umap.{pdf,png,svg}` | UMAP of the decoder-input embedding, two panels (radius / masts), with evidence-map thumbnails on the extremes |
+| `fig2_embedding_pca.{pdf,png,svg}` | same two panels for the PCA projection |
 | `fig2_embeddings.npz` | the raw 2,000×576 embedding + both projections + labels |
-| `fig3_integrated_gradients.{pdf,png}` | IG of the argmax cell's log-prob w.r.t. each input map |
+| `fig3_integrated_gradients.{pdf,png,svg}` | IG of the argmax cell's log-prob w.r.t. each input map |
 | `xai_fig1.py`, `xai_fig23.py` | generation scripts (run from repo root) |
 
 ## Reproducibility constants
@@ -63,7 +63,7 @@ story.
 ## Figure 3 takeaway
 
 IG at the predicted cell: source evidence ΣIG = +1.88 > sensor visibility
-+1.35 > fit residual +0.49 > wind sensitivity ≈ 0.00 (this scenario), with
++1.35 > fit quality +0.49 > wind-error sensitivity ≈ 0.00 (this scenario), with
 attribution concentrated on the predicted cell and a mild negative band
 upwind. The maps pathway contributes +3.72 nats to the argmax cell's
 log-probability (logp −7.53 → −3.81 from zero maps to full maps). The

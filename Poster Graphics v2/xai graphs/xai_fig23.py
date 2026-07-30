@@ -4,18 +4,21 @@ from the real retrained paper checkpoint (see xai_fig1.py).
 Figure 2: the set-network embedding (the input to model.decoder — the
 concatenated mean-pool / max-pool / context vector, captured with a forward
 pre-hook) for all 2,000 seed-1 test scenarios, projected with UMAP
-(n_neighbors=30, min_dist=0.1, random_state=1) AND PCA.  Coloured by
-achieved 90% region radius, mast count, and Pasquill stability class.
-After plotting, the structure is quantified (silhouette of a radius split,
-Spearman correlation of each projection axis with log radius) and reported
-plainly.  Note: mast count and stability are inputs to the context MLP, so
-the embedding is expected to encode them.
+(n_neighbors=30, min_dist=0.1, random_state=1) AND PCA.  Two panels:
+coloured by achieved 90% region radius and by mast count (the stability
+panel was dropped — silhouette ~0, uniform blob).  The structure metrics
+(silhouette of a radius split, Spearman of axis 1 vs masts / log radius,
+and the within-mast-count correlation) are still computed, printed, and
+quoted on the figure.  Note: mast count is an input to the context MLP, so
+the embedding is expected to encode it.
 
 Figure 3: integrated gradients of the predicted (argmax) cell's log-prob
 w.r.t. the four input feature maps for the Figure-1 scenario
 (ch4t-test-001811).  Baseline = zero maps, 50 midpoint steps; the raw
 sensor tokens are held fixed, so this attributes the maps pathway.  The
 completeness identity (sum of IG = logp(full) - logp(baseline)) is printed.
+Panels follow the canonical map order shared with Figure 1 via
+xai_style.MAP_ORDER.
 
 Usage (from repo root):
   python "Poster Graphics v2/xai graphs/xai_fig23.py"
@@ -42,20 +45,15 @@ from methane_t import N_GRID, to_batch_t                       # noqa: E402
 from methane_t_uncertain import PhysHeadNet                    # noqa: E402
 from conformal import regions, tail_scores, tail_threshold     # noqa: E402
 from xai_fig1 import forward_probs                             # noqa: E402
+from xai_style import (BLUE, CMAP_COUNT, CMAP_DIV, CMAP_MAG,   # noqa: E402
+                       CMAP_MAG_R, INK2, MAP_ORDER, MUTED, ORANGE,
+                       apply_style, draw_argmax, draw_masts, draw_source,
+                       frame, header, save_all)
 
 N_CELLS = N_GRID * N_GRID
 SITE = 500.0
-INK, INK2, MUTED = "#0b0b0b", "#52514e", "#898781"
-SURF = "#fcfcfb"
-BLUE, ORANGE, GOLD, REDX = "#2a78d6", "#eb6834", "#f2c230", "#e04343"
 
-plt.rcParams.update({
-    "font.family": "sans-serif", "font.sans-serif": ["DejaVu Sans"],
-    "font.size": 16, "text.color": INK, "axes.labelcolor": INK2,
-    "xtick.color": INK2, "ytick.color": INK2,
-    "figure.facecolor": SURF, "axes.facecolor": SURF,
-    "savefig.facecolor": SURF,
-})
+apply_style()
 
 FIG1_SCENARIO = 1811   # ch4t-test-001811, fixed in xai_fig1.py
 
@@ -135,84 +133,88 @@ def fig2(d_tst, st_tst, emb, radii):
               f"(axis1, log r | within mast count) = {strat:+.3f}")
     print("VERDICT: the embedding organizes strongly by mast count (a "
           "context input); radius structure is weak and mostly mediated "
-          "by mast count — consider cutting or reframing this figure.")
-    stab = np.round(np.log(d_tst["D"]) * 5).astype(int)
-    stab_names = np.array(list("ABCDEF"))
+          "by mast count — presented as such on the figure.")
 
     for name, pr in (("umap", proj_umap), ("pca", proj_pca)):
         sil, r1, r2, rm, strat = stats[name.upper()]
-        fig, axes = plt.subplots(1, 3, figsize=(16.6, 6.4))
+        fig, axes = plt.subplots(1, 2, figsize=(15.2, 7.2))
         specs = [
-            ("A. 90% region radius", radii, "magma_r",
+            ("A. 90% region radius", radii, CMAP_MAG_R,
              LogNorm(vmin=30, vmax=300), "region radius (m), log"),
-            ("B. Number of masts", masts, "viridis", None, "masts"),
-            ("C. Stability class", stab, "cividis", None,
-             "Pasquill class (A–F)"),
+            ("B. Number of masts", masts, CMAP_COUNT, None, "masts"),
         ]
         for ax, (title, c, cmap, norm, cbl) in zip(axes, specs):
             sc = ax.scatter(pr[:, 0], pr[:, 1], c=c, cmap=cmap, norm=norm,
-                            s=13, linewidths=0, alpha=0.85, rasterized=True)
-            ax.set_title(title, fontsize=18, fontweight="bold", loc="left",
-                         pad=9)
-            ax.set_xticks([])
-            ax.set_yticks([])
-            for sp in ax.spines.values():
-                sp.set_color("#c3c2b7")
-                sp.set_linewidth(1.2)
+                            s=15, linewidths=0, alpha=0.85, rasterized=True)
+            ax.set_title(title, loc="left", pad=9)
+            frame(ax)
             cb = fig.colorbar(sc, ax=ax, orientation="horizontal",
-                              fraction=0.05, pad=0.05, aspect=30)
+                              fraction=0.05, pad=0.04, aspect=30)
             if norm is not None:
                 cb.set_ticks([50, 100, 200])
                 cb.set_ticklabels(["50", "100", "200"])
-            if "Stability" in title:
-                cb.set_ticks(range(6))
-                cb.set_ticklabels(list("ABCDEF"))
             cb.set_label(cbl, fontsize=13, color=INK2)
             cb.ax.tick_params(labelsize=12)
             cb.outline.set_visible(False)
 
-        # thumbnails of the source-evidence map for extreme-radius points
+        # thumbnails of the source-evidence map for extreme-radius points:
+        # white inner pad + white outer halo so they detach from the
+        # scatter; borders match the smallest/largest legend colours;
+        # overlapping picks are nudged apart (greedy, in data units)
+        import matplotlib.patheffects as pe
         ev = st_tst[:, 0, :].numpy()
         order = np.argsort(radii)
+        span = np.ptp(pr, axis=0)
+        placed = []
         for rank, col in [(order[:3], BLUE), (order[-3:], ORANGE)]:
             for j in rank:
                 m = ev[j].reshape(N_GRID, N_GRID)
                 lo, hi = np.percentile(m, [2, 99])
-                im = OffsetImage(np.clip(m, lo, hi), zoom=0.55,
-                                 cmap="viridis", origin="lower")
+                xy = np.array([pr[j, 0], pr[j, 1]], float)
+                for _ in range(12):
+                    if all(np.any(np.abs(xy - q) > 0.135 * span)
+                           for q in placed):
+                        break
+                    xy[0] += 0.05 * span[0]
+                placed.append(xy.copy())
+                im = OffsetImage(np.clip(m, lo, hi), zoom=0.62,
+                                 cmap=CMAP_MAG, origin="lower")
                 ab = AnnotationBbox(
-                    im, (pr[j, 0], pr[j, 1]), frameon=True, pad=0.12,
-                    bboxprops=dict(edgecolor=col, linewidth=2.2))
+                    im, tuple(xy), frameon=True, pad=0.55,
+                    bboxprops=dict(edgecolor=col, facecolor="white",
+                                   linewidth=2.5))
+                ab.patch.set_path_effects(
+                    [pe.withStroke(linewidth=7, foreground="white")])
                 axes[0].add_artist(ab)
-        axes[0].annotate("thumbnails: source-evidence maps of the 3 "
-                         "smallest (blue)\nand 3 largest (orange) regions",
-                         xy=(0, -0.30), xycoords="axes fraction",
-                         fontsize=12, color=MUTED, va="top",
-                         linespacing=1.35)
+        hthumb = [plt.Line2D([], [], marker="s", lw=0, ms=11, mfc="white",
+                             mec=BLUE, mew=2.2,
+                             label="3 smallest regions (evidence map)"),
+                  plt.Line2D([], [], marker="s", lw=0, ms=11, mfc="white",
+                             mec=ORANGE, mew=2.2,
+                             label="3 largest regions (evidence map)")]
+        axes[0].legend(handles=hthumb, loc="lower left", frameon=True,
+                       fontsize=12.5, facecolor="white", framealpha=0.9,
+                       edgecolor="none")
 
-        fig.suptitle("What the set network learned: embedding of all "
-                     "2,000 test scenarios", fontsize=21,
-                     fontweight="bold", x=0.05, ha="left", y=1.075)
-        fig.text(0.05, 1.020,
-                 f"{name.upper()} of the decoder-input embedding "
-                 "(mean-pool ⊕ max-pool ⊕ context), physics-guided "
-                 f"DeepSets (ensr, seed 1) — silhouette of radius split "
-                 f"{sil:.2f};\nSpearman(axis 1): log radius {r1:+.2f}, "
-                 f"masts {rm:+.2f}, log radius within a mast count "
-                 f"{strat:+.2f} — the layout tracks network size (an "
-                 "input), not difficulty per se",
-                 fontsize=13, color=MUTED, ha="left", va="top",
-                 linespacing=1.45)
-        fig.subplots_adjust(wspace=0.09, top=0.90, bottom=0.13,
-                            left=0.03, right=0.985)
-        for ext in ("pdf", "png"):
-            p = HERE / f"fig2_embedding_{name}.{ext}"
-            fig.savefig(p, dpi=300, bbox_inches="tight")
-            print(f"wrote {p}")
+        header(fig, "The embedding tracks mast count — an input — "
+               "not difficulty",
+               f"{name.upper()} of the decoder-input embedding, DeepSets "
+               f"ensr seed 1, 2,000 scenarios · silhouette {sil:.2f} · "
+               f"Spearman axis 1: masts {rm:+.2f}, log radius {r1:+.2f} "
+               f"({strat:+.2f} within a mast count)",
+               ty=1.052, sy=1.014)
+        save_all(fig, str(HERE / f"fig2_embedding_{name}"))
         plt.close(fig)
 
 
 # ------------------------------------------------------------- Figure 3
+def fmt_sig(v):
+    """Signed 2-dp value, but never '-0.00': round first, sign only when
+    the rounded magnitude is >= 0.005."""
+    r = round(float(v), 2)
+    return "0.00" if abs(r) < 0.005 else f"{r:+.2f}"
+
+
 def fig3(cfg, device, model, d_tst, st_tst, Pt, radii, steps=50):
     i = FIG1_SCENARIO
     ns = int(d_tst["n_sensors"][i])
@@ -248,47 +250,33 @@ def fig3(cfg, device, model, d_tst, st_tst, Pt, radii, steps=50):
           f"logp(full) - logp(zero) = {lp_full - lp_zero:+.4f}  "
           f"({steps} midpoint steps, zero-map baseline)")
 
-    titles = [("Source evidence", 0), ("Wind-error\nsensitivity", 1),
-              ("Sensor visibility", 2), ("Fit residual", 3)]
-    vmax = max(np.percentile(np.abs(ig[ch]), 99.5) for _, ch in titles)
+    # symmetric colour limits: 99th percentile of |IG| across all four maps
+    vmax = float(np.percentile(np.abs(ig), 99))
     ext = [0, SITE, 0, SITE]
-    fig, axes = plt.subplots(1, 4, figsize=(16.6, 5.6))
-    for ax, (title, ch) in zip(axes, titles):
-        im = ax.imshow(ig[ch], origin="lower", cmap="RdBu_r", vmin=-vmax,
+    fig, axes = plt.subplots(1, 4, figsize=(16.6, 5.4))
+    for ax, (title, ch) in zip(axes, MAP_ORDER):
+        im = ax.imshow(ig[ch], origin="lower", cmap=CMAP_DIV, vmin=-vmax,
                        vmax=vmax, extent=ext, interpolation="bilinear")
-        ax.scatter(sx[:, 0], sx[:, 1], marker="^", s=64, c="white",
-                   edgecolors=INK, linewidths=1.1, zorder=6)
-        ax.plot(*tx, marker="*", color=GOLD, ms=16, mec=INK, mew=1.0,
-                zorder=7)
-        ax.plot(*ax_, marker="x", color=REDX, ms=11, mew=2.6, zorder=7)
-        ax.set_title(f"{title}\n$\\Sigma$IG = {ig[ch].sum():+.2f}",
-                     fontsize=16.5, fontweight="bold", linespacing=1.2,
-                     pad=8)
-        ax.set_xticks([])
-        ax.set_yticks([])
-        for sp in ax.spines.values():
-            sp.set_color("#c3c2b7")
-            sp.set_linewidth(1.2)
-    cb = fig.colorbar(im, ax=axes, fraction=0.023, pad=0.015, shrink=0.86)
+        draw_masts(ax, sx)
+        draw_source(ax, tx)
+        draw_argmax(ax, ax_)
+        ax.set_title(f"{title}\n$\\Sigma$IG = {fmt_sig(ig[ch].sum())}",
+                     fontsize=16.5, linespacing=1.2, pad=8)
+        frame(ax)
+    cb = fig.colorbar(im, ax=axes, fraction=0.023, pad=0.015, shrink=0.70)
     cb.set_label("IG of log $\\hat{p}$(argmax cell)", fontsize=13.5,
                  color=INK2)
     cb.ax.tick_params(labelsize=12)
     cb.outline.set_visible(False)
 
-    fig.suptitle("Which physics map drove the decision? Integrated "
-                 "gradients on the Figure-1 scenario", fontsize=21,
-                 fontweight="bold", x=0.045, ha="left", y=1.10)
-    fig.text(0.045, 1.025,
-             f"scenario ch4t-test-{FIG1_SCENARIO:06d} ({ns} masts); red = "
-             "pushed probability toward the predicted cell, blue = away; "
-             f"zero-map baseline, {steps} midpoint steps — completeness "
-             f"|error| {abs(ig.sum() - (lp_full - lp_zero)):.3f} nats; "
-             "complements the Table II ablation",
-             fontsize=13, color=MUTED, ha="left")
-    for ext_ in ("pdf", "png"):
-        p = HERE / f"fig3_integrated_gradients.{ext_}"
-        fig.savefig(p, dpi=300, bbox_inches="tight")
-        print(f"wrote {p}")
+    header(fig, "Which physics map drove the decision? Integrated "
+           "gradients on the Figure-1 scenario",
+           f"scenario ch4t-test-{FIG1_SCENARIO:06d} ({ns} masts) · red = "
+           "toward the predicted cell, blue = away · zero-map baseline, "
+           f"{steps} midpoint steps · completeness |error| "
+           f"{abs(ig.sum() - (lp_full - lp_zero)):.3f} nats",
+           ty=1.085, sy=1.028)
+    save_all(fig, str(HERE / "fig3_integrated_gradients"))
     plt.close(fig)
 
 
