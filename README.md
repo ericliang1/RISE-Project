@@ -1,4 +1,4 @@
-# Conformal Source Regions for Sparse-Sensor Pollution Localization
+# Conformal Source Regions for Sparse-Sensor Pollution Localization 
 
 Computational pipeline for the paper *"Conformal Source Regions for
 Sparse-Sensor Pollution Localization: A Calibration, Exact-Posterior Audit,
