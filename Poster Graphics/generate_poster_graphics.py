@@ -153,7 +153,7 @@ def fig_dumbbell(m):
               handletextpad=0.4)
     ax.set_title("Physics-guided features reduce localization region size",
                  fontsize=20, fontweight="bold", loc="left", pad=16)
-    ax.annotate("coverage held at 0.89–0.91 against the nominal 90%; "
+    ax.annotate("coverage held at 0.89–0.92 against the nominal 90%; "
                 "bars span three training seeds",
                 xy=(0, -0.155), xycoords="axes fraction", fontsize=13,
                 color=MUTED)
