@@ -194,9 +194,9 @@
     "wilcoxon_p": 1.117875445391786e-62
   },
   "CH4T_probe": {
-    "ident_frac": 0.73,
-    "n": 400,
-    "weak_frac": 0.05
+    "ident_frac": 0.7166666666666667,
+    "n": 300,
+    "weak_frac": 0.08333333333333333
   },
   "CH4_extras": {
     "dose_knob1": {

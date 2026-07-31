@@ -485,3 +485,14 @@ Side effect: the paper sentence "the same K wind draws calculate all maps"
 becomes literally true (stream 92 only; the residual used stream 93).
 Full-pop evidence for the dropped rung: -4.0 m [-5.6, -2.7], smallest
 contributor. gen-marg/verify-marg dropped from datagen; chains train ens.
+
+## 2026-07-31 — Population re-decision: 2-8 masts (user directive, third range)
+Sequence 6-12 -> (4-8 staged) -> 2-8, chosen after seeing 6-12 results where
+maps hurt GNN/ST (equalizer pattern; baselines outran maps on dense networks).
+Forking-paths risk surfaced to user explicitly; 2-12 sweep recommended; user
+chose 2-8. DISCLOSURE REQUIRED in paper: population selected after observing
+the density interaction. 6-12 grid complete and retained (18 runs, csr-data-se,
+results archived) as the dense-regime comparison. Identifiability probe (300
+scenarios, 2-8, q>=100): weak-frac 0.08, identifiable 0.72, median oracle area
+0.001 of site — population well-posed, gate passed. CSR_DATA_DIR env override
+added so se28 datagen runs while chain 1 finishes 6-12 on the config'd dir.

@@ -4,13 +4,16 @@
   calib: 2000  q [100, 499] kg/h  masts [6, 12]
   test: 2000  q [100, 500] kg/h  masts [6, 12]
 == exact posteriors (calib/test only) ==
-  posterior 2000/2000
-  calib: norm_err 5.63e-14
-  posterior 2000/2000
-  test: norm_err 5.66e-14
   conformal-on-exact coverage: 0.963  median radius 4.4 m
 == datagen gates passed ==
-  train: maps done
-  val: maps done
-  calib: maps done
+  train: maps exist, skipping
+  val: maps exist, skipping
+  calib: maps exist, skipping
   calib oracle 1000/2000
+  calib oracle 2000/2000
+  calib: oracles done
+  test: maps done
+  test oracle 1000/2000
+  test oracle 2000/2000
+  test: oracles done
+== SE DATAGEN COMPLETE 14:03

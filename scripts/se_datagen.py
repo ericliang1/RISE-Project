@@ -41,7 +41,7 @@ def main():
             savez_atomic(p, **data[name])
         q = data[name]["q"]
         ns = data[name]["n_sensors"].astype(int)
-        assert q.min() >= 100.0 and ns.min() >= 6, \
+        assert q.min() >= 100.0 and ns.min() >= 2 and ns.max() <= 8, \
             f"{name}: population violation (q_min {q.min():.1f}, S_min {ns.min()})"
         print(f"  {name}: {len(data[name]['ids'])}  q [{q.min():.0f}, "
               f"{q.max():.0f}] kg/h  masts [{ns.min()}, {ns.max()}]",

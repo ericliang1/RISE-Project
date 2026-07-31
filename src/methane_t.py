@@ -107,7 +107,7 @@ def gen_split(name, count, cfg, root):
         stab = int(rng.integers(0, 6))
         sig = np.exp(rng.uniform(np.log(0.2), np.log(3.0)))
         pd = rng.uniform(0.0, 0.2)
-        n = int(rng.integers(6, 13))
+        n = int(rng.integers(2, 9))
         sensors = rng.uniform(0, 1, (n, 2))
         pad = np.zeros((12, 2)); pad[:n] = sensors
         g = sensor_responses_t(sensors, xs, u_seq, stab, "cpu").numpy()  # (n,T)

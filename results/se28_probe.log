@@ -1,0 +1,9 @@
+== PROBE: 300 test scenarios ==
+  posterior 100/300
+  posterior 200/300
+  posterior 300/300
+  norm_err 2.89e-14
+  MAP within 1 cell of true (sharp scenarios): 0.87 of 198
+  weakly identifiable (oracle>=50% site): 0.08 (steady model was 0.57)
+  identifiable (oracle<10% site): 0.72
+  oracle area quartiles: [0.    0.001 0.204]

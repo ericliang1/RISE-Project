@@ -24,6 +24,15 @@ def get_device():
 
 
 def resolve(cfg, key):
+    """Resolve a paths: entry relative to the repo root.  CSR_DATA_DIR
+    overrides data_dir so a new benchmark can generate in parallel with
+    runs still reading the config'd directory."""
+    if key == "data_dir" and os.environ.get("CSR_DATA_DIR"):
+        return Path(os.environ["CSR_DATA_DIR"])
+    return _resolve_cfg(cfg, key)
+
+
+def _resolve_cfg(cfg, key):
     """Resolve a paths: entry relative to the repo root."""
     p = Path(cfg["paths"][key])
     return p if p.is_absolute() else REPO_ROOT / p
