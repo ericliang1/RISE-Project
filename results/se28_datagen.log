@@ -10,3 +10,14 @@
   test: norm_err 5.64e-14
   conformal-on-exact coverage: 0.962  median radius 7.6 m
 == datagen gates passed ==
+  train: maps done
+  val: maps done
+  calib: maps done
+  calib oracle 1000/2000
+  calib oracle 2000/2000
+  calib: oracles done
+  test: maps done
+  test oracle 1000/2000
+  test oracle 2000/2000
+  test: oracles done
+== SE DATAGEN COMPLETE 14:54

@@ -504,3 +504,10 @@ and checkpoints remain in csr-data-se (not deleted). Paper population is 2-8
 exclusively; config data_dir flipped to csr-data-se28. The 6-12 evidence of
 the density interaction (maps hurt GNN/ST at 54-57 m baselines) stays on disk
 for the record and for any density-axis discussion.
+
+## 2026-07-31 — Final population: 4-8 masts (user directive, fourth range)
+2-8 partial grid (3 runs: DS pair 127->92 m, ST ens 91 m) cut short; user
+moved to 4-8, the range the fullpop forecast supported (all-arch map gains,
++16 to +27 pp <50m). 2-8 rows archived (paired_wind_se28_partial.json),
+csr-data-se28 retained incl. 72%-identifiable probe. Paper must disclose
+the range iteration; 6-12 and 2-8 evidence stays on disk.

@@ -1,11 +1,11 @@
-"""Table II (super-emitter benchmark): physics-only inversion vs the method.
+"""Table I (2-8-mast super-emitter benchmark): one table, whole story.
 
-Row 1: the wind-averaged physics-only posterior (ch4tu_*_oracle_marg.npz,
-K=8 draws from the anemometer error model, rate integrated over the
-generating prior), conformalized with the identical wrapper and calibration
-scenarios as every network.  Rows 2-4: the three base networks with the three
-physics input maps (evidence, spread, visibility; K=8 shared wind draws),
-read from their per-scenario audit npzs (3 seeds each).
+Row 1: wind-averaged physics-only inversion (ch4tu_*_oracle_marg.npz, K=8
+draws from the anemometer error model, rate integrated over the generating
+prior), conformalized with the identical wrapper and calibration scenarios
+as every network.  Rows 2-7: three set networks, each without and with the
+three physics input maps (evidence, spread, visibility; K=8 shared draws),
+from their per-scenario audit npzs (3 seeds each; measured wind).
 
 Run after the training chains complete: python scripts/se_physics_table.py
 """
@@ -44,7 +44,7 @@ def fmt(name, per_seed):
          else "%.1f-%.1f" % (min(med), max(med)))
     f = ("%.1f%%" % (100 * f50[0]) if len(f50) == 1
          else "%.1f-%.1f%%" % (100 * min(f50), 100 * max(f50)))
-    print("%-28s %-12s %-12s %-12s  worst-seed CP [%.3f, %.3f]"
+    print("%-30s %-12s %-12s %-12s worst-seed CP [%.3f, %.3f]"
           % (name, c, r, f, lo, hi))
 
 
@@ -52,10 +52,9 @@ dc = dict(np.load(dd / "ch4t_calib.npz", allow_pickle=True))
 dt = dict(np.load(dd / "ch4t_test.npz", allow_pickle=True))
 n = len(dt["ids"])
 
-print("%-28s %-12s %-12s %-12s" % ("method", "coverage", "radius (m)",
+print("%-30s %-12s %-12s %-12s" % ("method", "coverage", "radius (m)",
                                    "below 50 m"))
 
-# ---- row 1: wind-averaged physics only, same wrapper, same calib ----
 Pc = np.load(dd / "ch4tu_calib_oracle_marg.npz")["probs"]
 Pt = np.load(dd / "ch4tu_test_oracle_marg.npz")["probs"]
 th = tail_threshold(tail_scores(Pc, dc["true_cell"],
@@ -63,12 +62,16 @@ th = tail_threshold(tail_scores(Pc, dc["true_cell"],
 reg = regions(Pt, th, dt["true_cell"])
 fmt("Wind-averaged physics only", [stats(reg["sizes"], reg["covered"], n)])
 
-# ---- rows 2-4: the three networks with the physics maps ----
-for name, at in [("DeepSets + physics maps", ""),
-                 ("GNN + physics maps", "_gnn"),
-                 ("Set Transformer + physics maps", "_st")]:
-    per_seed = []
-    for s in (1, 2, 3):
-        z = np.load(dd / f"pw_audit_pw_noisy_ens{at}_seed{s}_noisy.npz")
-        per_seed.append(stats(z["sizes"], z["covered"], n))
-    fmt(name, per_seed)
+for arch, at in [("DeepSets", ""), ("GNN", "_gnn"),
+                 ("Set Transformer", "_st")]:
+    for label, mt in [("without maps", "nomaps"), ("with maps", "ens")]:
+        per_seed = []
+        for s in (1, 2, 3):
+            p = dd / f"pw_audit_pw_noisy_{mt}{at}_seed{s}_noisy.npz"
+            if p.exists():
+                z = np.load(p)
+                per_seed.append(stats(z["sizes"], z["covered"], n))
+        if per_seed:
+            fmt(f"{arch} {label} [{len(per_seed)}s]", per_seed)
+        else:
+            print(f"{arch} {label}: no runs yet")
