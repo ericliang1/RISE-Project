@@ -25,6 +25,7 @@ Usage examples:
   python src/paired_wind.py --stage train --views noisy --maps ensr --seed 2
 """
 import argparse
+import fcntl
 import json
 import os
 
@@ -32,7 +33,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from common import cell_centers, get_device, load_config, pos_to_cell, resolve
+from common import cell_centers, get_device, load_config, pos_to_cell, \
+    resolve, savez_atomic
 from conformal import region_mask, regions, tail_scores, tail_threshold
 from methane_t import DeepSetsT, N_GRID, SPLITS, cell_responses_t, \
     d4_augment_t, stab_of, to_batch_t
@@ -261,8 +263,8 @@ def stage_gen_marg(cfg, device, k_draws=K_MARG):
         r = (Rsum / k_draws) / np.maximum(nob, 1)[:, None]
         r = r - r.min(1, keepdims=True)
         med = np.median(r, axis=1, keepdims=True) + 1e-12
-        np.savez_compressed(path, noisy=np.minimum(r / med, R_MAX)
-                            .astype(np.float16))
+        savez_atomic(path, noisy=np.minimum(r / med, R_MAX)
+                     .astype(np.float16))
         print(f"  {name}: marginalized residual saved", flush=True)
 
 
@@ -476,7 +478,8 @@ def stage_train(cfg, device, views, seed, maps="det", arch="deepsets"):
             out.append(torch.softmax(model(b).float(), -1).cpu().numpy())
         return np.concatenate(out).astype(np.float64)
 
-    for ep in range(200):
+    n_epochs = int(os.environ.get("PW_EPOCHS", 200))   # override for smoke runs
+    for ep in range(n_epochs):
         model.train()
         perm = rng.permutation(n_train)
         for lo in range(0, n_train, tr["batch_size"]):
@@ -545,14 +548,20 @@ def stage_train(cfg, device, views, seed, maps="det", arch="deepsets"):
                      "median_radius_m": rad_m(reg["sizes"]),
                      "frac_below_50m": float((radii < 50).mean())}
         masks = np.stack([region_mask(Pt[i], th) for i in range(len(Pt))])
-        np.savez_compressed(dd / f"pw_audit_{tag}_{cond}.npz",
+        savez_atomic(dd / f"pw_audit_{tag}_{cond}.npz",
                             sizes=reg["sizes"], covered=reg["covered"],
                             masks=np.packbits(masks, axis=1))
     res_path = rr / "paired_wind.json"
-    all_res = json.load(open(res_path)) if res_path.exists() else {}
-    all_res[tag] = out
-    with open(res_path, "w") as f:
-        json.dump(all_res, f, indent=2)
+    # flock: two chains (one per GPU) may finish runs concurrently; guard the
+    # read-modify-write so neither update is lost.
+    with open(rr / "paired_wind.json.lock", "w") as lk:
+        fcntl.flock(lk, fcntl.LOCK_EX)
+        all_res = json.load(open(res_path)) if res_path.exists() else {}
+        all_res[tag] = out
+        tmp = str(res_path) + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(all_res, f, indent=2)
+        os.replace(tmp, res_path)
     print(json.dumps(out), flush=True)
 
 

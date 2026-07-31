@@ -35,7 +35,8 @@ import torch
 import torch.nn as nn
 from scipy.stats import wilcoxon
 
-from common import cell_centers, get_device, load_config, resolve
+from common import cell_centers, get_device, load_config, resolve, \
+    savez_atomic
 from conformal import regions, tail_scores, tail_threshold
 from exact_posterior import marginal_log_evidence
 from methane_pipeline import ch4_cfg
@@ -48,7 +49,10 @@ N_CELLS = N_GRID * N_GRID
 SIG_TH = np.deg2rad(10.0)      # direction error, per step
 SIG_S = 0.10                   # log-speed error, per step
 K_MAPS = 8                     # wind draws for ensemble input maps
-K_TEACHER = 16                 # wind draws for marginalized oracle
+K_TEACHER = 8                  # wind draws for marginalized oracle: same K
+                               # budget as the input maps, so the physics-only
+                               # baseline and the method get identical
+                               # marginalization effort
 
 
 def rad_m(sizes):
@@ -127,10 +131,24 @@ def stage_gen(cfg, cfg_q, device):
         u_obs = obs_wind_split(d, name, root)
         np.save(dd / f"ch4tu_{name}_uobs.npy", u_obs)
 
+        if (dd / f"ch4tu_{name}_maps_ens.npz").exists():   # resume after wall clock
+            print(f"  {name}: maps exist, skipping", flush=True)
+        else:
+            _gen_maps(d, u_obs, cells, device, dd, name, tag, root, n)
+        if name not in ("calib", "test"):
+            continue        # oracles feed only the gate + physics baseline
+        if (dd / f"ch4tu_{name}_oracle_marg.npz").exists():
+            print(f"  {name}: oracles exist, skipping", flush=True)
+            continue
+        _gen_oracles(d, u_obs, cells, device, dd, name, tag, root, n, cfg_q)
+        print(f"  {name}: oracles done", flush=True)
+
+
+def _gen_maps(d, u_obs, cells, device, dd, name, tag, root, n):
         # deterministic maps + evidence at u_hat
         A, B = ab_maps(d, u_obs, cells, device)
         det = np.stack([zmap(A, B, d["sigma"]), logbmap(B)], 1)
-        np.savez_compressed(dd / f"ch4tu_{name}_maps_det.npz",
+        savez_atomic(dd / f"ch4tu_{name}_maps_det.npz",
                             maps=det.astype(np.float32))
 
         # ensemble maps + marginalized evidence over wind draws
@@ -145,10 +163,12 @@ def stage_gen(cfg, cfg_q, device):
             zs[j] = zmap(Aj, Bj, d["sigma"])
             lb[j] = logbmap(Bj)
         ens = np.stack([zs.mean(0), zs.std(0) * 3.0, lb.mean(0)], 1)
-        np.savez_compressed(dd / f"ch4tu_{name}_maps_ens.npz",
+        savez_atomic(dd / f"ch4tu_{name}_maps_ens.npz",
                             maps=ens.astype(np.float32))
         print(f"  {name}: maps done", flush=True)
 
+
+def _gen_oracles(d, u_obs, cells, device, dd, name, tag, root, n, cfg_q):
         # oracle_det: evidence at u_hat; oracle_marg: log-mean-exp over draws
         P_det = np.empty((n, N_CELLS), np.float64)
         P_marg = np.empty((n, N_CELLS), np.float64)
@@ -180,9 +200,8 @@ def stage_gen(cfg, cfg_q, device):
             P_marg[i] = torch.exp(lm - torch.logsumexp(lm, 0)).cpu().numpy()
             if (i + 1) % 1000 == 0:
                 print(f"  {name} oracle {i+1}/{n}", flush=True)
-        np.savez_compressed(dd / f"ch4tu_{name}_oracle_det.npz", probs=P_det)
-        np.savez_compressed(dd / f"ch4tu_{name}_oracle_marg.npz", probs=P_marg)
-        print(f"  {name}: oracles done", flush=True)
+        savez_atomic(dd / f"ch4tu_{name}_oracle_det.npz", probs=P_det)
+        savez_atomic(dd / f"ch4tu_{name}_oracle_marg.npz", probs=P_marg)
 
 
 # ------------------------------------------------------------------ audits

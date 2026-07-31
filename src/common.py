@@ -81,6 +81,17 @@ def sha256_file(path, chunk=1 << 20):
     return h.hexdigest()
 
 
+def savez_atomic(path, **arrs):
+    """np.savez_compressed via tmp + rename, so file existence == write
+    completed (the resume guards key on existence; a wall-clock kill must
+    never leave a truncated npz that passes a guard).  numpy appends '.npz'
+    to tmp *names* but not to open file objects, hence the file handle."""
+    tmp = str(path) + ".tmp"
+    with open(tmp, "wb") as f:
+        np.savez_compressed(f, **arrs)
+    os.replace(tmp, path)
+
+
 def update_json(path, updates):
     """Merge updates into a JSON file (nested one level)."""
     path = Path(path)

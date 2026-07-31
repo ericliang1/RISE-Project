@@ -461,3 +461,19 @@ ensr 68.4-69.3 (27-29%); ST nomaps 80.4-82.3 (7-12%) vs ensr 69.4-70.3
 families converge to 68-73 m / 24-29% <50 m; for stronger baselines the
 gain concentrates in the lower tail (GNN median ~flat, <50m share 10x).
 Table II now per-model; abstract/C3 updated to 68-73 across families.
+
+## 2026-07-31 — Super-emitter benchmark rebuild (branch super-emitter)
+User directive: population becomes q ~ LogU(100,500) kg/h (all super-emitters),
+S in {6..12}; Table II becomes physics-only baseline vs 3 nets (ladder dropped).
+New data dir csr-data-se; full-pop artifacts untouched; results/paired_wind.json
+archived to paired_wind_fullpop.json. Prior Q_LO 10->100 (methane_pipeline) so
+oracle/exact posterior match the generating prior. K_TEACHER 16->8: baseline
+gets the same marginalization budget as the maps. Adversarial review (4 lenses,
+10 agents) confirmed pre-launch: PW_EPOCHS leak pinned in chain; CUDA preflight
+added (silent-CPU burn); savez_atomic for every resume-guard artifact (truncated
+npz passed guards); conformal-on-exact gate widened to [0.85, 0.985] (sharper
+population + tie-rule over-coverage: 0.97 ceiling = ~30% spurious abort,
+review-measured). Train/val oracles skipped (nothing consumes them). GPU
+selection maps onto SGE's CUDA_VISIBLE_DEVICES (job owns 1,2; 0 is foreign).
+Refactor verified: seed streams byte-identical, skip-guard tags match
+stage_train for all 6 config families.
