@@ -15,7 +15,11 @@ export CUDA_VISIBLE_DEVICES="${SE_GPUS[$1]}"
 export PW_SAVE_CKPT=1
 export PW_EPOCHS=200   # pin: a leaked smoke-test override must never reach real runs
 python -c "import torch; assert torch.cuda.is_available(), 'no usable CUDA device'" || exit 1
-DD=/projectnb/rise-tower/eric1/csr-data-se
+# resolve the audit dir from the config (env override honored) -- a hardcoded
+# path here once skipped an entire chain against a previous benchmark's audits
+DD=$(python -c "import sys; sys.path.insert(0,'src')
+from common import load_config, resolve
+print(resolve(load_config(), 'data_dir'))")
 
 run() {  # run <maps> <arch> <seed>
   local maps=$1 arch=$2 seed=$3 at=""
