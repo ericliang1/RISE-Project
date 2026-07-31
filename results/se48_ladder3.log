@@ -3,3 +3,19 @@
   ep 0 val_nll 6.4303
   ep 25 val_nll 5.9874
   ep 50 val_nll 6.2092
+  ep 75 val_nll 6.3844
+  ep 100 val_nll 6.5697
+  ep 125 val_nll 6.7132
+  ep 150 val_nll 6.8020
+  ep 175 val_nll 6.8607
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_seed1.pt
+{"tag": "pw_noisy_seed1", "maps": "det", "arch": "deepsets", "val_nll": 5.971762451171875, "noisy": {"coverage": 0.9105, "median_radius_m": 81.09506579842814, "frac_below_50m": 0.1295}}
+== pw_noisy_zdet_seed2 start 17:08
+  ep 0 val_nll 6.5629
+  ep 25 val_nll 6.2098
+  ep 50 val_nll 6.3075
+  ep 75 val_nll 6.5108
+  ep 100 val_nll 6.6223
+  ep 125 val_nll 6.7457
+  ep 150 val_nll 6.8125
+  ep 175 val_nll 6.8605

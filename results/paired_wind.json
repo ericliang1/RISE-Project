@@ -252,5 +252,16 @@
       "median_radius_m": 69.06226892023373,
       "frac_below_50m": 0.013
     }
+  },
+  "pw_noisy_seed1": {
+    "tag": "pw_noisy_seed1",
+    "maps": "det",
+    "arch": "deepsets",
+    "val_nll": 5.971762451171875,
+    "noisy": {
+      "coverage": 0.9105,
+      "median_radius_m": 81.09506579842814,
+      "frac_below_50m": 0.1295
+    }
   }
 }

@@ -138,7 +138,7 @@ def stage_gen(cfg, cfg_q, device):
         u_obs = obs_wind_split(d, name, root)
         np.save(dd / f"ch4tu_{name}_uobs.npy", u_obs)
 
-        if (dd / f"ch4tu_{name}_maps_ensq.npz").exists():  # resume after wall clock
+        if (dd / f"ch4tu_{name}_maps_ens.npz").exists():   # resume after wall clock
             print(f"  {name}: maps exist, skipping", flush=True)
         else:
             _gen_maps(d, u_obs, cells, device, dd, name, tag, root, n)
@@ -161,7 +161,6 @@ def _gen_maps(d, u_obs, cells, device, dd, name, tag, root, n):
         # ensemble maps + marginalized evidence over wind draws
         zs = np.empty((K_MAPS, n, N_CELLS), np.float32)
         lb = np.empty((K_MAPS, n, N_CELLS), np.float32)
-        qm = np.zeros((n, N_CELLS), np.float64)
         for j in range(K_MAPS):
             uj = np.stack([perturb_wind(u_obs[i],
                                         np.random.default_rng(
@@ -170,16 +169,9 @@ def _gen_maps(d, u_obs, cells, device, dd, name, tag, root, n):
             Aj, Bj = ab_maps(d, uj, cells, device)
             zs[j] = zmap(Aj, Bj, d["sigma"])
             lb[j] = logbmap(Bj)
-            # rate-consistency: the nonnegative best-fit rate (kg/h), asinh
-            # at the super-emitter floor scale -- the SNR-normalized channels
-            # discard absolute rate, but this population defines sources by it
-            qm += np.arcsinh(np.maximum(Aj / (Bj + 1e-30), 0.0) / 100.0)
         ens = np.stack([zs.mean(0), zs.std(0) * 3.0, lb.mean(0)], 1)
         savez_atomic(dd / f"ch4tu_{name}_maps_ens.npz",
                             maps=ens.astype(np.float32))
-        ensq = np.concatenate([ens, (qm / K_MAPS)[:, None, :]], 1)
-        savez_atomic(dd / f"ch4tu_{name}_maps_ensq.npz",
-                            maps=ensq.astype(np.float32))
         print(f"  {name}: maps done", flush=True)
 
 
