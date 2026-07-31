@@ -50,8 +50,9 @@ N_CELLS = N_GRID * N_GRID
 R_MAX = 10.0
 K_MARG = 8       # wind draws for the marginalized residual (stream 93)
 # map kinds that only exist under the measured-wind condition
-NOISY_ONLY_MAPS = ("ens", "ensr", "smear", "ensp", "full", "rand",
-                   "zdet")
+NOISY_ONLY_MAPS = ("det", "ens", "ensq", "ensr", "smear", "ensp",
+                   "full", "rand", "zdet")   # det: noisy-only on this branch
+                                             # (clean suffstats not generated)
 
 
 def phys_head_on(base_cls, n_ch):
@@ -379,11 +380,14 @@ def make_view(cfg, dd, name_data, view, maps="det"):
         elif maps == "smear":
             stats = torch.tensor(
                 np.load(dd / f"ch4tu_{split}_maps_smear.npz")["maps"])
-        elif maps in ("ens", "ensr", "ensp", "full"):
+        elif maps in ("ens", "ensq", "ensr", "ensp", "full"):
             ens = torch.tensor(
                 np.load(dd / f"ch4tu_{split}_maps_ens.npz")["maps"])
             if maps == "ens":
                 stats = ens
+            elif maps == "ensq":
+                stats = torch.tensor(
+                    np.load(dd / f"ch4tu_{split}_maps_ensq.npz")["maps"])
             elif maps == "ensr":
                 r = np.load(dd / f"pw_{split}_resid_marg.npz")["noisy"]
                 r = torch.tensor(r.astype(np.float32) / R_MAX)[:, None, :]
@@ -572,9 +576,9 @@ def main():
                              "verify-marg", "verify-smear", "train"])
     ap.add_argument("--views", choices=["clean", "noisy", "paired"],
                     default="paired")
-    ap.add_argument("--maps", choices=["on", "det", "smear", "ens", "ensr",
-                                       "ensp", "full", "rand", "zdet",
-                                       "off"],
+    ap.add_argument("--maps", choices=["on", "det", "smear", "ens", "ensq",
+                                       "ensr", "ensp", "full", "rand",
+                                       "zdet", "off"],
                     default="on",
                     help="det (=on): 2ch at u_obs; smear: 2ch analytically "
                          "wind-smeared; ens: 3ch over wind draws; ensr: ens "
