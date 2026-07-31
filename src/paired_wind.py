@@ -26,6 +26,7 @@ Usage examples:
 """
 import argparse
 import json
+import os
 
 import numpy as np
 import torch
@@ -524,6 +525,13 @@ def stage_train(cfg, device, views, seed, maps="det", arch="deepsets"):
     tag = f"pw_{views}{mt}{at}_seed{seed}"
     out = {"tag": tag, "maps": maps or "off", "arch": arch,
            "val_nll": float(best)}
+    if os.environ.get("PW_SAVE_CKPT"):
+        ck = dd / "checkpoints"
+        ck.mkdir(exist_ok=True)
+        torch.save({"model_state": model.state_dict(), "maps": maps or "off",
+                    "arch": arch, "seed": seed, "val_nll": float(best)},
+                   ck / f"{tag}.pt")
+        print(f"saved checkpoint {ck / f'{tag}.pt'}", flush=True)
     for cond in conds:
         Pc = probs(A, "calib", cond)
         Pt = probs(A, "test", cond)
