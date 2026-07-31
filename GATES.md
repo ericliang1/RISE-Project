@@ -522,3 +522,12 @@ Chosen from train-split statistics, not test results. Old-clip ens artifacts
 archived in csr-data-se48/oldclip + paired_wind_se48_oldclip.json (seed-1
 grid: DS 83.3/12.3, GNN 80.8/12.9, ST 82.0/13.1 — the 81-83 m ceiling).
 Maps + ens/ladder runs regenerating; baselines and oracle unaffected.
+
+## 2026-07-31 — Head warmup adopted (PW_HEAD_WARMUP=100, uniform recipe)
+Adaptive change, made after observing the GNN median regression under joint
+training; validated by a prespecified pilot (GNN ens seed 4): 61.7 m / 28.4%
+<50m / val-NLL 5.816 vs joint 72.3-74.0 / 21-23% / 5.93 and vs no-maps
+baseline 67.6-69.3 / 1.3-6.9%. Mechanism (head shortcut displaces base
+feature learning) confirmed. Applied identically to every map configuration;
+joint-trained grid archived (csr-data-se48/joint + paired_wind_se48_joint.json)
+as the before. Baselines unaffected (no head).

@@ -480,7 +480,16 @@ def stage_train(cfg, device, views, seed, maps="det", arch="deepsets"):
         return np.concatenate(out).astype(np.float64)
 
     n_epochs = int(os.environ.get("PW_EPOCHS", 200))   # override for smoke runs
+    # PW_HEAD_WARMUP=N: physics head frozen for the first N epochs (exactly
+    # baseline training), joining from zero-init afterwards -- prevents the
+    # head's easy early signal from displacing the base's own feature
+    # learning.  Default 0 = original joint training.
+    warmup = int(os.environ.get("PW_HEAD_WARMUP", 0))
+    head_params = list(model.phys.parameters()) if (maps and warmup) else []
     for ep in range(n_epochs):
+        if head_params:
+            for pp in head_params:
+                pp.requires_grad_(ep >= warmup)
         model.train()
         perm = rng.permutation(n_train)
         for lo in range(0, n_train, tr["batch_size"]):

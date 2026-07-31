@@ -1,0 +1,178 @@
+{
+  "pw_noisy_zdet_seed1": {
+    "tag": "pw_noisy_zdet_seed1",
+    "maps": "zdet",
+    "arch": "deepsets",
+    "val_nll": 6.184198486328125,
+    "noisy": {
+      "coverage": 0.907,
+      "median_radius_m": 87.32426211177136,
+      "frac_below_50m": 0.1015
+    }
+  },
+  "pw_noisy_ens_seed1": {
+    "tag": "pw_noisy_ens_seed1",
+    "maps": "ens",
+    "arch": "deepsets",
+    "val_nll": 5.81799560546875,
+    "noisy": {
+      "coverage": 0.912,
+      "median_radius_m": 77.16677199675176,
+      "frac_below_50m": 0.1815
+    }
+  },
+  "pw_noisy_ens_st_seed1": {
+    "tag": "pw_noisy_ens_st_seed1",
+    "maps": "ens",
+    "arch": "st",
+    "val_nll": 5.78408056640625,
+    "noisy": {
+      "coverage": 0.9105,
+      "median_radius_m": 73.75544874083045,
+      "frac_below_50m": 0.21
+    }
+  },
+  "pw_noisy_ens_gnn_seed1": {
+    "tag": "pw_noisy_ens_gnn_seed1",
+    "maps": "ens",
+    "arch": "gnn",
+    "val_nll": 5.776020751953125,
+    "noisy": {
+      "coverage": 0.9035,
+      "median_radius_m": 72.29216547407226,
+      "frac_below_50m": 0.2285
+    }
+  },
+  "pw_noisy_ens_seed2": {
+    "tag": "pw_noisy_ens_seed2",
+    "maps": "ens",
+    "arch": "deepsets",
+    "val_nll": 5.812036865234375,
+    "noisy": {
+      "coverage": 0.905,
+      "median_radius_m": 74.60662723656475,
+      "frac_below_50m": 0.198
+    }
+  },
+  "pw_noisy_ens_gnn_seed2": {
+    "tag": "pw_noisy_ens_gnn_seed2",
+    "maps": "ens",
+    "arch": "gnn",
+    "val_nll": 5.77768896484375,
+    "noisy": {
+      "coverage": 0.9165,
+      "median_radius_m": 73.09395153338976,
+      "frac_below_50m": 0.2185
+    }
+  },
+  "pw_noisy_ens_st_seed2": {
+    "tag": "pw_noisy_ens_st_seed2",
+    "maps": "ens",
+    "arch": "st",
+    "val_nll": 5.78370458984375,
+    "noisy": {
+      "coverage": 0.906,
+      "median_radius_m": 73.1603704035532,
+      "frac_below_50m": 0.2205
+    }
+  },
+  "pw_noisy_ens_seed3": {
+    "tag": "pw_noisy_ens_seed3",
+    "maps": "ens",
+    "arch": "deepsets",
+    "val_nll": 5.8262021484375,
+    "noisy": {
+      "coverage": 0.9085,
+      "median_radius_m": 76.85141811509273,
+      "frac_below_50m": 0.176
+    }
+  },
+  "pw_noisy_ens_gnn_seed3": {
+    "tag": "pw_noisy_ens_gnn_seed3",
+    "maps": "ens",
+    "arch": "gnn",
+    "val_nll": 5.77497900390625,
+    "noisy": {
+      "coverage": 0.9095,
+      "median_radius_m": 74.01839235108771,
+      "frac_below_50m": 0.212
+    }
+  },
+  "pw_noisy_ens_st_seed3": {
+    "tag": "pw_noisy_ens_st_seed3",
+    "maps": "ens",
+    "arch": "st",
+    "val_nll": 5.80009814453125,
+    "noisy": {
+      "coverage": 0.9085,
+      "median_radius_m": 74.21498869297416,
+      "frac_below_50m": 0.216
+    }
+  },
+  "pw_noisy_seed1": {
+    "tag": "pw_noisy_seed1",
+    "maps": "det",
+    "arch": "deepsets",
+    "val_nll": 5.971762451171875,
+    "noisy": {
+      "coverage": 0.9105,
+      "median_radius_m": 81.09506579842814,
+      "frac_below_50m": 0.1295
+    }
+  },
+  "pw_noisy_zdet_seed2": {
+    "tag": "pw_noisy_zdet_seed2",
+    "maps": "zdet",
+    "arch": "deepsets",
+    "val_nll": 6.1941787109375,
+    "noisy": {
+      "coverage": 0.9045,
+      "median_radius_m": 85.92249753630306,
+      "frac_below_50m": 0.1065
+    }
+  },
+  "pw_noisy_seed2": {
+    "tag": "pw_noisy_seed2",
+    "maps": "det",
+    "arch": "deepsets",
+    "val_nll": 5.9869970703125,
+    "noisy": {
+      "coverage": 0.903,
+      "median_radius_m": 79.40035507416403,
+      "frac_below_50m": 0.136
+    }
+  },
+  "pw_noisy_ens_gnn_seed4": {
+    "tag": "pw_noisy_ens_gnn_seed4",
+    "maps": "ens",
+    "arch": "gnn",
+    "val_nll": 5.81599072265625,
+    "noisy": {
+      "coverage": 0.8975,
+      "median_radius_m": 61.708235700535845,
+      "frac_below_50m": 0.2835
+    }
+  },
+  "pw_noisy_zdet_seed3": {
+    "tag": "pw_noisy_zdet_seed3",
+    "maps": "zdet",
+    "arch": "deepsets",
+    "val_nll": 6.17778369140625,
+    "noisy": {
+      "coverage": 0.911,
+      "median_radius_m": 88.37473418877845,
+      "frac_below_50m": 0.094
+    }
+  },
+  "pw_noisy_seed3": {
+    "tag": "pw_noisy_seed3",
+    "maps": "det",
+    "arch": "deepsets",
+    "val_nll": 5.982760009765625,
+    "noisy": {
+      "coverage": 0.9025,
+      "median_radius_m": 81.15493665619462,
+      "frac_below_50m": 0.1285
+    }
+  }
+}

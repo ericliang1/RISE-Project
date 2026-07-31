@@ -19,3 +19,39 @@ saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_
   ep 125 val_nll 6.7457
   ep 150 val_nll 6.8125
   ep 175 val_nll 6.8605
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_zdet_seed2.pt
+{"tag": "pw_noisy_zdet_seed2", "maps": "zdet", "arch": "deepsets", "val_nll": 6.1941787109375, "noisy": {"coverage": 0.9045, "median_radius_m": 85.92249753630306, "frac_below_50m": 0.1065}}
+== pw_noisy_det_seed2 start 17:10
+  ep 0 val_nll 6.5716
+  ep 25 val_nll 6.0153
+  ep 50 val_nll 6.1988
+  ep 75 val_nll 6.3625
+  ep 100 val_nll 6.5118
+  ep 125 val_nll 6.6637
+  ep 150 val_nll 6.7618
+  ep 175 val_nll 6.8224
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_seed2.pt
+{"tag": "pw_noisy_seed2", "maps": "det", "arch": "deepsets", "val_nll": 5.9869970703125, "noisy": {"coverage": 0.903, "median_radius_m": 79.40035507416403, "frac_below_50m": 0.136}}
+== pw_noisy_zdet_seed3 start 17:13
+  ep 0 val_nll 6.5237
+  ep 25 val_nll 6.1856
+  ep 50 val_nll 6.3147
+  ep 75 val_nll 6.4712
+  ep 100 val_nll 6.5913
+  ep 125 val_nll 6.7080
+  ep 150 val_nll 6.7886
+  ep 175 val_nll 6.8444
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_zdet_seed3.pt
+{"tag": "pw_noisy_zdet_seed3", "maps": "zdet", "arch": "deepsets", "val_nll": 6.17778369140625, "noisy": {"coverage": 0.911, "median_radius_m": 88.37473418877845, "frac_below_50m": 0.094}}
+== pw_noisy_det_seed3 start 17:15
+  ep 0 val_nll 6.5799
+  ep 25 val_nll 6.0022
+  ep 50 val_nll 6.2278
+  ep 75 val_nll 6.3869
+  ep 100 val_nll 6.5678
+  ep 125 val_nll 6.6948
+  ep 150 val_nll 6.8045
+  ep 175 val_nll 6.8527
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_seed3.pt
+{"tag": "pw_noisy_seed3", "maps": "det", "arch": "deepsets", "val_nll": 5.982760009765625, "noisy": {"coverage": 0.9025, "median_radius_m": 81.15493665619462, "frac_below_50m": 0.1285}}
+== ladder complete 17:17

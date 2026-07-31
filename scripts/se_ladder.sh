@@ -11,6 +11,9 @@ IFS=',' read -ra SE_GPUS <<< "${CUDA_VISIBLE_DEVICES:-0,1}"
 export CUDA_VISIBLE_DEVICES="${SE_GPUS[$1]}"
 export PW_SAVE_CKPT=1
 export PW_EPOCHS=200   # pin: a leaked smoke-test override must never reach real runs
+export PW_HEAD_WARMUP=100  # head joins at half budget: pilot showed joint
+                           # training lets the head displace base features
+                           # (GNN 72-74 joint vs 61.7 warmed, val-NLL 5.93->5.82)
 python -c "import torch; assert torch.cuda.is_available(), 'no usable CUDA device'" || exit 1
 DD=$(python -c "import sys; sys.path.insert(0,'src')
 from common import load_config, resolve
