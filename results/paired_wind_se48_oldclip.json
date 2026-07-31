@@ -1,0 +1,46 @@
+{
+  "pw_noisy_ens_seed1": {
+    "tag": "pw_noisy_ens_seed1",
+    "maps": "ens",
+    "arch": "deepsets",
+    "val_nll": 5.971311279296875,
+    "noisy": {
+      "coverage": 0.911,
+      "median_radius_m": 83.33992726175845,
+      "frac_below_50m": 0.1225
+    }
+  },
+  "pw_noisy_ens_gnn_seed1": {
+    "tag": "pw_noisy_ens_gnn_seed1",
+    "maps": "ens",
+    "arch": "gnn",
+    "val_nll": 5.93253173828125,
+    "noisy": {
+      "coverage": 0.908,
+      "median_radius_m": 80.79504602853767,
+      "frac_below_50m": 0.129
+    }
+  },
+  "pw_noisy_ens_st_seed1": {
+    "tag": "pw_noisy_ens_st_seed1",
+    "maps": "ens",
+    "arch": "st",
+    "val_nll": 5.953828369140625,
+    "noisy": {
+      "coverage": 0.905,
+      "median_radius_m": 81.98853821812531,
+      "frac_below_50m": 0.1305
+    }
+  },
+  "pw_noisy_ens_seed2": {
+    "tag": "pw_noisy_ens_seed2",
+    "maps": "ens",
+    "arch": "deepsets",
+    "val_nll": 5.97654052734375,
+    "noisy": {
+      "coverage": 0.906,
+      "median_radius_m": 82.93096616016344,
+      "frac_below_50m": 0.127
+    }
+  }
+}

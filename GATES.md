@@ -511,3 +511,14 @@ moved to 4-8, the range the fullpop forecast supported (all-arch map gains,
 +16 to +27 pp <50m). 2-8 rows archived (paired_wind_se28_partial.json),
 csr-data-se28 retained incl. 72%-identifiable probe. Paper must disclose
 the range iteration; 6-12 and 2-8 evidence stays on disk.
+
+## 2026-07-31 — Evidence-map saturation fix (asinh replaces clip; user-approved)
+Measurement (50 TRAIN scenarios, 4-8 benchmark): raw |z| p99=335, max 4501 vs
+clip at 60; 30% of near-source cells clipped on average (bimodal); z at true
+cell p90=337. On all-super-emitter training data every strong scenario's map
+has a flat top. Fix: zmap := asinh(z/10) — identical to old z/10 small-signal,
+log-compressing (never flat) beyond; the same transform the raw tokens use.
+Chosen from train-split statistics, not test results. Old-clip ens artifacts
+archived in csr-data-se48/oldclip + paired_wind_se48_oldclip.json (seed-1
+grid: DS 83.3/12.3, GNN 80.8/12.9, ST 82.0/13.1 — the 81-83 m ceiling).
+Maps + ens/ladder runs regenerating; baselines and oracle unaffected.

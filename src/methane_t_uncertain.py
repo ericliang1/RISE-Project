@@ -110,7 +110,14 @@ def ab_maps(d, u_seqs, cells, device):
 
 
 def zmap(a, b, sig):
-    return np.clip(a / (sig[:, None] * np.sqrt(b) + 1e-30), -60, 60) / 10.0
+    """Evidence channel: asinh replaces the former hard clip(+-60)/10.
+    Identical to z/10 in the small-signal regime, logarithmic (never flat)
+    for strong sources -- on the super-emitter population the clip
+    saturated ~30% of near-source cells (train-split measurement), handing
+    the head a plateau exactly where the peak belongs.  Same
+    variance-stabilizing transform the raw reading tokens use."""
+    z = a / (sig[:, None] * np.sqrt(b) + 1e-30)
+    return np.arcsinh(z / 10.0)
 
 
 def logbmap(b):
