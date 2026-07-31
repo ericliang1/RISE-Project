@@ -477,3 +477,11 @@ review-measured). Train/val oracles skipped (nothing consumes them). GPU
 selection maps onto SGE's CUDA_VISIBLE_DEVICES (job owns 1,2; 0 is foreign).
 Refactor verified: seed streams byte-identical, skip-guard tags match
 stage_train for all 6 config families.
+
+## 2026-07-31 — Residual map removed from method (user directive)
+"remove residual map, doesn't do much and too complicated": final method is
+now `ens` (3 channels: mean z, spread z, mean log b over K=8 shared draws).
+Side effect: the paper sentence "the same K wind draws calculate all maps"
+becomes literally true (stream 92 only; the residual used stream 93).
+Full-pop evidence for the dropped rung: -4.0 m [-5.6, -2.7], smallest
+contributor. gen-marg/verify-marg dropped from datagen; chains train ens.

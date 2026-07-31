@@ -33,11 +33,11 @@ run() {  # run <maps> <arch> <seed>
 
 if [ "$1" = "0" ]; then
   for s in 1 2 3; do
-    run off deepsets "$s"; run ensr deepsets "$s"; run ensr gnn "$s"
+    run off deepsets "$s"; run ens deepsets "$s"; run ens gnn "$s"
   done
 else
   for s in 1 2 3; do
-    run off st "$s"; run ensr st "$s"; run off gnn "$s"
+    run off st "$s"; run ens st "$s"; run off gnn "$s"
   done
 fi
 echo "== chain $1 complete $(date '+%H:%M')"

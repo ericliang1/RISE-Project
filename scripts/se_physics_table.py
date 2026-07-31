@@ -3,8 +3,9 @@
 Row 1: the wind-averaged physics-only posterior (ch4tu_*_oracle_marg.npz,
 K=8 draws from the anemometer error model, rate integrated over the
 generating prior), conformalized with the identical wrapper and calibration
-scenarios as every network.  Rows 2-4: the three base networks with the
-physics input maps, read from their per-scenario audit npzs (3 seeds each).
+scenarios as every network.  Rows 2-4: the three base networks with the three
+physics input maps (evidence, spread, visibility; K=8 shared wind draws),
+read from their per-scenario audit npzs (3 seeds each).
 
 Run after the training chains complete: python scripts/se_physics_table.py
 """
@@ -68,6 +69,6 @@ for name, at in [("DeepSets + physics maps", ""),
                  ("Set Transformer + physics maps", "_st")]:
     per_seed = []
     for s in (1, 2, 3):
-        z = np.load(dd / f"pw_audit_pw_noisy_ensr{at}_seed{s}_noisy.npz")
+        z = np.load(dd / f"pw_audit_pw_noisy_ens{at}_seed{s}_noisy.npz")
         per_seed.append(stats(z["sizes"], z["covered"], n))
     fmt(name, per_seed)
