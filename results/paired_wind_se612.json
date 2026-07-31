@@ -198,5 +198,21 @@
       "median_radius_m": 54.698504736680846,
       "frac_below_50m": 0.355
     }
+  },
+  "pw_noisy_nomaps_st_seed3": {
+    "tag": "pw_noisy_nomaps_st_seed3",
+    "maps": "off",
+    "arch": "st",
+    "val_nll": 5.4916484375,
+    "clean": {
+      "coverage": 0.8845,
+      "median_radius_m": 53.80321507338534,
+      "frac_below_50m": 0.417
+    },
+    "noisy": {
+      "coverage": 0.8845,
+      "median_radius_m": 57.300504579069006,
+      "frac_below_50m": 0.3665
+    }
   }
 }

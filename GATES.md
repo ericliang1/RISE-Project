@@ -496,3 +496,11 @@ results archived) as the dense-regime comparison. Identifiability probe (300
 scenarios, 2-8, q>=100): weak-frac 0.08, identifiable 0.72, median oracle area
 0.001 of site — population well-posed, gate passed. CSR_DATA_DIR env override
 added so se28 datagen runs while chain 1 finishes 6-12 on the config'd dir.
+
+## 2026-07-31 — 6-12 grid cancelled at 16/18 (user directive: benchmark = 2-8 only)
+Chain 1 killed before its last two runs (ens_st_seed3, nomaps_gnn_seed3).
+Completed 6-12 results archived: results/paired_wind_se612.json + audit npzs
+and checkpoints remain in csr-data-se (not deleted). Paper population is 2-8
+exclusively; config data_dir flipped to csr-data-se28. The 6-12 evidence of
+the density interaction (maps hurt GNN/ST at 54-57 m baselines) stays on disk
+for the record and for any density-axis discussion.

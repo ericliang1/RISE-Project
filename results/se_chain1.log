@@ -71,3 +71,14 @@ saved checkpoint /projectnb/rise-tower/eric1/csr-data-se/checkpoints/pw_noisy_no
   ep 75 val_nll 5.8539
   ep 100 val_nll 5.7317
   ep 125 val_nll 5.6579
+  ep 150 val_nll 5.5647
+  ep 175 val_nll 5.4994
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se/checkpoints/pw_noisy_nomaps_st_seed3.pt
+{"tag": "pw_noisy_nomaps_st_seed3", "maps": "off", "arch": "st", "val_nll": 5.4916484375, "clean": {"coverage": 0.8845, "median_radius_m": 53.80321507338534, "frac_below_50m": 0.417}, "noisy": {"coverage": 0.8845, "median_radius_m": 57.300504579069006, "frac_below_50m": 0.3665}}
+== pw_noisy_ens_st_seed3 start 14:43
+  ep 0 val_nll 6.2362
+  ep 25 val_nll 5.6079
+  ep 50 val_nll 5.5728
+  ep 75 val_nll 5.5830
+  ep 100 val_nll 5.6076
+  ep 125 val_nll 5.7242

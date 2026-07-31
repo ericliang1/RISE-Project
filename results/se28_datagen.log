@@ -1,0 +1,12 @@
+== data (super-emitter population) ==
+  train: 10000  q [100, 500] kg/h  masts [2, 8]
+  val: 1000  q [100, 498] kg/h  masts [2, 8]
+  calib: 2000  q [100, 499] kg/h  masts [2, 8]
+  test: 2000  q [100, 500] kg/h  masts [2, 8]
+== exact posteriors (calib/test only) ==
+  posterior 2000/2000
+  calib: norm_err 4.82e-14
+  posterior 2000/2000
+  test: norm_err 5.64e-14
+  conformal-on-exact coverage: 0.962  median radius 7.6 m
+== datagen gates passed ==
