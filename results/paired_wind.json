@@ -142,5 +142,170 @@
       "median_radius_m": 69.06226892023373,
       "frac_below_50m": 0.013
     }
+  },
+  "pw_noisy_ens_seed1": {
+    "tag": "pw_noisy_ens_seed1",
+    "maps": "ens",
+    "arch": "deepsets",
+    "val_nll": 6.042373291015625,
+    "noisy": {
+      "coverage": 0.916,
+      "median_radius_m": 75.31934242033076,
+      "frac_below_50m": 0.163
+    }
+  },
+  "pw_noisy_ens_gnn_seed1": {
+    "tag": "pw_noisy_ens_gnn_seed1",
+    "maps": "ens",
+    "arch": "gnn",
+    "val_nll": 5.799681884765625,
+    "noisy": {
+      "coverage": 0.903,
+      "median_radius_m": 62.33473131272386,
+      "frac_below_50m": 0.2735
+    }
+  },
+  "pw_noisy_ens_st_seed1": {
+    "tag": "pw_noisy_ens_st_seed1",
+    "maps": "ens",
+    "arch": "st",
+    "val_nll": 5.72117333984375,
+    "noisy": {
+      "coverage": 0.898,
+      "median_radius_m": 64.32871788819043,
+      "frac_below_50m": 0.2925
+    }
+  },
+  "pw_noisy_ens_seed2": {
+    "tag": "pw_noisy_ens_seed2",
+    "maps": "ens",
+    "arch": "deepsets",
+    "val_nll": 6.09013916015625,
+    "noisy": {
+      "coverage": 0.8915,
+      "median_radius_m": 73.49156435729867,
+      "frac_below_50m": 0.173
+    }
+  },
+  "pw_noisy_ens_gnn_seed2": {
+    "tag": "pw_noisy_ens_gnn_seed2",
+    "maps": "ens",
+    "arch": "gnn",
+    "val_nll": 5.7575390625,
+    "noisy": {
+      "coverage": 0.9115,
+      "median_radius_m": 61.86545439024945,
+      "frac_below_50m": 0.272
+    }
+  },
+  "pw_noisy_ens_st_seed2": {
+    "tag": "pw_noisy_ens_st_seed2",
+    "maps": "ens",
+    "arch": "st",
+    "val_nll": 5.73692236328125,
+    "noisy": {
+      "coverage": 0.8875,
+      "median_radius_m": 63.874092277080145,
+      "frac_below_50m": 0.296
+    }
+  },
+  "pw_noisy_ens_seed3": {
+    "tag": "pw_noisy_ens_seed3",
+    "maps": "ens",
+    "arch": "deepsets",
+    "val_nll": 6.10407470703125,
+    "noisy": {
+      "coverage": 0.8905,
+      "median_radius_m": 73.62362477711974,
+      "frac_below_50m": 0.171
+    }
+  },
+  "pw_noisy_ens_gnn_seed3": {
+    "tag": "pw_noisy_ens_gnn_seed3",
+    "maps": "ens",
+    "arch": "gnn",
+    "val_nll": 5.771531494140625,
+    "noisy": {
+      "coverage": 0.8895,
+      "median_radius_m": 61.07531398786499,
+      "frac_below_50m": 0.2855
+    }
+  },
+  "pw_noisy_ens_st_seed3": {
+    "tag": "pw_noisy_ens_st_seed3",
+    "maps": "ens",
+    "arch": "st",
+    "val_nll": 5.705738525390625,
+    "noisy": {
+      "coverage": 0.906,
+      "median_radius_m": 65.22846393234533,
+      "frac_below_50m": 0.282
+    }
+  },
+  "pw_noisy_zdet_seed1": {
+    "tag": "pw_noisy_zdet_seed1",
+    "maps": "zdet",
+    "arch": "deepsets",
+    "val_nll": 6.208978515625,
+    "noisy": {
+      "coverage": 0.903,
+      "median_radius_m": 76.6615831159394,
+      "frac_below_50m": 0.114
+    }
+  },
+  "pw_noisy_seed1": {
+    "tag": "pw_noisy_seed1",
+    "maps": "det",
+    "arch": "deepsets",
+    "val_nll": 6.138501953125,
+    "noisy": {
+      "coverage": 0.903,
+      "median_radius_m": 75.57684519685463,
+      "frac_below_50m": 0.1245
+    }
+  },
+  "pw_noisy_zdet_seed2": {
+    "tag": "pw_noisy_zdet_seed2",
+    "maps": "zdet",
+    "arch": "deepsets",
+    "val_nll": 6.2818388671875,
+    "noisy": {
+      "coverage": 0.8975,
+      "median_radius_m": 75.19026033331636,
+      "frac_below_50m": 0.1165
+    }
+  },
+  "pw_noisy_seed2": {
+    "tag": "pw_noisy_seed2",
+    "maps": "det",
+    "arch": "deepsets",
+    "val_nll": 6.203244873046875,
+    "noisy": {
+      "coverage": 0.8935,
+      "median_radius_m": 74.01839235108771,
+      "frac_below_50m": 0.1355
+    }
+  },
+  "pw_noisy_zdet_seed3": {
+    "tag": "pw_noisy_zdet_seed3",
+    "maps": "zdet",
+    "arch": "deepsets",
+    "val_nll": 6.2602548828125,
+    "noisy": {
+      "coverage": 0.9045,
+      "median_radius_m": 78.3535422936996,
+      "frac_below_50m": 0.109
+    }
+  },
+  "pw_noisy_seed3": {
+    "tag": "pw_noisy_seed3",
+    "maps": "det",
+    "arch": "deepsets",
+    "val_nll": 6.18241162109375,
+    "noisy": {
+      "coverage": 0.899,
+      "median_radius_m": 75.31934242033076,
+      "frac_below_50m": 0.133
+    }
   }
 }

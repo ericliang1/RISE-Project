@@ -1,0 +1,70 @@
+== skip pw_noisy_nomaps_seed1 (audit exists)
+== pw_noisy_ens_seed1 start 18:17
+  ep 0 val_nll 8.0004
+  ep 25 val_nll 7.1349
+  ep 50 val_nll 6.7977
+  ep 75 val_nll 6.6882
+  ep 100 val_nll 6.4129
+  ep 125 val_nll 6.0548
+  ep 150 val_nll 6.0831
+  ep 175 val_nll 6.1124
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_ens_seed1.pt
+{"tag": "pw_noisy_ens_seed1", "maps": "ens", "arch": "deepsets", "val_nll": 6.042373291015625, "noisy": {"coverage": 0.916, "median_radius_m": 75.31934242033076, "frac_below_50m": 0.163}}
+== pw_noisy_ens_gnn_seed1 start 18:19
+  ep 0 val_nll 7.9948
+  ep 25 val_nll 6.9700
+  ep 50 val_nll 6.2567
+  ep 75 val_nll 6.1560
+  ep 100 val_nll 5.9670
+  ep 125 val_nll 5.9056
+  ep 150 val_nll 5.9542
+  ep 175 val_nll 6.0157
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_ens_gnn_seed1.pt
+{"tag": "pw_noisy_ens_gnn_seed1", "maps": "ens", "arch": "gnn", "val_nll": 5.799681884765625, "noisy": {"coverage": 0.903, "median_radius_m": 62.33473131272386, "frac_below_50m": 0.2735}}
+== skip pw_noisy_nomaps_seed2 (audit exists)
+== pw_noisy_ens_seed2 start 18:21
+  ep 0 val_nll 7.9820
+  ep 25 val_nll 7.1391
+  ep 50 val_nll 6.7972
+  ep 75 val_nll 6.7338
+  ep 100 val_nll 6.5109
+  ep 125 val_nll 6.0901
+  ep 150 val_nll 6.1522
+  ep 175 val_nll 6.1606
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_ens_seed2.pt
+{"tag": "pw_noisy_ens_seed2", "maps": "ens", "arch": "deepsets", "val_nll": 6.09013916015625, "noisy": {"coverage": 0.8915, "median_radius_m": 73.49156435729867, "frac_below_50m": 0.173}}
+== pw_noisy_ens_gnn_seed2 start 18:24
+  ep 0 val_nll 7.9852
+  ep 25 val_nll 6.9662
+  ep 50 val_nll 6.3476
+  ep 75 val_nll 6.0862
+  ep 100 val_nll 5.9447
+  ep 125 val_nll 5.8418
+  ep 150 val_nll 5.8778
+  ep 175 val_nll 5.9570
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_ens_gnn_seed2.pt
+{"tag": "pw_noisy_ens_gnn_seed2", "maps": "ens", "arch": "gnn", "val_nll": 5.7575390625, "noisy": {"coverage": 0.9115, "median_radius_m": 61.86545439024945, "frac_below_50m": 0.272}}
+== skip pw_noisy_nomaps_seed3 (audit exists)
+== pw_noisy_ens_seed3 start 18:26
+  ep 0 val_nll 7.9874
+  ep 25 val_nll 7.1173
+  ep 50 val_nll 6.7725
+  ep 75 val_nll 6.6979
+  ep 100 val_nll 6.4510
+  ep 125 val_nll 6.1173
+  ep 150 val_nll 6.1398
+  ep 175 val_nll 6.1693
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_ens_seed3.pt
+{"tag": "pw_noisy_ens_seed3", "maps": "ens", "arch": "deepsets", "val_nll": 6.10407470703125, "noisy": {"coverage": 0.8905, "median_radius_m": 73.62362477711974, "frac_below_50m": 0.171}}
+== pw_noisy_ens_gnn_seed3 start 18:28
+  ep 0 val_nll 7.9721
+  ep 25 val_nll 6.8081
+  ep 50 val_nll 6.3685
+  ep 75 val_nll 6.1510
+  ep 100 val_nll 6.0267
+  ep 125 val_nll 5.8630
+  ep 150 val_nll 5.9384
+  ep 175 val_nll 5.9745
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_ens_gnn_seed3.pt
+{"tag": "pw_noisy_ens_gnn_seed3", "maps": "ens", "arch": "gnn", "val_nll": 5.771531494140625, "noisy": {"coverage": 0.8895, "median_radius_m": 61.07531398786499, "frac_below_50m": 0.2855}}
+== chain 0 complete 18:31
