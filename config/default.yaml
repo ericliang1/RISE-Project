@@ -6,7 +6,7 @@
 # =====================================================================
 
 paths:
-  # super-emitter branch: q >= 100 kg/h, 6-12 masts.  Separate data dir so the
+  # super-emitter branch: q >= 100 kg/h, 4-8 masts.  Separate data dir so the
   # full-population artifacts (csr-data, via the data/ symlink) stay intact.
   data_dir: /projectnb/rise-tower/eric1/csr-data-se48
   results_dir: results

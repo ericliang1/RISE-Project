@@ -1,4 +1,4 @@
-"""Table I (2-8-mast super-emitter benchmark): one table, whole story.
+"""Table I (4-8-mast super-emitter benchmark): one table, whole story.
 
 Row 1: wind-averaged physics-only inversion (ch4tu_*_oracle_marg.npz, K=8
 draws from the anemometer error model, rate integrated over the generating

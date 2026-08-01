@@ -1,7 +1,7 @@
 """Super-emitter datagen: splits, exact posteriors (calib/test), gate.
 
 Generates the four CH4-T splits under the super-emitter population
-(q ~ LogUniform(100, 500) kg/h, S in {6..12}; everything else unchanged),
+(q ~ LogUniform(100, 500) kg/h, S in {4..8}; everything else unchanged),
 then computes exact posteriors for calib and test only (the training path
 uses smoothed labels, not posteriors) and runs the blocking
 conformal-on-exact self-calibration gate before anything trains.
