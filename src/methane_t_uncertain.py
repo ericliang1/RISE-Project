@@ -15,7 +15,7 @@ falsifiable prediction; the run decides.
 Grid (all same DeepSets+phys-head architecture, CE loss, byte-identical
 conformal audit):
   oracle_det   exact posterior at u_hat (misspecified)
-  oracle_marg  K=16 Monte-Carlo wind-marginalized posterior
+  oracle_marg  K=8 Monte-Carlo wind-marginalized posterior
   s_<maps>_<teacher>  2x2: maps in {det (z,logb @ u_hat), ens (mean_z,
                       std_z, mean_logb over K=8 draws)} x teacher in
                       {tempered oracle_det, tempered oracle_marg}
