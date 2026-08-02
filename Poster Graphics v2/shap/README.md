@@ -21,7 +21,37 @@ forward runs once per scenario and only the conv head re-runs per coalition
 | `shap_maps.py` | the analysis (run from repo root) |
 | `shap_map_contributions.csv` | 6,000 rows = 3 models × 2,000 scenarios: per-map Shapley values, v(all), v(none), efficiency residual |
 | `shap_map_summary.{pdf,png,svg}` | poster figure: mean \|φ\| per map × model + DeepSets beeswarm coloured by mast count |
+| `shap_map_summary.pptx` | **editable** PowerPoint version — see below |
+| `export_pptx.py` | builds the pptx from `shap_map_contributions.csv` only (no model/GPU access) |
 | `retrain_gnn_st_seed1.log` | training log for the GNN / Set Transformer checkpoints |
+
+## The PowerPoint export
+
+`shap_map_summary.pptx` rebuilds both panels as **native PowerPoint chart
+objects**, not an embedded picture — every number, color, and label is
+editable directly in PowerPoint (right-click a chart → *Edit Data in
+Excel*):
+
+- **Panel A**: a native clustered bar chart, one series per model (mean
+  |Shapley value| per map, matching `shap_map_summary.png` to 2 decimal
+  places).
+- **Panel B**: a native XY scatter chart of the DeepSets per-scenario
+  values. PowerPoint scatter charts have no continuous-colormap option, so
+  mast count is bucketed into 3 editable series (4–6 / 7–9 / 10–12 masts)
+  instead of the PNG's smooth plasma gradient; black diamonds are the
+  **full 2,000-scenario mean** (not the subsample's). For editability
+  (thousands of native points make PowerPoint sluggish), the scatter plots
+  a fixed-seed subsample of 400/2,000 DeepSets scenarios — stated on the
+  slide itself.
+
+Two LibreOffice-specific pitfalls hit during construction, both fixed and
+worth knowing if this script is extended: (1) `series.has_data_labels =
+True` alone creates an empty label — `show_value` must also be set
+explicitly, or the label renders with nothing in it; (2) PowerPoint's
+horizontal bar chart plots the **first** category at the *bottom*, so the
+canonical map order has to be reversed in the data before it reads
+top-to-bottom correctly. Verified visually via headless LibreOffice
+(`soffice --headless --convert-to pdf`), not just by inspecting the XML.
 
 ## Results (mean Shapley per map, nats; mean |φ| in parentheses)
 
@@ -82,4 +112,8 @@ python "Poster Graphics v2/shap/shap_maps.py"
 PW_SAVE_CKPT=1 python src/paired_wind.py --stage train --views noisy --maps ensr --seed 1
 PW_SAVE_CKPT=1 python src/paired_wind.py --stage train --views noisy --maps ensr --arch gnn --seed 1
 PW_SAVE_CKPT=1 python src/paired_wind.py --stage train --views noisy --maps ensr --arch st --seed 1
+
+# editable pptx (needs python-pptx; reads the CSV above, no GPU/model needed)
+pip install --user python-pptx
+python "Poster Graphics v2/shap/export_pptx.py"
 ```
