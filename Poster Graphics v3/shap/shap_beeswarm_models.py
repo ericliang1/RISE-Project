@@ -87,8 +87,22 @@ cb.ax.set_yticklabels(["low", "high"], fontsize=12)
 cb.set_label("feature value", fontsize=13, color=INK2)
 cb.outline.set_visible(False)
 
-for ext in ("pdf", "png", "svg"):
-    fig.savefig(HERE / f"shap_beeswarm_models.{ext}", dpi=220,
+for ext in ("pdf", "png"):
+    fig.savefig(HERE / f"shap_beeswarm_models.{ext}", dpi=300,
                 bbox_inches="tight")
-print("wrote shap_beeswarm_models.{pdf,png,svg}  xlim [%.2f, %.2f]"
+
+# single-slide PowerPoint sized to the figure, PNG embedded full-bleed
+from pptx import Presentation                       # noqa: E402
+from pptx.util import Inches                        # noqa: E402
+from PIL import Image                               # noqa: E402
+img = HERE / "shap_beeswarm_models.png"
+w_px, h_px = Image.open(img).size
+prs = Presentation()
+prs.slide_width = Inches(w_px / 300)
+prs.slide_height = Inches(h_px / 300)
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+slide.shapes.add_picture(str(img), 0, 0, width=prs.slide_width,
+                         height=prs.slide_height)
+prs.save(HERE / "shap_beeswarm_models.pptx")
+print("wrote shap_beeswarm_models.{pdf,png,pptx}  xlim [%.2f, %.2f]"
       % (XLO, XHI))
