@@ -40,7 +40,9 @@ ns_all = d["n_sensors"].astype(int)
 th = np.degrees(np.unwrap(np.arctan2(d["u_seq"][:, :, 1],
                                      d["u_seq"][:, :, 0]), axis=1))
 swing = th.max(1) - th.min(1)
-cand = (ns_all == 6) & (d["q"] > 300) & (swing > 55) & (swing < 90)
+early_std = th[:, :6].std(1)         # steady start -> narrow early beam
+cand = (ns_all == 6) & (d["q"] > 300) & (swing > 60) & (swing < 110) \
+       & (early_std < 7)
 i = int(np.where(cand)[0][0])
 
 ns = int(d["n_sensors"][i])
@@ -57,14 +59,17 @@ gx, gy = np.meshgrid(g1, g1)
 pts = torch.tensor(np.stack([gx.ravel(), gy.ravel()], 1),
                    dtype=torch.float64)
 src = torch.tensor(xs, dtype=torch.float64).expand(R * R, 2)
-SNAPS = (4, 14, 24)
-fields = []
-for t in SNAPS:
-    u = torch.tensor(u_seq[t], dtype=torch.float64).expand(R * R, 2)
-    st = torch.full((R * R,), stab, dtype=torch.long)
-    c = q * plume_ppm_per_kgh(pts, src, u, st).numpy().reshape(R, R)
-    fields.append(c)
-vmax = np.percentile(np.concatenate([f.ravel() for f in fields]), 99.5)
+# running time-average: the pollution footprint grows as the wind meanders
+SNAPS = (2, 10, 30)                 # minutes included in each panel
+st = torch.full((R * R,), stab, dtype=torch.long)
+csum, fields = np.zeros((R, R)), []
+for m in range(30):
+    u = torch.tensor(u_seq[m], dtype=torch.float64).expand(R * R, 2)
+    csum += q * plume_ppm_per_kgh(pts, src, u, st).numpy().reshape(R, R)
+    if (m + 1) in SNAPS:
+        fields.append(csum.copy())          # cumulative exposure (ppm-min)
+vmax = np.percentile(fields[-1], 99.5)
+FOOTPRINT = 3.0                             # ppm-min detectability outline
 
 fig, axes = plt.subplots(1, 4, figsize=(13.6, 3.55),
                          gridspec_kw=dict(width_ratios=[1, 1, 1, 1.35],
@@ -74,18 +79,16 @@ fig, axes = plt.subplots(1, 4, figsize=(13.6, 3.55),
 for ax, t, c in zip(axes[:3], SNAPS, fields):
     ax.imshow(np.clip(c, 0, vmax), origin="lower", cmap=CMO,
               extent=[0, 500, 0, 500],
-              norm=PowerNorm(0.35, vmin=0, vmax=vmax),
+              norm=PowerNorm(0.5, vmin=0, vmax=vmax),
               interpolation="bilinear")
+    ax.contour(c, levels=[FOOTPRINT], extent=[0, 500, 0, 500],
+               colors=[INK2], linewidths=1.3, linestyles="dashed")
     ax.scatter(sx[:, 0], sx[:, 1], s=42, c=INK, edgecolors="white",
                linewidths=1.3, zorder=5)
     ax.plot(xs[0] * 500, xs[1] * 500, marker="*", color=INK, ms=15,
             mec="white", mew=1.0, zorder=6)
-    u = u_seq[t]
-    un = u / np.linalg.norm(u) * 70
-    ax.annotate("", xy=(430 + un[0], 435 + un[1]), xytext=(430, 435),
-                arrowprops=dict(arrowstyle="-|>", color=INK, lw=2.2,
-                                mutation_scale=17))
-    ax.set_title(f"minute {t + 1}", fontsize=11.5, color=INK)
+    ax.set_title(f"first {t} minutes" if t < 30 else "all 30 minutes",
+                 fontsize=11.5, color=INK)
     ax.set_xticks([]); ax.set_yticks([])
     for sp in ax.spines.values():
         sp.set_color(BASE)
@@ -112,9 +115,9 @@ for sp in ("top", "right"):
     ax.spines[sp].set_visible(False)
 ax.yaxis.grid(True, color=GRID, lw=0.8)
 ax.set_axisbelow(True)
-ax.set_title("mast readings (with noise)", fontsize=11.5, color=INK)
-for t in SNAPS:
-    ax.axvline(t + 1, color=MUTED, lw=0.9, ls=(0, (3, 3)), alpha=0.7)
+ax.set_title("mast readings over the 30 minutes", fontsize=11.5, color=INK)
+for t in SNAPS[:2]:
+    ax.axvline(t, color=MUTED, lw=0.9, ls=(0, (3, 3)), alpha=0.7)
 
 out = pathlib.Path("figures/paper")
 fig.savefig(out / "fig_simulator.pdf", dpi=300, bbox_inches="tight")
