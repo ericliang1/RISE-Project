@@ -22,8 +22,8 @@ from methane_t import stab_of
 BLUE, ORANGE = "#2a78d6", "#eb6834"
 INK, INK2, MUTED = "#0b0b0b", "#52514e", "#898781"
 GRID, BASE = "#e1e0d9", "#c3c2b7"
-CMO = LinearSegmentedColormap.from_list("o", ["#ffffff", "#fbe0d5",
-    "#f6b899", "#eb6834", "#a03c14", "#5e1f07"])
+CMB = LinearSegmentedColormap.from_list("b", ["#ffffff", "#cde2fb",
+    "#9ec5f4", "#6da7ec", "#3987e5", "#256abf", "#104281"])
 plt.rcParams.update({
     "font.family": "sans-serif", "font.sans-serif": ["DejaVu Sans"],
     "text.color": INK, "axes.edgecolor": BASE, "axes.labelcolor": INK2,
@@ -71,13 +71,12 @@ for m in range(30):
 vmax = np.percentile(fields[-1], 99.5)
 FOOTPRINT = 3.0                             # ppm-min detectability outline
 
-fig, axes = plt.subplots(1, 4, figsize=(13.6, 3.55),
-                         gridspec_kw=dict(width_ratios=[1, 1, 1, 1.35],
-                                          wspace=0.14),
+fig, axes = plt.subplots(1, 3, figsize=(10.4, 3.55),
+                         gridspec_kw=dict(wspace=0.10),
                          layout="constrained")
 
-for ax, t, c in zip(axes[:3], SNAPS, fields):
-    ax.imshow(np.clip(c, 0, vmax), origin="lower", cmap=CMO,
+for ax, t, c in zip(axes, SNAPS, fields):
+    ax.imshow(np.clip(c, 0, vmax), origin="lower", cmap=CMB,
               extent=[0, 500, 0, 500],
               norm=PowerNorm(0.5, vmin=0, vmax=vmax),
               interpolation="bilinear")
@@ -87,37 +86,11 @@ for ax, t, c in zip(axes[:3], SNAPS, fields):
                linewidths=1.3, zorder=5)
     ax.plot(xs[0] * 500, xs[1] * 500, marker="*", color=INK, ms=15,
             mec="white", mew=1.0, zorder=6)
-    ax.set_title(f"first {t} minutes" if t < 30 else "all 30 minutes",
-                 fontsize=11.5, color=INK)
+    ax.set_title(f"First {t} Minutes" if t < 30 else "All 30 Minutes",
+                 fontsize=12, color=INK)
     ax.set_xticks([]); ax.set_yticks([])
     for sp in ax.spines.values():
         sp.set_color(BASE)
-axes[0].set_ylabel("500 m site", fontsize=11, color=INK2)
-
-# panel 4: what the masts record
-ax = axes[3]
-tt = np.arange(1, 31)
-order = np.argsort(-d["readings"][i, :ns].max(1))
-shades = plt.cm.Blues(np.linspace(0.45, 0.95, ns))
-for rank, m in enumerate(order):
-    y = d["readings"][i, m].copy()
-    keep = d["keep"][i, m]
-    y[~keep] = np.nan
-    ax.plot(tt, y, color=shades[ns - 1 - rank], lw=1.7,
-            marker=".", ms=4)
-ax.axhline(0, color=BASE, lw=1.0)
-ax.set_xlabel("time (minutes)", fontsize=11)
-ax.set_ylabel("reading (ppm)", fontsize=11)
-ax.set_xlim(1, 30)
-ax.set_ylim(top=np.nanmax(np.where(d["keep"][i, :ns],
-                                   d["readings"][i, :ns], np.nan)) * 1.12)
-for sp in ("top", "right"):
-    ax.spines[sp].set_visible(False)
-ax.yaxis.grid(True, color=GRID, lw=0.8)
-ax.set_axisbelow(True)
-ax.set_title("mast readings over the 30 minutes", fontsize=11.5, color=INK)
-for t in SNAPS[:2]:
-    ax.axvline(t, color=MUTED, lw=0.9, ls=(0, (3, 3)), alpha=0.7)
 
 out = pathlib.Path("figures/paper")
 fig.savefig(out / "fig_simulator.pdf", dpi=300, bbox_inches="tight")
