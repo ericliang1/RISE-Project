@@ -76,8 +76,7 @@ ax.set_yticklabels(ylabels, fontsize=12.5)
 ax.tick_params(left=False)
 ax.set_xlim(XLO, XHI)
 ax.set_ylim(min(ys) - 0.55, max(ys) + 0.55)
-ax.set_xlabel("Shapley value (nats; contribution to log-probability of "
-              "the true source cell)", fontsize=14)
+ax.set_xlabel("Shapley value (nats)", fontsize=15)
 ax.xaxis.grid(True, color="#e1e0d9", lw=0.9)
 ax.set_axisbelow(True)
 for sp in ("top", "right", "left"):
@@ -85,13 +84,8 @@ for sp in ("top", "right", "left"):
 
 cb = fig.colorbar(sc, ax=ax, fraction=0.03, pad=0.015, ticks=[0, 1])
 cb.ax.set_yticklabels(["low", "high"], fontsize=12)
-cb.set_label("feature value (percentile within row)", fontsize=12.5,
-             color=INK2)
+cb.set_label("feature value", fontsize=13, color=INK2)
 cb.outline.set_visible(False)
-
-ax.annotate("black diamond = mean;  axis clipped at $\\pm$3",
-            xy=(0.99, 0.015), xycoords="axes fraction",
-            ha="right", fontsize=11, color=MUTED)
 
 for ext in ("pdf", "png", "svg"):
     fig.savefig(HERE / f"shap_beeswarm_models.{ext}", dpi=220,
