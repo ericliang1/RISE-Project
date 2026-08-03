@@ -1,0 +1,84 @@
+== pw_noisy_nomaps_st_seed1 start 14:15
+  ep 0 val_nll 7.9922
+  ep 25 val_nll 7.8897
+  ep 50 val_nll 6.6345
+  ep 75 val_nll 5.9513
+  ep 100 val_nll 5.7475
+  ep 125 val_nll 5.5931
+  ep 150 val_nll 5.4712
+  ep 175 val_nll 5.4433
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se/checkpoints/pw_noisy_nomaps_st_seed1.pt
+{"tag": "pw_noisy_nomaps_st_seed1", "maps": "off", "arch": "st", "val_nll": 5.420693115234375, "clean": {"coverage": 0.902, "median_radius_m": 51.40253626937141, "frac_below_50m": 0.4575}, "noisy": {"coverage": 0.8995, "median_radius_m": 53.98346085489617, "frac_below_50m": 0.379}}
+== pw_noisy_ens_st_seed1 start 14:20
+  ep 0 val_nll 6.3096
+  ep 25 val_nll 5.6182
+  ep 50 val_nll 5.5903
+  ep 75 val_nll 5.5890
+  ep 100 val_nll 5.6152
+  ep 125 val_nll 5.6471
+  ep 150 val_nll 5.7213
+  ep 175 val_nll 5.7395
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se/checkpoints/pw_noisy_ens_st_seed1.pt
+{"tag": "pw_noisy_ens_st_seed1", "maps": "ens", "arch": "st", "val_nll": 5.58185693359375, "noisy": {"coverage": 0.8945, "median_radius_m": 66.91917201985893, "frac_below_50m": 0.226}}
+== pw_noisy_nomaps_gnn_seed1 start 14:25
+  ep 0 val_nll 7.9952
+  ep 25 val_nll 6.4483
+  ep 50 val_nll 5.8318
+  ep 75 val_nll 5.6593
+  ep 100 val_nll 5.5855
+  ep 125 val_nll 5.5734
+  ep 150 val_nll 5.5868
+  ep 175 val_nll 5.6341
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se/checkpoints/pw_noisy_nomaps_gnn_seed1.pt
+{"tag": "pw_noisy_nomaps_gnn_seed1", "maps": "off", "arch": "gnn", "val_nll": 5.488687744140625, "clean": {"coverage": 0.9065, "median_radius_m": 50.15912804534769, "frac_below_50m": 0.4955}, "noisy": {"coverage": 0.8985, "median_radius_m": 54.520622949389974, "frac_below_50m": 0.374}}
+== pw_noisy_nomaps_st_seed2 start 14:27
+  ep 0 val_nll 7.9765
+  ep 25 val_nll 7.4616
+  ep 50 val_nll 6.2782
+  ep 75 val_nll 5.8851
+  ep 100 val_nll 5.6901
+  ep 125 val_nll 5.5854
+  ep 150 val_nll 5.5651
+  ep 175 val_nll 5.5175
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se/checkpoints/pw_noisy_nomaps_st_seed2.pt
+{"tag": "pw_noisy_nomaps_st_seed2", "maps": "off", "arch": "st", "val_nll": 5.488267822265625, "clean": {"coverage": 0.89, "median_radius_m": 52.708798035983286, "frac_below_50m": 0.456}, "noisy": {"coverage": 0.8855, "median_radius_m": 55.7538786297741, "frac_below_50m": 0.388}}
+== pw_noisy_ens_st_seed2 start 14:31
+  ep 0 val_nll 6.3826
+  ep 25 val_nll 5.5918
+  ep 50 val_nll 5.5537
+  ep 75 val_nll 5.6002
+  ep 100 val_nll 5.6756
+  ep 125 val_nll 5.8161
+  ep 150 val_nll 5.8871
+  ep 175 val_nll 5.9018
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se/checkpoints/pw_noisy_ens_st_seed2.pt
+{"tag": "pw_noisy_ens_st_seed2", "maps": "ens", "arch": "st", "val_nll": 5.5528125, "noisy": {"coverage": 0.8965, "median_radius_m": 67.42532099708897, "frac_below_50m": 0.2305}}
+== pw_noisy_nomaps_gnn_seed2 start 14:37
+  ep 0 val_nll 7.9844
+  ep 25 val_nll 6.5330
+  ep 50 val_nll 5.8284
+  ep 75 val_nll 5.6062
+  ep 100 val_nll 5.5291
+  ep 125 val_nll 5.5985
+  ep 150 val_nll 5.6066
+  ep 175 val_nll 5.6393
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se/checkpoints/pw_noisy_nomaps_gnn_seed2.pt
+{"tag": "pw_noisy_nomaps_gnn_seed2", "maps": "off", "arch": "gnn", "val_nll": 5.48761328125, "clean": {"coverage": 0.9025, "median_radius_m": 51.213207684003706, "frac_below_50m": 0.467}, "noisy": {"coverage": 0.9005, "median_radius_m": 54.698504736680846, "frac_below_50m": 0.355}}
+== pw_noisy_nomaps_st_seed3 start 14:39
+  ep 0 val_nll 7.9844
+  ep 25 val_nll 7.3166
+  ep 50 val_nll 6.1395
+  ep 75 val_nll 5.8539
+  ep 100 val_nll 5.7317
+  ep 125 val_nll 5.6579
+  ep 150 val_nll 5.5647
+  ep 175 val_nll 5.4994
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se/checkpoints/pw_noisy_nomaps_st_seed3.pt
+{"tag": "pw_noisy_nomaps_st_seed3", "maps": "off", "arch": "st", "val_nll": 5.4916484375, "clean": {"coverage": 0.8845, "median_radius_m": 53.80321507338534, "frac_below_50m": 0.417}, "noisy": {"coverage": 0.8845, "median_radius_m": 57.300504579069006, "frac_below_50m": 0.3665}}
+== pw_noisy_ens_st_seed3 start 14:43
+  ep 0 val_nll 6.2362
+  ep 25 val_nll 5.6079
+  ep 50 val_nll 5.5728
+  ep 75 val_nll 5.5830
+  ep 100 val_nll 5.6076
+  ep 125 val_nll 5.7242

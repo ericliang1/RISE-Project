@@ -6,8 +6,9 @@
 # =====================================================================
 
 paths:
-  # data/ is a symlink -> /projectnb/rise-tower/eric1/csr-data (10 GB home quota)
-  data_dir: data
+  # super-emitter branch: q >= 100 kg/h, 4-8 masts.  Separate data dir so the
+  # full-population artifacts (csr-data, via the data/ symlink) stay intact.
+  data_dir: /projectnb/rise-tower/eric1/csr-data-se48
   results_dir: results
   figures_dir: figures
   checkpoints_dir: data/checkpoints   # checkpoints live on projectnb too

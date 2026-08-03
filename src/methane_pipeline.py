@@ -30,7 +30,7 @@ from train import blur_teacher, d4_augment, d4_target_perms, teacher_ce, val_nll
 
 SPLITS = {"train": 10000, "val": 1000, "calib": 2000, "test": 2000}
 TAG_BASE = 40                     # SeedSequence split tags 40..43
-Q_LO, Q_HI = 10.0, 500.0          # kg/h
+Q_LO, Q_HI = 100.0, 500.0         # kg/h (super-emitter population; matches gen_split)
 SIG_LO, SIG_HI = 0.2, 3.0         # ppm
 N_GRID = 64
 T = 30

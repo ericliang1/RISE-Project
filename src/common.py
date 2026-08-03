@@ -24,6 +24,15 @@ def get_device():
 
 
 def resolve(cfg, key):
+    """Resolve a paths: entry relative to the repo root.  CSR_DATA_DIR
+    overrides data_dir so a new benchmark can generate in parallel with
+    runs still reading the config'd directory."""
+    if key == "data_dir" and os.environ.get("CSR_DATA_DIR"):
+        return Path(os.environ["CSR_DATA_DIR"])
+    return _resolve_cfg(cfg, key)
+
+
+def _resolve_cfg(cfg, key):
     """Resolve a paths: entry relative to the repo root."""
     p = Path(cfg["paths"][key])
     return p if p.is_absolute() else REPO_ROOT / p
@@ -79,6 +88,17 @@ def sha256_file(path, chunk=1 << 20):
                 break
             h.update(b)
     return h.hexdigest()
+
+
+def savez_atomic(path, **arrs):
+    """np.savez_compressed via tmp + rename, so file existence == write
+    completed (the resume guards key on existence; a wall-clock kill must
+    never leave a truncated npz that passes a guard).  numpy appends '.npz'
+    to tmp *names* but not to open file objects, hence the file handle."""
+    tmp = str(path) + ".tmp"
+    with open(tmp, "wb") as f:
+        np.savez_compressed(f, **arrs)
+    os.replace(tmp, path)
 
 
 def update_json(path, updates):

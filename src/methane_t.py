@@ -102,12 +102,12 @@ def gen_split(name, count, cfg, root):
         cell = pos_to_cell(xs[None], N_GRID)[0]
         xs = np.array([(cell % N_GRID + 0.5) / N_GRID,
                        (cell // N_GRID + 0.5) / N_GRID])
-        q = np.exp(rng.uniform(np.log(10.0), np.log(500.0)))
+        q = np.exp(rng.uniform(np.log(100.0), np.log(500.0)))
         u_seq, u_mean = wind_sequence(rng)
         stab = int(rng.integers(0, 6))
         sig = np.exp(rng.uniform(np.log(0.2), np.log(3.0)))
         pd = rng.uniform(0.0, 0.2)
-        n = int(rng.integers(4, 13))
+        n = int(rng.integers(4, 9))
         sensors = rng.uniform(0, 1, (n, 2))
         pad = np.zeros((12, 2)); pad[:n] = sensors
         g = sensor_responses_t(sensors, xs, u_seq, stab, "cpu").numpy()  # (n,T)
