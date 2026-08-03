@@ -95,7 +95,7 @@ for j, k in enumerate((7, 5, 3, 0)):
     show_map(ax, zmaps[k])
 fig.text(x0 + 0.10, 0.075, "one evidence map\nper sampled wind",
          ha="center", fontsize=10.5, color=INK2)
-fig.text(x0 + 0.10, 0.93, "2. compute physics under each",
+fig.text(x0 + 0.10, 0.93, "2. Monte Carlo wind ensemble",
          ha="center", fontsize=12, color=INK)
 
 # ---- step 3: the averaged map
