@@ -90,7 +90,10 @@ for ax, t, c in zip(axes, SNAPS, fields):
                  fontsize=12, color=INK)
     ax.set_xticks([]); ax.set_yticks([])
     for sp in ax.spines.values():
-        sp.set_color(BASE)
+        sp.set_visible(True)
+        sp.set_color(INK2)
+        sp.set_linewidth(1.3)
+        sp.set_zorder(10)
 
 out = pathlib.Path("figures/paper")
 fig.savefig(out / "fig_simulator.pdf", dpi=300, bbox_inches="tight")
