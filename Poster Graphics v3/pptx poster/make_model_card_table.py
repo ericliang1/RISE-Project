@@ -31,7 +31,7 @@ slide = prs.slides.add_slide(prs.slide_layouts[6])  # blank
 # Title
 title_box = slide.shapes.add_textbox(Inches(0.6), Inches(0.35), Inches(12.1), Inches(0.9))
 tf = title_box.text_frame
-tf.text = "Physics-Guided Head Adds <0.25% Parameters Across All Architectures"
+tf.text = "Model Parameter Comparison"
 p = tf.paragraphs[0]
 p.font.size = Pt(30)
 p.font.bold = True
