@@ -92,3 +92,33 @@ print("scenario %d, %d masts; no-maps %.0f m -> with maps %.0f m; "
       "p(true cell) = %.3f, argmax %s truth"
       % (i, ns, rb[i], ro[i], probs2d.ravel()[tc],
          "==" if int(probs.argmax()) == tc else "!="))
+
+
+# ---- final panel: the conformal region cut from the probability map ----
+za = np.load(dd / "pw_audit_pw_noisy_ens_seed1_noisy.npz")
+mask = np.unpackbits(za["masks"][i])[:4096].reshape(64, 64).astype(float)
+r_m = rad(za["sizes"][i:i + 1])[0]
+
+fig, ax = plt.subplots(figsize=(4.6, 4.6))
+lp = np.clip(np.log10(probs2d + 1e-12), -8, None)
+ax.imshow(lp, origin="lower", cmap=CMB, extent=[0, 500, 0, 500],
+          interpolation="bilinear", alpha=0.45)
+ax.imshow(np.where(mask > 0, 1.0, np.nan), origin="lower",
+          extent=[0, 500, 0, 500], interpolation="nearest",
+          cmap=LinearSegmentedColormap.from_list("r", ["#9ec5f4",
+                                                       "#9ec5f4"]),
+          alpha=0.55, zorder=2)
+ax.contour(mask, levels=[0.5], extent=[0, 500, 0, 500], colors=[BLUE],
+           linewidths=2.6, zorder=3)
+ax.scatter(sx[:, 0], sx[:, 1], s=46, c=INK, edgecolors="white",
+           linewidths=1.5, zorder=5)
+ax.add_patch(Circle(tx, 13, ec=INK, fc="none", lw=2.0, zorder=6))
+ax.set_xticks([]); ax.set_yticks([])
+for sp in ax.spines.values():
+    sp.set_color(BASE)
+out = pathlib.Path("figures/paper")
+fig.savefig(out / "fig_map_region.pdf", bbox_inches="tight")
+fig.savefig(out / "fig_map_region.png", dpi=260, bbox_inches="tight")
+plt.close(fig)
+print("wrote fig_map_region  (90%% conformal region, %.0f m equivalent "
+      "radius, covered=%s)" % (r_m, bool(za["covered"][i])))
