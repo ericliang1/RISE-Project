@@ -22,7 +22,7 @@ dd = resolve(cfg, "data_dir")
 N_CELLS = 64 * 64
 d = dict(np.load(dd / "ch4t_test.npz", allow_pickle=True))
 zb = np.load(dd / "pw_audit_pw_noisy_nomaps_seed1_noisy.npz")
-zo = np.load(dd / "pw_audit_pw_noisy_ensr_seed1_noisy.npz")
+zo = np.load(dd / "pw_audit_pw_noisy_ens_seed1_noisy.npz")
 
 
 def rad(s):
@@ -36,16 +36,14 @@ dist = (np.log(rb / np.median(rb[grp])) ** 2
 dist[~grp] = np.inf
 i = int(np.argmin(dist))
 ens = np.load(dd / "ch4tu_test_maps_ens.npz")["maps"][i]
-rm = np.load(dd / "pw_test_resid_marg.npz")["noisy"][i].astype(float)
 ns = int(d["n_sensors"][i])
 sx = d["sensors"][i, :ns] * 500
 tc = int(d["true_cell"][i])
 tx = ((tc % 64 + 0.5) / 64 * 500, (tc // 64 + 0.5) / 64 * 500)
 
 maps = [("evidence", ens[0].reshape(64, 64), CMB),
-        ("fragility", ens[1].reshape(64, 64), CMO),
-        ("sensitivity", ens[2].reshape(64, 64), CMB),
-        ("fitquality", (10 - rm).reshape(64, 64), CMB)]
+        ("spread", ens[1].reshape(64, 64), CMO),
+        ("visibility", ens[2].reshape(64, 64), CMB)]
 
 for name, img, cm in maps:
     fig, ax = plt.subplots(figsize=(4.6, 4.6))
