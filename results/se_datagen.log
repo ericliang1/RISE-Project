@@ -1,0 +1,19 @@
+== data (super-emitter population) ==
+  train: 10000  q [100, 500] kg/h  masts [6, 12]
+  val: 1000  q [100, 498] kg/h  masts [6, 12]
+  calib: 2000  q [100, 499] kg/h  masts [6, 12]
+  test: 2000  q [100, 500] kg/h  masts [6, 12]
+== exact posteriors (calib/test only) ==
+  conformal-on-exact coverage: 0.963  median radius 4.4 m
+== datagen gates passed ==
+  train: maps exist, skipping
+  val: maps exist, skipping
+  calib: maps exist, skipping
+  calib oracle 1000/2000
+  calib oracle 2000/2000
+  calib: oracles done
+  test: maps done
+  test oracle 1000/2000
+  test oracle 2000/2000
+  test: oracles done
+== SE DATAGEN COMPLETE 14:03

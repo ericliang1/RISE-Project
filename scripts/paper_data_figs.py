@@ -318,7 +318,7 @@ def fig_masts():
     ns = d["n_sensors"].astype(int)
     nets = [("DeepSets", "", BLUE), ("GNN", "_gnn", ORANGE),
             ("Set Transf.", "_st", AQUA)]
-    counts = np.arange(4, 13)
+    counts = np.arange(4, 9)
     fig, ax = plt.subplots(figsize=(6.6, 4.2))
     ax.axhline(50, color=MUTED, lw=1.4, ls=(0, (4, 3)), zorder=2)
     ax.annotate("50 m facility scale", xy=(4.1, 50), va="bottom",
@@ -326,7 +326,7 @@ def fig_masts():
     for lab, sfx, c in nets:
         rb = rad(np.load(dd / f"pw_audit_pw_noisy_nomaps{sfx}_seed1_noisy"
                          ".npz")["sizes"].astype(float))
-        ro = rad(np.load(dd / f"pw_audit_pw_noisy_ensr{sfx}_seed1_noisy"
+        ro = rad(np.load(dd / f"pw_audit_pw_noisy_ens{sfx}_seed1_noisy"
                          ".npz")["sizes"].astype(float))
         mb = [np.median(rb[ns == k]) for k in counts]
         mo = [np.median(ro[ns == k]) for k in counts]
@@ -337,7 +337,7 @@ def fig_masts():
     ax.set_xticks(counts)
     ax.set_xlabel("number of sensor masts")
     ax.set_ylabel("median 90% region radius (m)")
-    ax.set_xlim(3.6, 12.4); ax.set_ylim(38, 175)
+    ax.set_xlim(3.7, 8.3); ax.set_ylim(38, 175)
     ax.yaxis.grid(True, color=GRID, lw=0.8); ax.set_axisbelow(True)
     despine(ax)
     leg = ax.legend(loc="upper right", frameon=False, fontsize=10.5,
@@ -354,13 +354,13 @@ def fig_dist():
     fig, ax = plt.subplots(figsize=(8.6, 4.0))
     for lab, sfx, c in nets:
         for kind, ls, lw, al in (("nomaps", (0, (4, 2)), 1.7, 0.75),
-                                 ("ensr", "-", 2.4, 1.0)):
+                                 ("ens", "-", 2.4, 1.0)):
             r = rad(np.load(dd / f"pw_audit_pw_noisy_{kind}{sfx}_seed1"
                             "_noisy.npz")["sizes"].astype(float))
             x = np.sort(r)
             yv = np.arange(1, len(x) + 1) / len(x)
             ax.plot(x, yv, color=c, ls=ls, lw=lw, alpha=al,
-                    label=(lab if kind == "ensr" else None),
+                    label=(lab if kind == "ens" else None),
                     solid_capstyle="round")
     ax.axvline(50, color=MUTED, lw=1.4, ls=(0, (4, 3)))
     ax.annotate("EPA 50 m", xy=(50, 1.015), ha="center", fontsize=10,

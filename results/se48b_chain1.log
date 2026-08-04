@@ -1,0 +1,80 @@
+== skip pw_noisy_nomaps_st_seed1 (audit exists)
+== pw_noisy_ens_st_seed1 start 15:45
+  ep 0 val_nll 6.6708
+  ep 25 val_nll 5.8067
+  ep 50 val_nll 5.8083
+  ep 75 val_nll 5.8440
+  ep 100 val_nll 5.8709
+  ep 125 val_nll 5.9420
+  ep 150 val_nll 6.0145
+  ep 175 val_nll 6.0292
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_ens_st_seed1.pt
+{"tag": "pw_noisy_ens_st_seed1", "maps": "ens", "arch": "st", "val_nll": 5.78408056640625, "noisy": {"coverage": 0.9105, "median_radius_m": 73.75544874083045, "frac_below_50m": 0.21}}
+== skip pw_noisy_nomaps_gnn_seed1 (audit exists)
+== pw_noisy_nomaps_st_seed2 start 15:51
+  ep 0 val_nll 7.9760
+  ep 25 val_nll 7.5700
+  ep 50 val_nll 6.5016
+  ep 75 val_nll 6.2411
+  ep 100 val_nll 6.1381
+  ep 125 val_nll 6.0866
+  ep 150 val_nll 6.0279
+  ep 175 val_nll 6.0377
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_nomaps_st_seed2.pt
+{"tag": "pw_noisy_nomaps_st_seed2", "maps": "off", "arch": "st", "val_nll": 6.005087158203125, "clean": {"coverage": 0.8955, "median_radius_m": 70.10925538546454, "frac_below_50m": 0.154}, "noisy": {"coverage": 0.891, "median_radius_m": 73.95274409661882, "frac_below_50m": 0.1025}}
+== pw_noisy_ens_st_seed2 start 15:55
+  ep 0 val_nll 6.6863
+  ep 25 val_nll 5.8073
+  ep 50 val_nll 5.7960
+  ep 75 val_nll 5.9006
+  ep 100 val_nll 6.0328
+  ep 125 val_nll 6.1296
+  ep 150 val_nll 6.1633
+  ep 175 val_nll 6.1697
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_ens_st_seed2.pt
+{"tag": "pw_noisy_ens_st_seed2", "maps": "ens", "arch": "st", "val_nll": 5.78370458984375, "noisy": {"coverage": 0.906, "median_radius_m": 73.1603704035532, "frac_below_50m": 0.2205}}
+== pw_noisy_nomaps_gnn_seed2 start 16:01
+  ep 0 val_nll 7.9852
+  ep 25 val_nll 6.9662
+  ep 50 val_nll 6.3476
+  ep 75 val_nll 6.0862
+  ep 100 val_nll 6.0412
+  ep 125 val_nll 6.1057
+  ep 150 val_nll 6.1440
+  ep 175 val_nll 6.2308
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_nomaps_gnn_seed2.pt
+{"tag": "pw_noisy_nomaps_gnn_seed2", "maps": "off", "arch": "gnn", "val_nll": 6.022166748046875, "clean": {"coverage": 0.8995, "median_radius_m": 65.15395966596122, "frac_below_50m": 0.05}, "noisy": {"coverage": 0.902, "median_radius_m": 69.27293215152224, "frac_below_50m": 0.0185}}
+== pw_noisy_nomaps_st_seed3 start 16:03
+  ep 0 val_nll 7.9874
+  ep 25 val_nll 7.1108
+  ep 50 val_nll 6.4049
+  ep 75 val_nll 6.2222
+  ep 100 val_nll 6.1214
+  ep 125 val_nll 6.0286
+  ep 150 val_nll 6.0243
+  ep 175 val_nll 6.0124
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_nomaps_st_seed3.pt
+{"tag": "pw_noisy_nomaps_st_seed3", "maps": "off", "arch": "st", "val_nll": 5.988523193359375, "clean": {"coverage": 0.884, "median_radius_m": 65.67371458879661, "frac_below_50m": 0.22}, "noisy": {"coverage": 0.9015, "median_radius_m": 72.29216547407226, "frac_below_50m": 0.1205}}
+== pw_noisy_ens_st_seed3 start 16:07
+  ep 0 val_nll 6.5869
+  ep 25 val_nll 5.8186
+  ep 50 val_nll 5.8010
+  ep 75 val_nll 5.9346
+  ep 100 val_nll 6.1225
+  ep 125 val_nll 6.1911
+  ep 150 val_nll 6.2539
+  ep 175 val_nll 6.2702
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_ens_st_seed3.pt
+{"tag": "pw_noisy_ens_st_seed3", "maps": "ens", "arch": "st", "val_nll": 5.80009814453125, "noisy": {"coverage": 0.9085, "median_radius_m": 74.21498869297416, "frac_below_50m": 0.216}}
+== pw_noisy_nomaps_gnn_seed3 start 16:13
+  ep 0 val_nll 7.9721
+  ep 25 val_nll 6.8081
+  ep 50 val_nll 6.3685
+  ep 75 val_nll 6.1510
+  ep 100 val_nll 6.1382
+  ep 125 val_nll 6.1526
+  ep 150 val_nll 6.2385
+  ep 175 val_nll 6.2750
+saved checkpoint /projectnb/rise-tower/eric1/csr-data-se48/checkpoints/pw_noisy_nomaps_gnn_seed3.pt
+{"tag": "pw_noisy_nomaps_gnn_seed3", "maps": "off", "arch": "gnn", "val_nll": 6.0482177734375, "clean": {"coverage": 0.89, "median_radius_m": 65.00469495747637, "frac_below_50m": 0.0405}, "noisy": {"coverage": 0.896, "median_radius_m": 69.06226892023373, "frac_below_50m": 0.013}}
+== chain 1 complete 16:14

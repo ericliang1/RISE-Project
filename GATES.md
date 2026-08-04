@@ -461,3 +461,73 @@ ensr 68.4-69.3 (27-29%); ST nomaps 80.4-82.3 (7-12%) vs ensr 69.4-70.3
 families converge to 68-73 m / 24-29% <50 m; for stronger baselines the
 gain concentrates in the lower tail (GNN median ~flat, <50m share 10x).
 Table II now per-model; abstract/C3 updated to 68-73 across families.
+
+## 2026-07-31 — Super-emitter benchmark rebuild (branch super-emitter)
+User directive: population becomes q ~ LogU(100,500) kg/h (all super-emitters),
+S in {6..12}; Table II becomes physics-only baseline vs 3 nets (ladder dropped).
+New data dir csr-data-se; full-pop artifacts untouched; results/paired_wind.json
+archived to paired_wind_fullpop.json. Prior Q_LO 10->100 (methane_pipeline) so
+oracle/exact posterior match the generating prior. K_TEACHER 16->8: baseline
+gets the same marginalization budget as the maps. Adversarial review (4 lenses,
+10 agents) confirmed pre-launch: PW_EPOCHS leak pinned in chain; CUDA preflight
+added (silent-CPU burn); savez_atomic for every resume-guard artifact (truncated
+npz passed guards); conformal-on-exact gate widened to [0.85, 0.985] (sharper
+population + tie-rule over-coverage: 0.97 ceiling = ~30% spurious abort,
+review-measured). Train/val oracles skipped (nothing consumes them). GPU
+selection maps onto SGE's CUDA_VISIBLE_DEVICES (job owns 1,2; 0 is foreign).
+Refactor verified: seed streams byte-identical, skip-guard tags match
+stage_train for all 6 config families.
+
+## 2026-07-31 — Residual map removed from method (user directive)
+"remove residual map, doesn't do much and too complicated": final method is
+now `ens` (3 channels: mean z, spread z, mean log b over K=8 shared draws).
+Side effect: the paper sentence "the same K wind draws calculate all maps"
+becomes literally true (stream 92 only; the residual used stream 93).
+Full-pop evidence for the dropped rung: -4.0 m [-5.6, -2.7], smallest
+contributor. gen-marg/verify-marg dropped from datagen; chains train ens.
+
+## 2026-07-31 — Population re-decision: 2-8 masts (user directive, third range)
+Sequence 6-12 -> (4-8 staged) -> 2-8, chosen after seeing 6-12 results where
+maps hurt GNN/ST (equalizer pattern; baselines outran maps on dense networks).
+Forking-paths risk surfaced to user explicitly; 2-12 sweep recommended; user
+chose 2-8. DISCLOSURE REQUIRED in paper: population selected after observing
+the density interaction. 6-12 grid complete and retained (18 runs, csr-data-se,
+results archived) as the dense-regime comparison. Identifiability probe (300
+scenarios, 2-8, q>=100): weak-frac 0.08, identifiable 0.72, median oracle area
+0.001 of site — population well-posed, gate passed. CSR_DATA_DIR env override
+added so se28 datagen runs while chain 1 finishes 6-12 on the config'd dir.
+
+## 2026-07-31 — 6-12 grid cancelled at 16/18 (user directive: benchmark = 2-8 only)
+Chain 1 killed before its last two runs (ens_st_seed3, nomaps_gnn_seed3).
+Completed 6-12 results archived: results/paired_wind_se612.json + audit npzs
+and checkpoints remain in csr-data-se (not deleted). Paper population is 2-8
+exclusively; config data_dir flipped to csr-data-se28. The 6-12 evidence of
+the density interaction (maps hurt GNN/ST at 54-57 m baselines) stays on disk
+for the record and for any density-axis discussion.
+
+## 2026-07-31 — Final population: 4-8 masts (user directive, fourth range)
+2-8 partial grid (3 runs: DS pair 127->92 m, ST ens 91 m) cut short; user
+moved to 4-8, the range the fullpop forecast supported (all-arch map gains,
++16 to +27 pp <50m). 2-8 rows archived (paired_wind_se28_partial.json),
+csr-data-se28 retained incl. 72%-identifiable probe. Paper must disclose
+the range iteration; 6-12 and 2-8 evidence stays on disk.
+
+## 2026-07-31 — Evidence-map saturation fix (asinh replaces clip; user-approved)
+Measurement (50 TRAIN scenarios, 4-8 benchmark): raw |z| p99=335, max 4501 vs
+clip at 60; 30% of near-source cells clipped on average (bimodal); z at true
+cell p90=337. On all-super-emitter training data every strong scenario's map
+has a flat top. Fix: zmap := asinh(z/10) — identical to old z/10 small-signal,
+log-compressing (never flat) beyond; the same transform the raw tokens use.
+Chosen from train-split statistics, not test results. Old-clip ens artifacts
+archived in csr-data-se48/oldclip + paired_wind_se48_oldclip.json (seed-1
+grid: DS 83.3/12.3, GNN 80.8/12.9, ST 82.0/13.1 — the 81-83 m ceiling).
+Maps + ens/ladder runs regenerating; baselines and oracle unaffected.
+
+## 2026-07-31 — Head warmup adopted (PW_HEAD_WARMUP=100, uniform recipe)
+Adaptive change, made after observing the GNN median regression under joint
+training; validated by a prespecified pilot (GNN ens seed 4): 61.7 m / 28.4%
+<50m / val-NLL 5.816 vs joint 72.3-74.0 / 21-23% / 5.93 and vs no-maps
+baseline 67.6-69.3 / 1.3-6.9%. Mechanism (head shortcut displaces base
+feature learning) confirmed. Applied identically to every map configuration;
+joint-trained grid archived (csr-data-se48/joint + paired_wind_se48_joint.json)
+as the before. Baselines unaffected (no head).
