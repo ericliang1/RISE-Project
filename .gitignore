@@ -1,6 +1,9 @@
 data
 __pycache__/
 *.pyc
+.ipynb_checkpoints/
+.DS_Store
+*.swp
 .pytest_cache/
 slurm_logs/
 paper/*.aux
