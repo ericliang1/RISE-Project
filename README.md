@@ -34,9 +34,6 @@ bash simulator/generate_data.sh       # data + gate + physics maps (GPU)
 bash localization/train_chain.sh 0    # training, chain 0 (GPU)
 bash localization/train_chain.sh 1    # training, chain 1 (GPU)
 python localization/table1_from_audits.py
-python localization/fig1_radius_cdf_values.py
-python localization/fig2_region_example_values.py
-python localization/fig3_masts_curves_values.py
 ```
 
 Table 1 straight from the committed results (no data or GPU needed):
@@ -50,10 +47,9 @@ python localization/table1_from_results_json.py
 ```
 simulator/       plume model, scenario generation, exact posterior, datagen
 localization/    networks, physics maps, conformal wrapper, training,
-                 table and figure-value scripts
+                 table scripts
 config/          the one config: all settings and seeds
-results/         the Table 1 numbers (paired_wind.json); figure values
-                 land here when their scripts run
+results/         the Table 1 numbers (paired_wind.json)
 ```
 
 Data generation is deterministic from the seeds in
