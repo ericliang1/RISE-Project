@@ -1,8 +1,0 @@
-  M1 ep 0 crit 8.2792
-  M1 ep 20 crit 7.3052
-  M1 ep 40 crit 7.0507
-  M1 ep 60 crit 6.9786
-  M1 ep 80 crit 6.9810
-  M1 ep 100 crit 6.9572
-{"tag": "s_nomaps_det", "coverage": 0.9055, "median_radius_m": 114.43135546162745, "wilcoxon_p_vs_ref": 1.0, "frac_sharper_than_ref": 0.323}
-NOMAPS DONE

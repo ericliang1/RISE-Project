@@ -1,66 +1,63 @@
-# Conformal Source Regions for Sparse-Sensor Pollution Localization 
+# Physics-Guided Calibrated Localization of Methane Sources
 
-Computational pipeline for the paper *"Conformal Source Regions for
-Sparse-Sensor Pollution Localization: A Calibration, Exact-Posterior Audit,
-and Information Dose-Response Study"*. Produces every number and figure that
-replaces the paper's `[0.XX]` placeholders.
+Code for the paper *"Physics-Guided Calibrated Localization of Methane
+Sources"*.
 
-## Environment (BU SCC)
+## How it works
+
+- **CH4-T simulator** (`simulator/`): Gaussian-plume methane leak
+  scenarios on a 500 m × 500 m site — one super-emitter leak
+  (100–500 kg/h), 4–8 point-sensor masts sampling methane and wind every
+  minute for 30 minutes, drifting wind, and realistic methane-sensor and
+  anemometer error.
+- **Localization** (`localization/`): three permutation-invariant
+  networks (DeepSets, GNN, Set Transformer) predict a probability map of
+  the leak location over a 64 × 64 grid; split conformal calibration
+  turns the map into a region guaranteed to contain the true source 90%
+  of the time.
+- **The method**: from the readings and the measured wind, three
+  physics-based input maps are computed — how well a leak at each cell
+  explains the readings (source evidence), how visible each cell is to
+  the masts (sensor visibility), and how stable the evidence is across
+  8 Monte-Carlo draws of plausible true winds (wind sensitivity). The
+  maps feed a small zero-initialized convolutional head (10,433
+  parameters) added to each network.
+- **Result**: coverage holds near 90% while median region radii fall
+  from 97–100 / 68–69 / 72–75 m to 73–75 / 61–62 / 64–65 m, and the
+  share of scenarios meeting the 50 m localization target rises from
+  0–12% to 16–30%.
+
+## Run
 
 ```bash
-source scripts/env.sh    # module load miniconda academic-ml/spring-2026; conda activate spring-2026-pyt
+bash simulator/generate_data.sh       # data + gate + physics maps (GPU)
+bash localization/train_chain.sh 0    # training, chain 0 (GPU)
+bash localization/train_chain.sh 1    # training, chain 1 (GPU)
+python localization/table1_from_audits.py
+python localization/fig1_radius_cdf_values.py
+python localization/fig2_region_example_values.py
+python localization/fig3_masts_curves_values.py
 ```
 
-Python 3.12.11, PyTorch 2.9.1+cu128 on NVIDIA L40S. `data/` is a symlink to
-`/projectnb/rise-tower/eric1/csr-data` (home quota is 10 GB).
-
-## One config
-
-Everything is driven by `config/default.yaml`. Documented deviations and all
-gate measurements live in `GATES.md` / `results/gates.json`.
-
-## Pipeline (gates G1-G5 are blocking; run in order)
+Table 1 straight from the committed results (no data or GPU needed):
 
 ```bash
-# G1 - physics validation
-pytest tests/test_forward_model.py -v          # quadrature/zero-wind/symmetry/linearity
-pytest tests/ -m slow -s                       # FD cross-check (GPU, ~15 min)
-
-# Stage 2 - benchmark generation + freeze + leakage audit
-python src/generate_data.py
-
-# G2 - training (two seeds)
-python src/train.py --seed 1
-python src/train.py --seed 2
-
-# G3 - conformal calibration (H1)
-python src/run_conformal.py --probs model --seed 1
-
-# G4 - exact posteriors + sanity + sharpness audit (H2, D1)
-python src/exact_posterior.py --splits calib test
-python src/sanity_oracle.py
-python src/run_conformal.py --probs exact
-python src/audit.py --seed 1
-
-# H3 - dose-response (inference only)
-python src/dose_response.py --seed 1
-
-# G5 - results assembly, figures F1-F5, placeholder map, tables
-python src/assemble_results.py
-python src/figures.py
+python localization/table1_from_results_json.py
 ```
-
-`python src/assemble_results.py` regenerates all main tables from the frozen
-data + checkpoints (the reproducibility rerun).
 
 ## Layout
 
 ```
-config/default.yaml     the ONE config
-src/                    pipeline stages (see paper sections 3-6)
-tests/                  pytest gates (G1)
-results/                gates.json, checksums.json, placeholder_map.json, tables/
-figures/                fig1_pipeline.pdf ... fig5_doseresponse.pdf
-data/ -> /projectnb/... frozen scenario npz files, checkpoints, posteriors
-GATES.md                human-readable gate summary + documented decisions
+simulator/       plume model, scenario generation, exact posterior, datagen
+localization/    networks, physics maps, conformal wrapper, training,
+                 table and figure-value scripts
+config/          the one config: all settings and seeds
+results/         the Table 1 numbers (paired_wind.json); figure values
+                 land here when their scripts run
 ```
+
+Data generation is deterministic from the seeds in
+`config/default.yaml`, so the benchmark regenerates identically.
+`paths.data_dir` (default `data/`, override with `CSR_DATA_DIR`) sets
+where the generated files live. Requires Python 3.12, PyTorch (CUDA),
+numpy, pyyaml.

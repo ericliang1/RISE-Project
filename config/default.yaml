@@ -6,12 +6,16 @@
 # =====================================================================
 
 paths:
-  # super-emitter branch: q >= 100 kg/h, 4-8 masts.  Separate data dir so the
-  # full-population artifacts (csr-data, via the data/ symlink) stay intact.
-  data_dir: /projectnb/rise-tower/eric1/csr-data-se48
+  # Where the generated benchmark npz files (splits, posteriors, maps,
+  # audits) live.  Relative paths resolve against the repo root; the
+  # CSR_DATA_DIR environment variable overrides this entry.  The frozen
+  # copy used for the paper lives on the BU SCC at
+  # /projectnb/rise-tower/eric1/csr-data-se48; scripts/se_datagen.sh
+  # regenerates a byte-identical benchmark from the seeds below.
+  data_dir: data
   results_dir: results
   figures_dir: figures
-  checkpoints_dir: data/checkpoints   # checkpoints live on projectnb too
+  checkpoints_dir: data/checkpoints
 
 seeds:
   root_entropy: 20260717          # root of every SeedSequence in the project
