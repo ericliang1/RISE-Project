@@ -1,7 +1,7 @@
-# Physics-Guided Calibrated Localization of Methane Sources
+# Uncertainty-Aware Physics Guidance for Methane Source Localization
 
-Code for the paper *"Physics-Guided Calibrated Localization of Methane
-Sources"*.
+Code for the paper *"Uncertainty-Aware Physics Guidance for Methane
+Source Localization"*.
 
 ## How it works
 
@@ -15,7 +15,7 @@ Sources"*.
   the leak location over a 64 × 64 grid; split conformal calibration
   turns the map into a region guaranteed to contain the true source 90%
   of the time.
-- **The method**: from the readings and the measured wind, three
+- **Physics guidance**: from the readings and the measured wind, three
   physics-based input maps are computed — how well a leak at each cell
   explains the readings (source evidence), how visible each cell is to
   the masts (sensor visibility), and how stable the evidence is across

@@ -109,9 +109,6 @@ def smoothed_targets(true_cells, n, std_cells, trunc_sigmas, device):
 
 def make_view(cfg, dd, name_data, view, maps=None):
     split, d_clean = name_data
-    if view == "clean":
-        assert maps is None, "ens maps are noisy-view only"
-        return d_clean, None
     d = with_obs_wind(d_clean, np.load(dd / f"ch4tu_{split}_uobs.npy"))
     if maps == "ens":
         stats = torch.tensor(
@@ -134,8 +131,7 @@ def stage_train(cfg, device, views, seed, maps=None, arch="deepsets"):
         assert views == "noisy", f"{maps} configs are noisy-view only"
     V = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps)
              for v in view_list} for s in SPLITS}
-    conds = (("noisy",) if maps in NOISY_ONLY_MAPS
-             else ("clean", "noisy"))
+    conds = ("noisy",)
     A = {s: {v: make_view(cfg, dd, (s, clean[s]), v, maps)
              for v in conds} for s in ("calib", "test")}
     torch.manual_seed(6000 + seed + 1300)

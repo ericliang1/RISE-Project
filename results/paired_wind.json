@@ -4,11 +4,6 @@
     "maps": "off",
     "arch": "deepsets",
     "val_nll": 6.637356689453125,
-    "clean": {
-      "coverage": 0.9015,
-      "median_radius_m": 95.96309907957256,
-      "frac_below_50m": 0.0005
-    },
     "noisy": {
       "coverage": 0.914,
       "median_radius_m": 99.88156027867295,
@@ -20,11 +15,6 @@
     "maps": "off",
     "arch": "st",
     "val_nll": 6.13131494140625,
-    "clean": {
-      "coverage": 0.8915,
-      "median_radius_m": 71.27725083529134,
-      "frac_below_50m": 0.1325
-    },
     "noisy": {
       "coverage": 0.8945,
       "median_radius_m": 75.060956264577,
@@ -36,11 +26,6 @@
     "maps": "off",
     "arch": "deepsets",
     "val_nll": 6.680752197265625,
-    "clean": {
-      "coverage": 0.8895,
-      "median_radius_m": 96.31674160130665,
-      "frac_below_50m": 0.0
-    },
     "noisy": {
       "coverage": 0.887,
       "median_radius_m": 97.32006806966561,
@@ -52,11 +37,6 @@
     "maps": "off",
     "arch": "gnn",
     "val_nll": 6.04610107421875,
-    "clean": {
-      "coverage": 0.895,
-      "median_radius_m": 62.64562965688644,
-      "frac_below_50m": 0.192
-    },
     "noisy": {
       "coverage": 0.904,
       "median_radius_m": 67.56923860159765,
@@ -68,11 +48,6 @@
     "maps": "off",
     "arch": "st",
     "val_nll": 6.005087158203125,
-    "clean": {
-      "coverage": 0.8955,
-      "median_radius_m": 70.10925538546454,
-      "frac_below_50m": 0.154
-    },
     "noisy": {
       "coverage": 0.891,
       "median_radius_m": 73.95274409661882,
@@ -84,11 +59,6 @@
     "maps": "off",
     "arch": "deepsets",
     "val_nll": 6.644498291015625,
-    "clean": {
-      "coverage": 0.8915,
-      "median_radius_m": 97.07020868931147,
-      "frac_below_50m": 0.0005
-    },
     "noisy": {
       "coverage": 0.899,
       "median_radius_m": 99.63812447855646,
@@ -100,11 +70,6 @@
     "maps": "off",
     "arch": "gnn",
     "val_nll": 6.022166748046875,
-    "clean": {
-      "coverage": 0.8995,
-      "median_radius_m": 65.15395966596122,
-      "frac_below_50m": 0.05
-    },
     "noisy": {
       "coverage": 0.902,
       "median_radius_m": 69.27293215152224,
@@ -116,11 +81,6 @@
     "maps": "off",
     "arch": "st",
     "val_nll": 5.988523193359375,
-    "clean": {
-      "coverage": 0.884,
-      "median_radius_m": 65.67371458879661,
-      "frac_below_50m": 0.22
-    },
     "noisy": {
       "coverage": 0.9015,
       "median_radius_m": 72.29216547407226,
@@ -132,11 +92,6 @@
     "maps": "off",
     "arch": "gnn",
     "val_nll": 6.0482177734375,
-    "clean": {
-      "coverage": 0.89,
-      "median_radius_m": 65.00469495747637,
-      "frac_below_50m": 0.0405
-    },
     "noisy": {
       "coverage": 0.896,
       "median_radius_m": 69.06226892023373,
